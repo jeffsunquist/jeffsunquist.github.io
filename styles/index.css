@@ -1,0 +1,126 @@
+/* Clean classroom look — light mode.
+   Loaded globally after the theme styles (theme → addons → user root),
+   so these overrides win at equal specificity. */
+
+:root {
+  --slidev-theme-primary: #374151;
+}
+
+/* --- Typography --- */
+
+.slidev-layout {
+  color: #1f2937;
+  font-size: 1.5rem;
+  padding-top: 0.5rem;
+}
+
+.slidev-layout h1 {
+  font-size: 4.0rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.slidev-layout h2 {
+  font-size: 3.6rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.slidev-layout h3 {
+  font-size: 3.2rem;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.slidev-layout h4 {
+  font-size: 2.8rem;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.slidev-layout p {
+  font-size: 2.4rem;
+  line-height: 1.2;
+}
+
+.slidev-layout li {
+  font-size: 2.4rem;
+  line-height: 1.2;
+}
+
+.slidev-layout h1 + p {
+  color: #4b5563;
+}
+
+.slidev-layout a {
+  color: var(--slidev-theme-primary);
+}
+
+/* --- Display equations: reduce vertical footprint --- */
+
+.slidev-layout .katex-display {
+  margin: 0.1em 0;
+  padding: 0;
+}
+
+.slidev-layout p:has(> .katex-display) {
+  margin-block: 0.15em;
+}
+
+/* --- Tables --- */
+
+.slidev-layout table {
+  border-collapse: collapse;
+  font-size: 1.6rem;
+  line-height: 1.6;
+}
+
+.slidev-layout tr {
+  border-bottom: none;
+}
+
+.slidev-layout thead th {
+  background: #f3f4f6;
+  border-bottom: 2px solid #d1d5db;
+  color: #374151;
+  font-weight: 600;
+}
+
+.slidev-layout th,
+.slidev-layout td {
+  border: 1px solid #e5e7eb;
+  padding: 0.1rem 0.75rem;
+}
+
+.slidev-layout tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+/* --- Callouts (plain blockquotes from `> ...`) --- */
+
+.slidev-layout blockquote {
+  background: #f3f4f6;
+  border-left: 4px solid var(--slidev-theme-primary);
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: inherit;
+  padding: 0.75rem 1rem;
+}
+
+.slidev-layout blockquote > :first-child {
+  margin-top: 0;
+}
+
+.slidev-layout blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* --- Bottom nav toolbar: semitransparent gray so white icons stay visible --- */
+
+#page-root nav.flex.flex-col > div {
+  background: rgb(80 80 80 / 0.4);
+  color: #fff;
+  border-radius: 0.5rem;
+  backdrop-filter: blur(4px);
+}
