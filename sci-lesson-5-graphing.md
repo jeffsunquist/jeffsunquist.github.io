@@ -10,6 +10,7 @@ learning_outcomes:
   - SCI-07
   - SCI-03
   - SCI-08
+  - KIN-50
   - KIN-51
 ---
 
@@ -27,8 +28,8 @@ Students will be able to identify the physical quantities on each axis, read val
 
 ## Review: Problem Solving
 
-- **Scalar**: a number with units (e.g. speed)
-- **Vector**: a number with units *and direction* (e.g. velocity)
+- **Scalar**: magnitude only (number with units)
+- **Vector**: magnitude and direction
 - The four problem-solving steps:
   1. What am I given? What am I finding?
   2. What equation connects them?
@@ -39,58 +40,40 @@ Students will be able to identify the physical quantities on each axis, read val
 
 ## Tables
 
-- **Table**: Organizes data into rows and columns for easy comparison.
 - The independent variable goes in the first column.
+- **average (mean)**: add all the values, then divide by how many there are.
 
-| Name of Cat | Color of Eyes |
-| ----------- | ------------- |
-| Toby        | Yellow        |
-| Sugar       | Brown         |
-| Ace         | Yellow        |
-| Tiger       | Yellow        |
-| Booboo      | Brown         |
-| Spud        | Blue          |
-
-**Reading relationships from a table:**
-
-| Time ($s$) | Distance ($m$) |
-| -------- | ------------ |
-| 1        | 5            |
-| 2        | 10           |
-| 3        | 15           |
-| 4        | 20           |
-
-<v-clicks>
-
-- As time increases, distance increases.
-- Equal steps in time give equal steps in distance — a direct relationship.
-- If the distance values instead got smaller as time grew, the relationship would be inverse.
-
-</v-clicks>
+| Name of Pet| Species | Color of Eyes | Mass (kg) |
+| ----------- | ------- | ------------- | --------- |
+| Toby        | Cat     | Yellow        | 4.2       |
+| Sugar       | Dog     | Brown         | 15.1       |
+| Hiro        | Dog     | Dark Brown       | 23.8       |
+| Tiger       | Cat     | Yellow        | 6.0       |
+| Booboo      | Cat     | Brown         | 3.5       |
 
 ---
 
 ## Line Graph
 
-- **Line Graph**: Used for continuous data (e.g., position vs. time). Shows trends.
+- Used for continuous data.
 
-<img src="/line_graph_template.excalidraw.svg" width="720" />
+<img src="/line_graph_template.excalidraw.svg" width="540" />
 
 ---
 
 ## Bar Graph & Pie Chart
 
-- **Bar Graph**: Used for categorical/discrete data comparisons.
+- Used for categories and comparisons.
 
-<img src="/bar_graph_template.excalidraw.svg" width="720" />
+<img src="/bar_graph_template.excalidraw.svg" width="540" />
 
 ---
 
 ## Pie Chart
 
-- **Pie Chart**: Shows parts of a whole (percentages).
+- Shows parts of a whole (percentages).
 
-<img src="/pie_chart_bronze.excalidraw.svg" width="560" />
+<img src="/pie_chart_bronze.excalidraw.svg" width="400" />
 
 ---
 
@@ -118,38 +101,14 @@ Acronym for graphing rules:
 
 <v-clicks>
 
-- Scale: Choose appropriate axis scales
-- Units: Label both axes with units
-- Legend: Include if multiple data sets
-- Title: Describe what the graph shows
-- Axes: Label independent (x) and dependent (y)
-- Neat: Plot points clearly
+- **S**cale: Choose appropriate axis scales
+- **U**nits: Label both axes with units
+- **L**egend: Include if multiple data sets
+- **T**itle: Describe what the graph shows
+- **A**xes: Label independent (x) and dependent (y)
+- **N**eat: Plot points clearly
 
 </v-clicks>
-
----
-
-## SULTAN: Scale
-
----
-
-## SULTAN: Units
-
----
-
-## SULTAN: Labels
-
----
-
-## SULTAN: Title
-
----
-
-## SULTAN: Axes
-
----
-
-## SULTAN: Neat
 
 ---
 
@@ -159,10 +118,54 @@ Acronym for graphing rules:
 
 <v-clicks>
 
-- Correct: the line follows the trend of the points.
-- Incorrect: connecting every point with a jagged line.
+- Correct: a **straight** line following the data trend
+- Incorrect: a line connecting every point (this would be a _line graph_, not a _line of best fit_)
 
 </v-clicks>
+
+---
+
+## Step 1: Plot the Data
+
+- Put the independent variable on the $x$-axis and the dependent variable on the $y$-axis.
+
+<img src="/prog_1_data.png" width="460" />
+
+---
+
+## Step 2: Line of Best Fit
+
+- Draw one straight line that follows the trend of the points.
+- Don't just connect the points one by one.
+
+<img src="/prog_2_line.png" width="460" />
+
+---
+
+## Step 3: Identify the y-Intercept
+
+- The y-intercept is where the line crosses the $y$-axis (at $t = 0$).
+- It's the distance at the very start — here, $3\ \text{m}$.
+
+<img src="/prog_3_intercept.png" width="460" />
+
+---
+
+## Step 4: Calculate the Slope
+
+- Choose two points on the line.
+- slope $=\frac{\Delta d}{\Delta t}= \frac{19\text{ m} - 3\text{ m}}{4\text{ s} - 0\text{ s}} = 4\frac{\text{m}}{\text{s}}$
+
+<img src="/prog_4_slope.png" width="460" />
+
+---
+
+## Step 5: Extrapolate
+
+- Extend the line past the last point and read the value at the target time.
+- At $t = 5\ \text{s}$, $d = 4\frac{\text{m}}{\text{s}}(5\text{ s}) + 3\text{ m} = 23\ \text{m}$.
+
+<img src="/prog_5_extrapolate.png" width="460" />
 
 ---
 
