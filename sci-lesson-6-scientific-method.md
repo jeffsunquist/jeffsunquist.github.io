@@ -35,11 +35,11 @@ Students will be able to write a hypothesis, identify the variables and groups i
 
 <v-clicks>
 
-- Observation: Watching and recording what happens in nature. This helps scientists spot patterns and ask questions.
-- Question: Asking something specific you want to find out. A good question is clear and can be tested.
-- Hypothesis: An educated guess that answers the question. It's a "if... then..." statement you can test.
-- Experiment: A fair test where you change one thing at a time and measure what happens.
-- Conclusion: Deciding if your hypothesis was right or wrong based on the data you collected.
+- Observation: Carefully observe and gather data to spot patterns, trends, or unusual occurrences.
+- Question: Based on the observations, ask a specific, focused, and testable question.
+- Hypothesis: Propose a tentative, testable statement (a possible explanation) that can be tested.
+- Experiment: Design and conduct a carefully controlled test that changes variables and measures their effects.
+- Conclusion: After the experiment and analyzing the data, decide whether the data supports the hypothesis, fails to support it, or raises new questions.
 
 </v-clicks>
 
@@ -47,14 +47,13 @@ Students will be able to write a hypothesis, identify the variables and groups i
 
 ## Scientific Method Flow
 
-| Step        | What happens                                              |
-| ----------- | --------------------------------------------------------- |
-| Observation | Watch and record; spot patterns, ask questions            |
-| Question    | Ask something specific that can be tested                 |
-| Hypothesis  | Make an educated "if... then..." guess                    |
-| Experiment  | Run a fair test; change only one thing at a time          |
-| Analysis    | Study the data you collected                              |
-| Conclusion  | Decide if the hypothesis was right or wrong               |
+| Step        | What happens                                                       |
+| ----------- | ------------------------------------------------------------------ |
+| Observation | Carefully observe and gather data to spot patterns, trends, or unusual occurrences |
+| Question    | Based on the observations, ask a specific, focused, and testable question |
+| Hypothesis  | Propose a tentative, testable statement that can be tested         |
+| Experiment  | Design and conduct a carefully controlled test that changes variables and measures their effects |
+| Conclusion  | After analyzing the data, decide whether it supports the hypothesis, fails to support it, or raises new questions |
 
 - An experiment is a controlled test: change only one variable at a time.
 
@@ -110,7 +109,7 @@ Students will be able to write a hypothesis, identify the variables and groups i
 
 ## Exit Ticket
 
-You test whether watering plants daily makes them grow taller.
+You roll a toy car down a ramp and measure how far it travels across the floor before it stops. You test several different ramp heights.
 
 <v-clicks>
 
