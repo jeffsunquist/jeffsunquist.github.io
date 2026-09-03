@@ -77,23 +77,6 @@ Students will be able to identify the physical quantities on each axis, read val
 
 ---
 
-## Reading Graphs: Position vs Time
-
-<img src="/x-t_graphs.excalidraw.svg" width="720" />
-
-- Steeper slope → faster speed.
-- Flat line → at rest (zero velocity).
-
----
-
-## Velocity vs Time Graphs
-
-<img src="/v-t_graphs.excalidraw.svg" width="720" />
-
-- Steeper slope → greater acceleration.
-- Flat line → constant velocity.
-
----
 
 ## SULTAN
 
@@ -144,8 +127,7 @@ Acronym for graphing rules:
 
 ## Step 3: Identify the y-Intercept
 
-- The y-intercept is where the line crosses the $y$-axis (at $t = 0$).
-- It's the distance at the very start — here, $3\ \text{m}$.
+- Read where the line crosses the $y$-axis. No calculation needed.
 
 <img src="/prog_3_intercept.png" width="460" />
 
@@ -153,8 +135,8 @@ Acronym for graphing rules:
 
 ## Step 4: Calculate the Slope
 
-- Choose two points on the line.
-- slope $=\frac{\Delta d}{\Delta t}= \frac{19\text{ m} - 3\text{ m}}{4\text{ s} - 0\text{ s}} = 4\frac{\text{m}}{\text{s}}$
+- Choose two points on the line that can be read from the graph.
+- slope $=\frac{\text{rise}}{\text{run}}= \frac{19\text{ m} - 3\text{ m}}{4\text{ s} - 0\text{ s}} = 4\frac{\text{m}}{\text{s}}$
 
 <img src="/prog_4_slope.png" width="460" />
 
@@ -163,19 +145,37 @@ Acronym for graphing rules:
 ## Step 5: Extrapolate
 
 - Extend the line past the last point and read the value at the target time.
-- At $t = 5\ \text{s}$, $d = 4\frac{\text{m}}{\text{s}}(5\text{ s}) + 3\text{ m} = 23\ \text{m}$.
+- At $t = 5\ \text{s}$, the line reads $d = 23\ \text{m}$.
 
 <img src="/prog_5_extrapolate.png" width="460" />
 
 ---
 
-## Exit Ticket
+## Motion Graphs
 
-A student draws a graph of plant height ($\text{cm}$) over 10 days.
+The position or velocity of an object can be graphed with respect to time.
+- position vs time
+- velocity vs time
 
-<v-clicks>
+---
 
-- What goes on the x-axis? The y-axis?
-- What units should be labeled?
+## Position vs Time
 
-</v-clicks>
+<img src="/x-t_graphs.excalidraw.svg" width="720" />
+
+
+- Flat line → at rest (zero velocity).
+- Slope → velocity.
+- Changing slope → accleration.
+
+---
+
+## Velocity vs Time Graphs
+
+<img src="/v-t_graphs.excalidraw.svg" width="720" />
+
+- Line at 0 → zero velocity
+- Flat line → constant velocity.
+- Slope → acceleration.
+
+---
