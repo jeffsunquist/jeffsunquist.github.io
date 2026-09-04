@@ -116,6 +116,23 @@
   margin-bottom: 0;
 }
 
+/* --- Bottom nav toolbar: keep it ALWAYS visible (no auto-hide) ---
+   Slidev has no config toggle for this; it's baked into the client:
+   - play page (pages/play.vue) hides the toolbar with Tailwind's
+     `opacity-0 hover:opacity-100` on a wrapper div inside #page-root.
+   - presenter page (pages/presenter.vue) dims it to 25% via `op25`.
+   The CSS override below pins the toolbar's opacity to 1.
+   NOTE: couples to Slidev's internal class names (nav.flex.flex-col,
+   #page-root, .grid-container) — re-verify after a Slidev upgrade. */
+
+#page-root div:has(> nav.flex.flex-col) {
+  opacity: 1 !important;
+}
+
+.grid-container nav.flex.flex-col {
+  opacity: 1 !important;
+}
+
 /* --- Bottom nav toolbar: semitransparent gray so white icons stay visible --- */
 
 #page-root nav.flex.flex-col > div {
