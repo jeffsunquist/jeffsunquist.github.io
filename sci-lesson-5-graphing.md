@@ -4,6 +4,11 @@ colorSchema: light
 title: Scientific Inquiry — Graphing
 info: |
   Grade 7 Physics · Lesson 5 of 6
+fonts:
+  sans: Patrick Hand
+  local:
+    - Patrick Hand
+  provider: none
 learning_outcomes:
   - SCI-01
   - SCI-02

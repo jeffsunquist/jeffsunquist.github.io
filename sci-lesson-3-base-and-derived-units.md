@@ -4,6 +4,11 @@ colorSchema: light
 title: Scientific Inquiry — Base Units & Derived Units
 info: |
   Grade 7 Physics · Lesson 3 of 6
+fonts:
+  sans: Patrick Hand
+  local:
+    - Patrick Hand
+  provider: none
 learning_outcomes:
   - MEAS-04
   - MEAS-01

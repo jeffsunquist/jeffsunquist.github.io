@@ -4,6 +4,11 @@ colorSchema: light
 title: Scientific Inquiry — Observations
 info: |
   Grade 7 Physics · Lesson 1 of 6
+fonts:
+  sans: Patrick Hand
+  local:
+    - Patrick Hand
+  provider: none
 learning_outcomes:
   - SCI-10
   - SCI-11

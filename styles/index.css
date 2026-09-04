@@ -2,6 +2,18 @@
    Loaded globally after the theme styles (theme → addons → user root),
    so these overrides win at equal specificity. */
 
+/* --- Self-hosted handwriting font (Patrick Hand, SIL OFL) ---
+   Served from public/fonts/ so no Google Fonts runtime dependency.
+   See slidev.config.ts (provider: none; local). */
+
+@font-face {
+  font-family: 'Patrick Hand';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/PatrickHand-Regular.ttf') format('truetype');
+}
+
 :root {
   --slidev-theme-primary: #374151;
 }

@@ -4,6 +4,11 @@ colorSchema: light
 title: Scientific Inquiry — Measurement & Metric Prefixes
 info: |
   Grade 7 Physics · Lesson 2 of 6
+fonts:
+  sans: Patrick Hand
+  local:
+    - Patrick Hand
+  provider: none
 learning_outcomes:
   - SCI-09
   - SCI-04
