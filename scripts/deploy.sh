@@ -31,6 +31,39 @@ for f in *.md; do
   npx slidev build "$f" --base "/$slug/" --router-mode hash --out "dist/$slug"
 done
 
+# Aura tracker data is a build-time input from data/aura.csv (date,value rows).
+# Build JS array literals; empty CSV -> empty chart.
+clean() {
+  local s="$1"
+  s="${s#"${s%%[![:space:]]*}"}"
+  s="${s%"${s##*[![:space:]]}"}"
+  s="${s%\"}"
+  s="${s#\"}"
+  printf '%s' "$s"
+}
+aura_labels_js='[]'
+aura_data_js='[]'
+if [ -f data/aura.csv ]; then
+  labels=''
+  values=''
+  first=1
+  while IFS=, read -r label value; do
+    label="$(clean "${label:-}")"
+    value="$(clean "${value:-}")"
+    [ -z "$label" ] && continue
+    [ "$label" = "date" ] && continue
+    if [ "$first" -eq 0 ]; then
+      labels="$labels,"
+      values="$values,"
+    fi
+    first=0
+    labels="$labels\"$label\""
+    values="$values$value"
+  done < data/aura.csv
+  aura_labels_js="[$labels]"
+  aura_data_js="[$values]"
+fi
+
 # Write the landing index.html.
 {
   cat <<'HTML'
@@ -66,12 +99,8 @@ HTML
   </div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    const auraLabels = [
-      'Aug 17','Aug 18','Aug 19','Aug 20','Aug 21','Aug 22','Aug 23','Aug 24',
-      'Aug 25','Aug 26','Aug 27','Aug 28','Aug 29','Aug 30','Aug 31',
-      'Sep 1','Sep 2','Sep 3','Sep 4'
-    ];
-    const auraData = [62, 64, 66, 66, 65, 65, 65, 62, 50, 50, 45, 50, 50, 50, 60, 48, 44, 42, 19];
+    const auraLabels = __AURA_LABELS__;
+    const auraData = __AURA_DATA__;
     const bestFitData = (() => {
       const n = auraData.length;
       const sx = (n - 1) * n / 2;
@@ -124,5 +153,11 @@ HTML
 </html>
 HTML
 } > dist/index.html
+
+# Inject the Aura tracker data parsed from data/aura.csv into the landing page.
+sed -i \
+  -e "s|__AURA_LABELS__|${aura_labels_js}|g" \
+  -e "s|__AURA_DATA__|${aura_data_js}|g" \
+  dist/index.html
 
 echo "Deck build complete -> $(pwd)/dist"
