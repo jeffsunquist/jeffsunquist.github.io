@@ -40,8 +40,6 @@ to them all.
 - Lesson decks: `sci-lesson-{N}-{slug}.md` — e.g.
   `sci-lesson-1-observations.md`, `sci-lesson-4-problem-solving.md`.
 - The unit's intro deck: `welcome-lesson-1-class-introduction.md`.
-- `slides.md` is the course-map index deck. **Always update its "The Decks"
-  table** when you add or rename a lesson.
 
 ## Frontmatter
 
@@ -201,7 +199,6 @@ image can accompany the prompt.
 - Interactive elements use `<v-click>` / `<v-clicks>` / `<kbd>`.
 - Math uses KaTeX inline `$...$` and display `$$...$$`.
 - Markdown tables are styled globally (striped, bordered) — no extra work.
-- `slides.md` is the course-map index deck listing every lesson.
 
 ## Build & verify
 
@@ -210,7 +207,7 @@ image can accompany the prompt.
 npx slidev sci-lesson-N-<slug>.md
 
 # 2. Check LO IDs against the master list
-rg -n "sci-lesson-N" slides.md   # course-map updated?
+rg -n "learning_outcomes" sci-lesson-N-<slug>.md
 
 # 3. Optional: export
 npx slidev export sci-lesson-N-<slug>.md
