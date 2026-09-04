@@ -72,6 +72,15 @@ HTML
       'Sep 1','Sep 2','Sep 3','Sep 4'
     ];
     const auraData = [62, 64, 66, 66, 65, 65, 65, 62, 50, 50, 45, 50, 50, 50, 60, 48, 44, 42, 19];
+    const bestFitData = (() => {
+      const n = auraData.length;
+      const sx = (n - 1) * n / 2;
+      let sy = 0, sxy = 0, sx2 = 0;
+      auraData.forEach((y, x) => { sy += y; sxy += x * y; sx2 += x * x; });
+      const slope = (n * sxy - sx * sy) / (n * sx2 - sx * sx);
+      const intercept = (sy - slope * sx) / n;
+      return auraData.map((_, x) => intercept + slope * x);
+    })();
     new Chart(document.getElementById('auraChart'), {
       type: 'line',
       data: {
@@ -81,6 +90,14 @@ HTML
           borderColor: '#0b57d0',
           tension: 0.3,
           pointRadius: 3
+        }, {
+          label: 'line of best fit',
+          data: bestFitData,
+          borderColor: 'black',
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+          tension: 0
         }]
       },
       options: {
