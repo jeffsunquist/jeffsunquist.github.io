@@ -77,11 +77,8 @@ HTML
       data: {
         labels: auraLabels,
         datasets: [{
-          label: 'Aura',
           data: auraData,
           borderColor: '#0b57d0',
-          backgroundColor: 'rgba(11, 87, 208, 0.12)',
-          fill: true,
           tension: 0.3,
           pointRadius: 3
         }]
@@ -89,9 +86,13 @@ HTML
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        plugins: {
+          title: { display: true, text: 'Aura Intensity vs Time' },
+          legend: { display: false }
+        },
         scales: {
           y: {
-            title: { display: true, text: 'Aura' },
+            title: { display: true, text: 'Aura Intensity (cd)' },
             min: 0,
             max: 100
           },
