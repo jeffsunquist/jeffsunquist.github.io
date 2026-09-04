@@ -120,10 +120,10 @@
    Slidev has no config toggle for this; it's baked into the client:
    - play page (pages/play.vue) hides the toolbar with Tailwind's
      `opacity-0 hover:opacity-100` on a wrapper div inside #page-root.
-   - presenter page (pages/presenter.vue) dims it to 25% via `op25`.
-   The CSS override below pins the toolbar's opacity to 1.
+   The CSS override below pins the toolbar's opacity to 1 and restyles it
+   as a play-mode-only vertical rail on the left edge.
    NOTE: couples to Slidev's internal class names (nav.flex.flex-col,
-   #page-root, .grid-container) — re-verify after a Slidev upgrade. */
+   #page-root) — re-verify after a Slidev upgrade. */
 
 #page-root div:has(> nav.flex.flex-col) {
   opacity: 1 !important;
@@ -146,25 +146,17 @@
   backdrop-filter: blur(4px);
   flex-direction: column !important;
   flex-wrap: nowrap !important;
+  width: 3rem;
+  gap: 0.75rem;
+  overflow: visible;
 }
 
-/* --- Presenter page: vertical rail on the left edge --- */
-
-.grid-container nav.flex.flex-col {
-  opacity: 1 !important;
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  z-index: 20;
+/* Drop the leftover 1px separators so spacing is clean and even */
+#page-root nav.flex.flex-col > div > .w-1px {
+  display: none;
 }
 
-.grid-container nav.flex.flex-col > div {
-  flex-direction: column !important;
-  flex-wrap: nowrap !important;
-}
-
-/* --- Center MenuButton-wrapped controls ("change sync settings", "more options") --- */
+/* --- Center the remaining MenuButton control ("more options") --- */
 
 #page-root nav.flex.flex-col > div .flex.relative {
   display: flex;
@@ -181,11 +173,38 @@
 /* --- Slide counter: small, fixed-width so the rail doesn't grow/shrink --- */
 
 #page-root nav.flex.flex-col > div > div.px2 {
-  min-width: 2.4em;
+  width: 2.4em;
+  min-width: 0;
+  flex: 0 0 auto;
+  align-self: center;
   text-align: center;
+  order: 1;
+  overflow: visible;
+  white-space: nowrap;
 }
 
 #page-root nav.flex.flex-col > div > div.px2 span {
   font-size: 8pt;
   line-height: 1;
+}
+
+/* Home link (custom-nav-controls) to the top of the rail */
+#page-root nav.flex.flex-col > div [title="Open basado.org"] {
+  order: -1;
+}
+
+/* --- Hide selected nav buttons (play-page rail) --- */
+
+#page-root nav.flex.flex-col [title="Show info"],
+#page-root nav.flex.flex-col [title="Browser Exporter"],
+#page-root nav.flex.flex-col [title="Presenter Mode"],
+#page-root nav.flex.flex-col [title="Toggle camera view"],
+#page-root nav.flex.flex-col [title="Record video"],
+#page-root nav.flex.flex-col [title="Stop record video"],
+#page-root nav.flex.flex-col [title="Select recording device"] {
+  display: none;
+}
+
+#page-root nav.flex.flex-col > div .flex.relative:has(button[title="Change sync settings"]) {
+  display: none;
 }

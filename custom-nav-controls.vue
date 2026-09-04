@@ -10,6 +10,6 @@ const link = 'https://www.basado.org'
     rel="noopener"
     title="Open basado.org"
   >
-    <div class="i-carbon:link" />
+    <div class="i-carbon:home" />
   </a>
 </template>
