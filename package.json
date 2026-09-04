@@ -8,7 +8,8 @@
     "export": "slidev export"
   },
   "dependencies": {
-    "@slidev/theme-default": "latest"
+    "@slidev/theme-default": "latest",
+    "slidev-addon-excalidraw": "^1.1.1"
   },
   "devDependencies": {
     "@slidev/cli": "^52.19.1"
