@@ -4,6 +4,11 @@ colorSchema: light
 title: Scientific Inquiry — Scientific Method & Variables
 info: |
   Grade 7 Physics · Lesson 6 of 6
+fonts:
+  sans: Patrick Hand
+  local:
+    - Patrick Hand
+  provider: none
 learning_outcomes:
   - SCI-05
   - SCI-06
