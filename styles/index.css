@@ -181,7 +181,7 @@
 /* --- Slide counter: small, fixed-width so the rail doesn't grow/shrink --- */
 
 #page-root nav.flex.flex-col > div > div.px2 {
-  min-width: 3em;
+  min-width: 2.4em;
   text-align: center;
 }
 
