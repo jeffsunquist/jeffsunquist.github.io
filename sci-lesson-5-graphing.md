@@ -9,8 +9,6 @@ fonts:
   local:
     - Patrick Hand
   provider: none
-addons:
-  - excalidraw
 learning_outcomes:
   - SCI-01
   - SCI-02
@@ -185,14 +183,4 @@ The position or velocity of an object can be graphed with respect to time.
 - Flat line → constant velocity.
 - Slope → acceleration.
 
----
 
-## Try Excalidraw
-
-An Excalidraw version of the Step 5 extrapolation graph (slide 14): line of best fit, dashed extrapolation, y-intercept = 3 m, and predicted = 23 m at t = 5 s.
-
-<div class="mx-auto w-1/2">
-  <Excalidraw drawFilePath="./motion_graph.excalidraw" class="excalidraw-svg" />
-</div>
-
----

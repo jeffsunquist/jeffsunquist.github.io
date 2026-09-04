@@ -14,12 +14,6 @@
   src: url('/fonts/PatrickHand-Regular.ttf') format('truetype');
 }
 
-/* --- Match the live <Excalidraw> drawing's text to the slide font (Patrick Hand) --- */
-
-.excalidraw-svg text {
-  font-family: 'Patrick Hand', 'Comic Sans MS', cursive !important;
-}
-
 :root {
   --slidev-theme-primary: #374151;
 }
