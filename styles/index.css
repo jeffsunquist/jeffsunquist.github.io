@@ -163,3 +163,29 @@
   flex-direction: column !important;
   flex-wrap: nowrap !important;
 }
+
+/* --- Center MenuButton-wrapped controls ("change sync settings", "more options") --- */
+
+#page-root nav.flex.flex-col > div .flex.relative {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#page-root nav.flex.flex-col > div .flex.relative > button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Slide counter: small, fixed-width so the rail doesn't grow/shrink --- */
+
+#page-root nav.flex.flex-col > div > div.px2 {
+  min-width: 3em;
+  text-align: center;
+}
+
+#page-root nav.flex.flex-col > div > div.px2 span {
+  font-size: 8pt;
+  line-height: 1;
+}
