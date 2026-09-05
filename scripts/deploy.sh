@@ -116,13 +116,13 @@ HTML
         labels: auraLabels,
         datasets: [{
           data: auraData,
-          borderColor: '#0b57d0',
+          borderColor: 'black',
           tension: 0.3,
           pointRadius: 3
         }, {
           label: 'line of best fit',
           data: bestFitData,
-          borderColor: 'black',
+          borderColor: '#0b57d0',
           borderWidth: 2,
           pointRadius: 0,
           fill: false,
