@@ -35,8 +35,8 @@
   }
   .page canvas { display: block; background: #fff; }
   .page svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-  .page.drawing { touch-action: none; }
-  .page.scrolling { pointer-events: none; }
+  .page svg.touch-none { touch-action: none; }
+  .page svg.pointer-events-none { pointer-events: none; }
   .swatch { width: 28px !important; height: 28px !important; min-width: 28px !important; padding: 0 !important; border: 2px solid rgba(255,255,255,.3) !important; }
   .swatch.active { border-color: #fff !important; }
 
@@ -112,16 +112,20 @@
       saveTimer = setTimeout(saveAll, 600);
     }
 
+    let lastPointerType = "";
     function makeDrauu(svg, wrap) {
       const d = createDrauu({
         el: svg,
         brush: { color: state.color, size: state.size, mode: state.tool },
-        acceptsInputTypes: undefined,
+        acceptsInputTypes: ["mouse", "touch", "pen"],
         coordinateTransform: false,
       });
+      wrap.addEventListener("pointerdown", e => { lastPointerType = e.pointerType; }, { passive: true });
       d.mount(svg, wrap);
       d.on("changed", scheduleSave);
       d.on("end", scheduleSave);
+      d.on("start", () => updateStatus("Drawing · " + state.tool + " · " + lastPointerType));
+      d.on("end", () => updateStatus("Ready"));
       return d;
     }
 
@@ -144,8 +148,12 @@
       pages.forEach(p => { p.drauu.brush = { color: state.color, size: s, mode: state.tool }; });
     }
     function applyDrawMode() {
-      const cls = state.drawMode ? "drawing" : "scrolling";
-      pages.forEach(p => { p.wrap.classList.remove("drawing", "scrolling"); p.wrap.classList.add(cls); });
+      const inputs = state.drawMode ? ["mouse", "touch", "pen"] : ["pen"];
+      pages.forEach(p => {
+        p.drauu.options.acceptsInputTypes = inputs;
+        p.svg.classList.toggle("touch-none", state.drawMode);
+        p.svg.classList.toggle("pointer-events-none", !state.drawMode);
+      });
       document.getElementById("btnMode").textContent = state.drawMode ? "Draw" : "Scroll";
     }
 
