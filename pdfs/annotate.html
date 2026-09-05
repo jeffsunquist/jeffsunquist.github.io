@@ -140,8 +140,15 @@
     }
 
     async function loadPdf(url, name) {
+      try {
       statusEl.textContent = "Loading " + name + "…";
-      const loadingTask = pdfjsLib.getDocument(url);
+      const loadingTask = pdfjsLib.getDocument({
+        url,
+        wasmUrl: "./vendor/wasm/",
+        standardFontDataUrl: "./vendor/standard_fonts/",
+        cMapUrl: "./vendor/cmaps/",
+        imageResourcesPath: "./vendor/image_decoders/",
+      });
       const doc = await loadingTask.promise;
       pdfName = name;
       document.title = "Annotator — " + name;
@@ -186,6 +193,9 @@
       applyDrawMode();
       updateStatus("Ready — " + doc.numPages + " pages");
       doc.destroy();
+      } catch (e) {
+        updateStatus("Error: " + (e && e.message ? e.message : e));
+      }
     }
 
     function updateStatus(msg) { statusEl.textContent = msg; }
