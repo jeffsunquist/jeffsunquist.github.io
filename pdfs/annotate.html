@@ -34,9 +34,11 @@
     box-shadow: 0 2px 8px rgba(0,0,0,.25); border-radius: 3px; overflow: hidden;
   }
   .page canvas { display: block; background: #fff; }
-  .page svg { position: absolute; top: 0; left: 0; }
-  .page svg.drawing { pointer-events: auto; touch-action: none; cursor: crosshair; }
-  .page svg.scrolling { pointer-events: none; }
+  .page svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  .page.drawing { touch-action: none; }
+  .page.scrolling { pointer-events: none; }
+  .swatch { width: 28px !important; height: 28px !important; min-width: 28px !important; padding: 0 !important; border: 2px solid rgba(255,255,255,.3) !important; }
+  .swatch.active { border-color: #fff !important; }
 
   #empty { text-align: center; color: #5f6368; padding: 60px 20px; }
   #empty button { font-size: 16px; padding: 12px 22px; }
@@ -46,13 +48,14 @@
   <div id="toolbar">
     <button class="wide" id="btnOpen" title="Open a PDF">Open PDF</button>
     <button class="wide" id="btnMode" title="Toggle draw / scroll">Draw</button>
-    <button id="t-stylus" title="Pencil (pressure)">✏️</button>
-    <button id="t-draw" class="active" title="Pen">🖊️</button>
+    <button id="t-stylus" class="active" title="Pencil (pressure)">✏️</button>
+    <button id="t-draw" title="Pen">🖊️</button>
     <button id="t-line" title="Line">╱</button>
     <button id="t-rect" title="Rectangle">▭</button>
     <button id="t-ellipse" title="Ellipse">◯</button>
     <button id="t-erase" title="Eraser">⌫</button>
-    <input type="color" id="color" value="#e02020" title="Color" />
+    <span id="palette"></span>
+    <input type="color" id="color" value="#ff595e" title="Custom color" />
     <label title="Size"><input type="range" id="size" min="1" max="24" value="4" /> <span id="sizeVal">4</span></label>
     <button id="btnUndo" title="Undo">↶</button>
     <button id="btnRedo" title="Redo">↷</button>
@@ -89,11 +92,12 @@
     const statusEl = document.getElementById("status");
 
     const state = {
-      tool: "draw",
-      color: "#e02020",
+      tool: "stylus",
+      color: "#ff595e",
       size: 4,
       drawMode: true,
     };
+    const palette = ["#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93", "#ffffff", "#000000"];
     let pages = [];
     let pdfName = "handout";
     let saveTimer = 0;
@@ -108,10 +112,14 @@
       saveTimer = setTimeout(saveAll, 600);
     }
 
-    function makeDrauu(svg) {
-      const d = createDrauu({ el: svg, brush: { color: state.color, size: state.size } });
-      d.mount();
-      d.mode = state.tool;
+    function makeDrauu(svg, wrap) {
+      const d = createDrauu({
+        el: svg,
+        brush: { color: state.color, size: state.size, mode: state.tool },
+        acceptsInputTypes: undefined,
+        coordinateTransform: false,
+      });
+      d.mount(svg, wrap);
       d.on("changed", scheduleSave);
       d.on("end", scheduleSave);
       return d;
@@ -126,16 +134,18 @@
     }
     function setColor(c) {
       state.color = c;
-      pages.forEach(p => { p.drauu.brush = { color: c, size: state.size }; });
+      pages.forEach(p => { p.drauu.brush = { color: c, size: state.size, mode: state.tool }; });
+      document.querySelectorAll("#palette .swatch").forEach(s => s.classList.toggle("active", s.dataset.color === c));
+      document.getElementById("color").value = c;
     }
     function setSize(s) {
       state.size = s;
       document.getElementById("sizeVal").textContent = s;
-      pages.forEach(p => { p.drauu.brush = { color: state.color, size: s }; });
+      pages.forEach(p => { p.drauu.brush = { color: state.color, size: s, mode: state.tool }; });
     }
     function applyDrawMode() {
       const cls = state.drawMode ? "drawing" : "scrolling";
-      pages.forEach(p => { p.svg.classList.remove("drawing", "scrolling"); p.svg.classList.add(cls); });
+      pages.forEach(p => { p.wrap.classList.remove("drawing", "scrolling"); p.wrap.classList.add(cls); });
       document.getElementById("btnMode").textContent = state.drawMode ? "Draw" : "Scroll";
     }
 
@@ -177,16 +187,14 @@
         wrap.appendChild(canvas);
 
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.style.width = vp.width + "px";
-        svg.style.height = vp.height + "px";
         wrap.appendChild(svg);
 
         pagesEl.appendChild(wrap);
 
         await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp, transform }).promise;
 
-        const d = makeDrauu(svg);
-        pages.push({ drauu: d, canvas, svg, index: i - 1 });
+        const d = makeDrauu(svg, wrap);
+        pages.push({ drauu: d, canvas, svg, wrap, index: i - 1 });
         const saved = localStorage.getItem(key(i - 1));
         if (saved) { try { d.load(saved); } catch {} }
       }
@@ -239,6 +247,17 @@
     Object.entries(tools).forEach(([mode, id]) => {
       document.getElementById(id).onclick = () => setTool(mode);
     });
+    const palEl = document.getElementById("palette");
+    palette.forEach(c => {
+      const b = document.createElement("button");
+      b.className = "swatch";
+      b.dataset.color = c;
+      b.style.background = c;
+      b.title = c;
+      b.onclick = () => setColor(c);
+      palEl.appendChild(b);
+    });
+    setColor(state.color);
     document.getElementById("color").oninput = e => setColor(e.target.value);
     document.getElementById("size").oninput = e => setSize(+e.target.value);
     document.getElementById("btnUndo").onclick = () => pages.forEach(p => p.drauu.undo());
