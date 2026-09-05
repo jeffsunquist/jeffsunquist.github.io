@@ -121,7 +121,6 @@
         coordinateTransform: false,
       });
       wrap.addEventListener("pointerdown", e => { lastPointerType = e.pointerType; }, { passive: true });
-      d.mount(svg, wrap);
       d.on("changed", scheduleSave);
       d.on("end", scheduleSave);
       d.on("start", () => updateStatus("Drawing · " + state.tool + " · " + lastPointerType));
