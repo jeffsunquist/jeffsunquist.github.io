@@ -30,8 +30,6 @@ Lesson 5 of 6
 Students will be able to identify the physical quantities on each axis, read values from a graph, and create clear graphs using SULTAN.
 
 ---
-overflow-y: auto
----
 
 # Review: Problem Solving
 
@@ -43,44 +41,6 @@ overflow-y: auto
   3. Plug in and solve.
   4. Check the units and direction (if applicable).
 
----
-overflow-y: auto
--
-# Review: Problem Solving
-
-- **Scalar**: magnitude only (number with units)
-- **Vector**: magnitude and direction
-- The four problem-solving steps:
-  1. What am I given? What am I finding?
-  2. What equation connects them?
-  3. Plug in and solve.
-  4. Check the units and direction (if applicable).
-6.
-7.
-4.
-3.
-3.
-4.
-Hello
-
----
-
-# Review: Problem Solving
-
-- **Scalar**: magnitude only (number with units)
-- **Vector**: magnitude and direction
-- The four problem-solving steps:
-  1. What am I given? What am I finding?
-  2. What equation connects them?
-  3. Plug in and solve.
-  4. Check the units and direction (if applicable).
-6.
-7.
-4.
-3.
-3.
-4.
-Hello
 
 ---
 
