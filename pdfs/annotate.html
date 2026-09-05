@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<title>Handout Annotator</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; background: #e8eaed; }
+  body { display: flex; flex-direction: column; }
+
+  #toolbar {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    padding: 8px 10px; background: #202124; color: #fff;
+    font-size: 14px;
+  }
+  #toolbar button, #toolbar input[type=color] {
+    height: 38px; min-width: 40px; padding: 0 10px; border: 0; border-radius: 6px;
+    background: #3c4043; color: #fff; font: inherit; cursor: pointer; touch-action: manipulation;
+  }
+  #toolbar button.active { background: #1a73e8; }
+  #toolbar button.wide { padding: 0 14px; }
+  #toolbar input[type=color] { padding: 0 4px; }
+  #toolbar label { display: flex; align-items: center; gap: 6px; }
+  #toolbar .spacer { flex: 1; }
+  #toolbar #status { font-size: 13px; opacity: .85; }
+
+  #scroll { flex: 1; overflow-y: auto; padding: 16px 8px; }
+  #pages { max-width: 1040px; margin: 0 auto; }
+
+  .page {
+    position: relative; margin: 0 auto 18px; background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25); border-radius: 3px; overflow: hidden;
+  }
+  .page canvas { display: block; background: #fff; }
+  .page svg { position: absolute; top: 0; left: 0; }
+  .page svg.drawing { pointer-events: auto; touch-action: none; cursor: crosshair; }
+  .page svg.scrolling { pointer-events: none; }
+
+  #empty { text-align: center; color: #5f6368; padding: 60px 20px; }
+  #empty button { font-size: 16px; padding: 12px 22px; }
+</style>
+</head>
+<body>
+  <div id="toolbar">
+    <button class="wide" id="btnOpen" title="Open a PDF">Open PDF</button>
+    <button class="wide" id="btnMode" title="Toggle draw / scroll">Draw</button>
+    <button id="t-stylus" title="Pencil (pressure)">✏️</button>
+    <button id="t-draw" class="active" title="Pen">🖊️</button>
+    <button id="t-line" title="Line">╱</button>
+    <button id="t-rect" title="Rectangle">▭</button>
+    <button id="t-ellipse" title="Ellipse">◯</button>
+    <button id="t-erase" title="Eraser">⌫</button>
+    <input type="color" id="color" value="#e02020" title="Color" />
+    <label title="Size"><input type="range" id="size" min="1" max="24" value="4" /> <span id="sizeVal">4</span></label>
+    <button id="btnUndo" title="Undo">↶</button>
+    <button id="btnRedo" title="Redo">↷</button>
+    <button id="btnClear" title="Clear this page">🗑</button>
+    <span class="spacer"></span>
+    <button id="btnSave" title="Export annotations (JSON)">⬇</button>
+    <button id="btnLoad" title="Import annotations (JSON)">⬆</button>
+    <span id="status"></span>
+  </div>
+
+  <div id="scroll">
+    <div id="pages"></div>
+    <div id="empty">
+      <p>Open a handout PDF to annotate,<br />then swipe to scroll or switch to <b>Draw</b> mode to mark it up.</p>
+      <button id="btnOpen2">Open PDF</button>
+    </div>
+  </div>
+
+  <input type="file" id="file" accept="application/pdf" hidden />
+  <input type="file" id="import" accept="application/json" hidden />
+
+  <script type="importmap">
+    { "imports": { "drauu": "./vendor/drauu.js", "@drauu/core": "./vendor/drauu-core.js" } }
+  </script>
+  <script type="module">
+    import * as pdfjsLib from "./vendor/pdf.js";
+    import { createDrauu } from "drauu";
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "./vendor/pdf.worker.js";
+
+    const params = new URLSearchParams(location.search);
+    const pagesEl = document.getElementById("pages");
+    const emptyEl = document.getElementById("empty");
+    const statusEl = document.getElementById("status");
+
+    const state = {
+      tool: "draw",
+      color: "#e02020",
+      size: 4,
+      drawMode: true,
+    };
+    let pages = [];
+    let pdfName = "handout";
+    let saveTimer = 0;
+
+    const DISPLAY_W = 960;
+
+    function key(i) { return `handout:${pdfName}:${i}`; }
+    function store(i) { try { localStorage.setItem(key(i), pages[i].drauu.dump()); } catch {} }
+    function saveAll() { pages.forEach((_, i) => store(i)); updateStatus("Autosaved"); }
+    function scheduleSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveAll, 600);
+    }
+
+    function makeDrauu(svg) {
+      const d = createDrauu({ el: svg, brush: { color: state.color, size: state.size } });
+      d.mount();
+      d.mode = state.tool;
+      d.on("changed", scheduleSave);
+      d.on("end", scheduleSave);
+      return d;
+    }
+
+    function setTool(t) {
+      state.tool = t;
+      pages.forEach(p => { p.drauu.mode = t; });
+      document.querySelectorAll("[id^=t-]").forEach(b => b.classList.remove("active"));
+      const btn = document.getElementById("t-" + t);
+      if (btn) btn.classList.add("active");
+    }
+    function setColor(c) {
+      state.color = c;
+      pages.forEach(p => { p.drauu.brush = { color: c, size: state.size }; });
+    }
+    function setSize(s) {
+      state.size = s;
+      document.getElementById("sizeVal").textContent = s;
+      pages.forEach(p => { p.drauu.brush = { color: state.color, size: s }; });
+    }
+    function applyDrawMode() {
+      const cls = state.drawMode ? "drawing" : "scrolling";
+      pages.forEach(p => { p.svg.classList.remove("drawing", "scrolling"); p.svg.classList.add(cls); });
+      document.getElementById("btnMode").textContent = state.drawMode ? "Draw" : "Scroll";
+    }
+
+    async function loadPdf(url, name) {
+      statusEl.textContent = "Loading " + name + "…";
+      const loadingTask = pdfjsLib.getDocument(url);
+      const doc = await loadingTask.promise;
+      pdfName = name;
+      document.title = "Annotator — " + name;
+      pagesEl.innerHTML = "";
+      pages = [];
+      emptyEl.style.display = "none";
+
+      const pg1 = await doc.getPage(1);
+      const vp1 = pg1.getViewport({ scale: 1 });
+      const scale = DISPLAY_W / vp1.width;
+      const dpr = window.devicePixelRatio || 1;
+      const transform = dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : undefined;
+
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const vp = page.getViewport({ scale });
+        const wrap = document.createElement("div");
+        wrap.className = "page";
+        wrap.style.width = vp.width + "px";
+
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.floor(vp.width * dpr);
+        canvas.height = Math.floor(vp.height * dpr);
+        canvas.style.width = vp.width + "px";
+        canvas.style.height = vp.height + "px";
+        wrap.appendChild(canvas);
+
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.style.width = vp.width + "px";
+        svg.style.height = vp.height + "px";
+        wrap.appendChild(svg);
+
+        pagesEl.appendChild(wrap);
+
+        await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp, transform }).promise;
+
+        const d = makeDrauu(svg);
+        pages.push({ drauu: d, canvas, svg, index: i - 1 });
+        const saved = localStorage.getItem(key(i - 1));
+        if (saved) { try { d.load(saved); } catch {} }
+      }
+      applyDrawMode();
+      updateStatus("Ready — " + doc.numPages + " pages");
+      doc.destroy();
+    }
+
+    function updateStatus(msg) { statusEl.textContent = msg; }
+
+    function exportJson() {
+      const out = { pdf: pdfName, pages: {} };
+      pages.forEach((p, i) => { out.pages[i] = p.drauu.dump(); });
+      download(JSON.stringify(out), pdfName + ".annotations.json");
+    }
+    function importJson(file) {
+      file.text().then(txt => {
+        try {
+          const obj = JSON.parse(txt);
+          Object.keys(obj.pages || {}).forEach(k => {
+            const idx = +k;
+            if (pages[idx]) { try { pages[idx].drauu.load(obj.pages[k]); } catch {} }
+          });
+          updateStatus("Imported");
+        } catch (e) { updateStatus("Import failed"); }
+      });
+    }
+    function download(content, filename) {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([content], { type: "application/json" }));
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    // wire toolbar
+    const modeButton = document.getElementById("btnMode");
+    modeButton.onclick = () => { state.drawMode = !state.drawMode; applyDrawMode(); };
+    document.getElementById("btnOpen").onclick = () => document.getElementById("file").click();
+    document.getElementById("btnOpen2").onclick = () => document.getElementById("file").click();
+    document.getElementById("file").onchange = e => {
+      const f = e.target.files[0];
+      if (f) loadPdf(URL.createObjectURL(f), f.name.replace(/\.pdf$/i, ""));
+      e.target.value = "";
+    };
+    const tools = { stylus: "t-stylus", draw: "t-draw", line: "t-line", rectangle: "t-rect", ellipse: "t-ellipse", eraseLine: "t-erase" };
+    Object.entries(tools).forEach(([mode, id]) => {
+      document.getElementById(id).onclick = () => setTool(mode);
+    });
+    document.getElementById("color").oninput = e => setColor(e.target.value);
+    document.getElementById("size").oninput = e => setSize(+e.target.value);
+    document.getElementById("btnUndo").onclick = () => pages.forEach(p => p.drauu.undo());
+    document.getElementById("btnRedo").onclick = () => pages.forEach(p => p.drauu.redo());
+    document.getElementById("btnClear").onclick = () => pages.forEach(p => { p.drauu.clear(); scheduleSave(); });
+    document.getElementById("btnSave").onclick = exportJson;
+    document.getElementById("btnLoad").onclick = () => document.getElementById("import").click();
+    document.getElementById("import").onchange = e => { const f = e.target.files[0]; if (f) importJson(f); e.target.value = ""; };
+
+    setTool(state.tool);
+    applyDrawMode();
+
+    if (params.get("pdf")) {
+      const p = params.get("pdf");
+      loadPdf(p, p.split("/").pop().replace(/\.pdf$/i, ""));
+    } else {
+      updateStatus("Open a PDF to begin");
+    }
+  </script>
+</body>
+</html>

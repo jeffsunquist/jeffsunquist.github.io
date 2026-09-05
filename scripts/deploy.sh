@@ -20,6 +20,11 @@ if [ -f CNAME ]; then
   cp CNAME dist/CNAME
 fi
 
+# Publish the annotatable PDFs (pdfs/ -> dist/pdfs/). Empty is fine.
+if [ -d pdfs ]; then
+  cp -r pdfs dist/pdfs
+fi
+
 decks=()
 for f in *.md; do
   case "$f" in
@@ -90,9 +95,22 @@ HTML
     label="$(printf '%s' "$slug" | tr '_-' ' ')"
     printf '    <li><a href="/%s/">%s</a></li>\n' "$slug" "$label"
   done
+  printf '  </ul>\n'
+  if [ -d pdfs ]; then
+    shopt -s nullglob
+    pdf_files=(pdfs/*.pdf)
+    shopt -u nullglob
+    if [ "${#pdf_files[@]}" -gt 0 ]; then
+      printf '\n  <h2>Handouts</h2>\n  <ul>\n'
+      for pdf in "${pdf_files[@]}"; do
+        name="${pdf##*/}"
+        base="${name%.pdf}"
+        printf '    <li><a href="/pdfs/annotate.html?pdf=/pdfs/%s">%s</a></li>\n' "$name" "$base"
+      done
+      printf '  </ul>\n'
+    fi
+  fi
   cat <<'HTML'
-  </ul>
-
   <h2>Aura Tracker</h2>
   <div style="max-width:720px; height:360px;">
     <canvas id="auraChart"></canvas>
