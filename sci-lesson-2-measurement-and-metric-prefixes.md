@@ -139,7 +139,7 @@ Objective: Students will be able to measure using measurement tools, differentia
 
 ## Scientific Notation
 
-Scientific notation writes a number as $a \times 10^{n}$, where $1 \le |a| < 10$ and $n$ is an integer.
+Scientific notation writes a number as $a \times 10^{n}$
 
 | Number                | Scientific Notation |
 | :-------------------- | :------------------ |
@@ -147,13 +147,14 @@ Scientific notation writes a number as $a \times 10^{n}$, where $1 \le |a| < 10$
 | $0.000000000001$      | $1.0 \times 10^{-12}$ |
 
 - The exponent `n` moves the decimal point.
-- A metric prefix is just a scientific-notation scale (e.g. kilo $= 10^{3}$, nano $= 10^{-9}$).
+- A metric prefix is just a scientific-notation scale.
+  - (e.g. kilo $= 10^{3}$, nano $= 10^{-9}$)
 
 ---
 
 ## Very Big Numbers → Scientific Notation
 
-Move the decimal point left; the number of places is the positive exponent.
+Move the decimal point left; the number of places moved is the positive exponent.
 
 $$
 9{,}300{,}000 = 9.3 \times 10^{6}
@@ -167,7 +168,7 @@ $$
 
 ## Very Small Numbers → Scientific Notation
 
-Move the decimal point right; the number of places is the negative exponent.
+Move the decimal point right; the number of places moved is the negative exponent.
 
 $$
 0.0000045 = 4.5 \times 10^{-6}
@@ -236,4 +237,3 @@ $$
 ## 40 km/h to m/s
 
 $40\ \frac{\cancel{\mathrm{km}}}{\cancel{\mathrm{h}}} \left(\frac{1000\ \mathrm{m}}{1\ \cancel{\mathrm{km}}}\right) \left(\frac{1\ \cancel{\mathrm{h}}}{3600\ \mathrm{s}}\right) = \frac{40 \times 1000}{3600}\ \frac{\mathrm{m}}{\mathrm{s}} = 11.11\ \frac{\mathrm{m}}{\mathrm{s}}$
-
