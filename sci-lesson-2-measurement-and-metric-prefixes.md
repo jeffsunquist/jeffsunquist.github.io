@@ -13,6 +13,7 @@ learning_outcomes:
   - SCI-09
   - SCI-04
   - MEAS-08
+  - MEAS-06
 ---
 
 # Scientific Inquiry — Measurement & Metric Prefixes
@@ -133,6 +134,76 @@ Objective: Students will be able to measure using measurement tools, differentia
 | micro-     | μ          | $10^{-6}$          |
 | nano-      | n          | $10^{-9}$          |
 | pico-      | p          | $10^{-12}$         |
+
+---
+
+## Scientific Notation
+
+Scientific notation writes a number as $a \times 10^{n}$, where $1 \le |a| < 10$ and $n$ is an integer.
+
+| Number                | Scientific Notation |
+| :-------------------- | :------------------ |
+| $602{,}000{,}000{,}000{,}000{,}000{,}000$ | $6.02 \times 10^{23}$ |
+| $0.000000000001$      | $1.0 \times 10^{-12}$ |
+
+- The exponent `n` moves the decimal point.
+- A metric prefix is just a scientific-notation scale (e.g. kilo $= 10^{3}$, nano $= 10^{-9}$).
+
+---
+
+## Very Big Numbers → Scientific Notation
+
+Move the decimal point left; the number of places is the positive exponent.
+
+$$
+9{,}300{,}000 = 9.3 \times 10^{6}
+$$
+
+$$
+150{,}000{,}000 = 1.5 \times 10^{8}
+$$
+
+---
+
+## Very Small Numbers → Scientific Notation
+
+Move the decimal point right; the number of places is the negative exponent.
+
+$$
+0.0000045 = 4.5 \times 10^{-6}
+$$
+
+$$
+0.000000025 = 2.5 \times 10^{-8}
+$$
+
+---
+
+## Big Prefixes → Scientific Notation
+
+The prefix gives the power of ten, so a measurement becomes $a \times 10^{n}$.
+
+$$
+3.0\ \mathrm{Gm} = 3.0 \times 10^{9}\ \mathrm{m}
+$$
+
+$$
+2.5\ \mathrm{Tm} = 2.5 \times 10^{12}\ \mathrm{m}
+$$
+
+---
+
+## Small Prefixes → Scientific Notation
+
+Small prefixes give negative powers of ten.
+
+$$
+4.2\ \mu\mathrm{s} = 4.2 \times 10^{-6}\ \mathrm{s}
+$$
+
+$$
+750\ \mathrm{nm} = 7.5 \times 10^{-7}\ \mathrm{m}
+$$
 
 ---
 
