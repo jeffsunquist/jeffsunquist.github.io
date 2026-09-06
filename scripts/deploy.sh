@@ -28,7 +28,7 @@ fi
 decks=()
 for f in *.md; do
   case "$f" in
-    AGENTS.md|README.md) continue ;;   # docs, not decks
+    AGENTS.md|README.md|slides.md) continue ;;   # docs / Slidev scaffold, not lesson decks
   esac
   slug="${f%.md}"
   decks+=("$slug")
