@@ -15,15 +15,6 @@ learning_outcomes:
   - MEAS-08
 ---
 
-## Physics
-
-- HW: calc w/ fractions, SCI-02 HW
-- IC: measurement
-- A: N/A
-- Do Now: how can you measure the thickness of a sheet of paper with a meter stick?
-
----
-
 # Scientific Inquiry — Measurement & Metric Prefixes
 
 Lesson 2 of 6
@@ -175,10 +166,3 @@ $$
 
 $40\ \frac{\cancel{\mathrm{km}}}{\cancel{\mathrm{h}}} \left(\frac{1000\ \mathrm{m}}{1\ \cancel{\mathrm{km}}}\right) \left(\frac{1\ \cancel{\mathrm{h}}}{3600\ \mathrm{s}}\right) = \frac{40 \times 1000}{3600}\ \frac{\mathrm{m}}{\mathrm{s}} = 11.11\ \frac{\mathrm{m}}{\mathrm{s}}$
 
----
-
-## Exit Ticket
-
-You need to measure 200 g of flour to make a cake. Which scale should you use?
-
-<img src="/bath_scale_kitchen_scale.jpg" width="720" />

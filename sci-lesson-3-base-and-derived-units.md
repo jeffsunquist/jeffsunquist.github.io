@@ -22,17 +22,6 @@ Lesson 3 of 6
 
 ---
 
-- **IC:** base & derived units
-- **HW:** none
-- **A:** none
-- **Do Now:** sing the metric prefixes song
-
-<v-click>
-<center><iframe width="560" height="315" src="https://www.youtube.com/embed/xTgRCJQ6w48" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></center>
-</v-click>
-
----
-
 ## Learning Objective
 
 - **Distinguish** between base units and derived units
@@ -231,11 +220,3 @@ $F_g = 164{,}400 \ \text{N} = 164.4 \text{ kN}$
 
 </v-click>
 
----
-
-## Exit Ticket
-
-
-- What are the SI base units, and the derived unit, for Gravitational Potential Energy?
-
-$$U=mgh$$

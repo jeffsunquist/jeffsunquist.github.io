@@ -110,16 +110,3 @@ Students will be able to write a hypothesis, identify the variables and groups i
 
 </v-clicks>
 
----
-
-## Exit Ticket
-
-You roll a toy car down a ramp and measure how far it travels across the floor before it stops. You test several different ramp heights.
-
-<v-clicks>
-
-- Independent variable?
-- Dependent variable?
-- One control variable?
-
-</v-clicks>
