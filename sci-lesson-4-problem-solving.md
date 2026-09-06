@@ -21,17 +21,6 @@ Lesson 4 of 6
 
 ---
 
-## CJ
-**IC:** problem solving
-
-**HW:** SCI-04 HW due next class
-
-**A:** 
-
-**Do Now:** it's on today's guided notes
-
----
-
 ## Learning Objective
 
 Students will be able to explain how they solved a physics problem, step by step. Students will use scalar and vector quantities.
@@ -186,10 +175,3 @@ The unit $\frac{\text{m}}{\text{s}^2}$ is valid for acceleration. Acceleration i
 3. **Plug in and solve.**
 4. **Check the units and direction (if applicable).**
 
----
-
-## Exit Ticket
-
-A turtle pushes a box with a force of $50\text{ N}$ across a floor for a distance of $8\text{ m}$. How much work did the turtle do?
-
-Use $W = Fd$.

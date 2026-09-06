@@ -17,17 +17,6 @@ learning_outcomes:
   - SCI-14
 ---
 
-
-
-## Physics
-
-- HW: get a calculator with fractions
-- IC: observations
-- A: N/A
-- Do Now: cats or dogs, which pet is objectively better?
-
----
-
 # Scientific Inquiry — Observations
 
 Lesson 1 of 6
@@ -145,8 +134,3 @@ How can this setup be used to measure the speed of the train?
 
 <img src="/train_calculate_speed.excalidraw.svg" width="640" />
 
----
-
-## Exit Ticket
-
-Write one new statement that is objective and qualitative.
