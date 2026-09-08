@@ -53,12 +53,14 @@
   .swatch { width: 28px !important; height: 28px !important; min-width: 28px !important; padding: 0 !important; border: 2px solid rgba(255,255,255,.3) !important; }
   .swatch.active { border-color: #fff !important; }
   #toolbar .sizeBtn {
-    display: inline-flex; align-items: center; justify-content: center;
+    position: relative;
     height: 38px; width: 38px; min-width: 38px;
-    padding: 0; line-height: 0; flex: 0 0 auto;
+    padding: 0; flex: 0 0 auto;
   }
   .sizeBtn .dot {
-    display: block; flex: 0 0 auto; border-radius: 50%; background: #fff;
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    display: block; border-radius: 50%; background: #fff;
     width: var(--dsz, 6px); height: var(--dsz, 6px);
   }
 
