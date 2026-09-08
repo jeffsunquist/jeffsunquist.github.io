@@ -24,7 +24,14 @@
   #toolbar input[type=color] { padding: 0 4px; }
   #toolbar label { display: flex; align-items: center; gap: 6px; }
   #toolbar .spacer { flex: 1; }
-  #toolbar #status { font-size: 13px; opacity: .85; }
+  #status {
+    position: fixed; right: 16px; bottom: 12px; z-index: 30;
+    font-size: 13px; pointer-events: none;
+    background: rgba(255,255,255,.80); color: #202124;
+    padding: 5px 10px; border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.18);
+    border: 1px solid rgba(0,0,0,.08);
+  }
   #toolbar a.home-btn {
     display: inline-flex; align-items: center; justify-content: center;
     height: 38px; width: 40px; border-radius: 6px;
@@ -69,7 +76,6 @@
     <span class="spacer"></span>
     <button id="btnSave" title="Export annotations (JSON)">⬇</button>
     <button id="btnLoad" title="Import annotations (JSON)">⬆</button>
-    <span id="status"></span>
     <button id="btnFull" title="Fullscreen">⛶</button>
     <a id="btnHome" class="home-btn" href="https://www.basado.org/" title="Home">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20" fill="currentColor"><path d="M16.612 2.214a1.01 1.01 0 0 0-1.242 0L1 13.419l1.243 1.572L4 13.621V26a2.004 2.004 0 0 0 2 2h20a2.004 2.004 0 0 0 2-2V13.63L29.757 15L31 13.428ZM18 26h-4v-8h4Zm2 0v-8a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v8H6V12.062l10-7.79l10 7.8V26Z"/></svg>
@@ -86,6 +92,7 @@
 
   <input type="file" id="file" accept="application/pdf" hidden />
   <input type="file" id="import" accept="application/json" hidden />
+  <span id="status"></span>
 
   <script type="importmap">
     { "imports": { "drauu": "./vendor/drauu.js", "@drauu/core": "./vendor/drauu-core.js" } }
