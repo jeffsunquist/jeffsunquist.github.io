@@ -52,6 +52,14 @@
   .page svg.pointer-events-none { pointer-events: none; }
   .swatch { width: 28px !important; height: 28px !important; min-width: 28px !important; padding: 0 !important; border: 2px solid rgba(255,255,255,.3) !important; }
   .swatch.active { border-color: #fff !important; }
+  #toolbar .sizeBtn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; padding: 0;
+  }
+  .sizeBtn .dot {
+    display: block; border-radius: 50%; background: #fff;
+    width: var(--dsz, 6px); height: var(--dsz, 6px);
+  }
 
   #empty { text-align: center; color: #5f6368; padding: 60px 20px; }
   #empty button { font-size: 16px; padding: 12px 22px; }
@@ -61,15 +69,15 @@
   <div id="toolbar">
     <button class="wide" id="btnOpen" title="Open a PDF">Open PDF</button>
     <button class="wide" id="btnMode" title="Toggle draw / scroll">Draw</button>
-    <button id="t-stylus" class="active" title="Pencil (pressure)">✏️</button>
-    <button id="t-draw" title="Pen">🖊️</button>
+    <button id="t-draw" class="active" title="Pen">🖊️</button>
+    <button id="t-stylus" title="Pencil (pressure)">✏️</button>
     <button id="t-line" title="Line">╱</button>
     <button id="t-rect" title="Rectangle">▭</button>
     <button id="t-ellipse" title="Ellipse">◯</button>
     <button id="t-erase" title="Eraser">⌫</button>
     <span id="palette"></span>
     <input type="color" id="color" value="#ff595e" title="Custom color" />
-    <label title="Size"><input type="range" id="size" min="1" max="24" value="4" /> <span id="sizeVal">4</span></label>
+    <span id="sizes" title="Size"></span>
     <button id="btnUndo" title="Undo">↶</button>
     <button id="btnRedo" title="Redo">↷</button>
     <button id="btnClear" title="Clear this page">🗑</button>
@@ -109,7 +117,7 @@
     const statusEl = document.getElementById("status");
 
     const state = {
-      tool: "stylus",
+      tool: "draw",
       color: "#ff595e",
       size: 4,
       drawMode: true,
@@ -165,7 +173,9 @@
     }
     function setSize(s) {
       state.size = s;
-      document.getElementById("sizeVal").textContent = s;
+      document.querySelectorAll("#sizes .sizeBtn").forEach(b => {
+        b.classList.toggle("active", +b.dataset.size === s);
+      });
       pages.forEach(p => { p.drauu.brush = { color: state.color, size: s, mode: state.tool }; });
     }
     function applyDrawMode() {
@@ -287,7 +297,23 @@
     });
     setColor(state.color);
     document.getElementById("color").oninput = e => setColor(e.target.value);
-    document.getElementById("size").oninput = e => setSize(+e.target.value);
+
+    const SIZES = [1, 2, 4, 8, 16, 24];
+    const sizeEl = document.getElementById("sizes");
+    SIZES.forEach(s => {
+      const b = document.createElement("button");
+      b.className = "sizeBtn";
+      b.dataset.size = s;
+      b.title = s;
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      dot.style.setProperty("--dsz", (2 + s) + "px");
+      b.appendChild(dot);
+      b.onclick = () => setSize(s);
+      sizeEl.appendChild(b);
+    });
+    setSize(state.size);
+
     document.getElementById("btnUndo").onclick = () => pages.forEach(p => p.drauu.undo());
     document.getElementById("btnRedo").onclick = () => pages.forEach(p => p.drauu.redo());
     document.getElementById("btnClear").onclick = () => pages.forEach(p => { p.drauu.clear(); scheduleSave(); });
