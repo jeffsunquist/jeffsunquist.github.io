@@ -70,6 +70,7 @@
     <button id="btnSave" title="Export annotations (JSON)">⬇</button>
     <button id="btnLoad" title="Import annotations (JSON)">⬆</button>
     <span id="status"></span>
+    <button id="btnFull" title="Fullscreen">⛶</button>
     <a id="btnHome" class="home-btn" href="https://www.basado.org/" title="Home">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20" fill="currentColor"><path d="M16.612 2.214a1.01 1.01 0 0 0-1.242 0L1 13.419l1.243 1.572L4 13.621V26a2.004 2.004 0 0 0 2 2h20a2.004 2.004 0 0 0 2-2V13.63L29.757 15L31 13.428ZM18 26h-4v-8h4Zm2 0v-8a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v8H6V12.062l10-7.79l10 7.8V26Z"/></svg>
     </a>
@@ -137,11 +138,16 @@
       return d;
     }
 
+    const TOOL_IDS = {
+      stylus: "t-stylus", draw: "t-draw", line: "t-line",
+      rectangle: "t-rect", ellipse: "t-ellipse", eraseLine: "t-erase",
+    };
+
     function setTool(t) {
       state.tool = t;
       pages.forEach(p => { p.drauu.mode = t; });
       document.querySelectorAll("[id^=t-]").forEach(b => b.classList.remove("active"));
-      const btn = document.getElementById("t-" + t);
+      const btn = document.getElementById(TOOL_IDS[t]);
       if (btn) btn.classList.add("active");
     }
     function setColor(c) {
@@ -259,8 +265,7 @@
       if (f) loadPdf(URL.createObjectURL(f), f.name.replace(/\.pdf$/i, ""));
       e.target.value = "";
     };
-    const tools = { stylus: "t-stylus", draw: "t-draw", line: "t-line", rectangle: "t-rect", ellipse: "t-ellipse", eraseLine: "t-erase" };
-    Object.entries(tools).forEach(([mode, id]) => {
+    Object.entries(TOOL_IDS).forEach(([mode, id]) => {
       document.getElementById(id).onclick = () => setTool(mode);
     });
     const palEl = document.getElementById("palette");
@@ -282,6 +287,20 @@
     document.getElementById("btnSave").onclick = exportJson;
     document.getElementById("btnLoad").onclick = () => document.getElementById("import").click();
     document.getElementById("import").onchange = e => { const f = e.target.files[0]; if (f) importJson(f); e.target.value = ""; };
+
+    // Fullscreen (toggle icon + title on state change)
+    const fullBtn = document.getElementById("btnFull");
+    function updateFullIcon() {
+      const fs = !!document.fullscreenElement;
+      fullBtn.textContent = fs ? "🗗" : "⛶";
+      fullBtn.title = fs ? "Exit fullscreen" : "Fullscreen";
+    }
+    fullBtn.onclick = () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    };
+    document.addEventListener("fullscreenchange", updateFullIcon);
+    updateFullIcon();
 
     setTool(state.tool);
     applyDrawMode();
