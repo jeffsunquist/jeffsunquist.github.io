@@ -54,10 +54,11 @@
   .swatch.active { border-color: #fff !important; }
   #toolbar .sizeBtn {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 38px; padding: 0;
+    height: 38px; width: 38px; min-width: 38px;
+    padding: 0; line-height: 0; flex: 0 0 auto;
   }
   .sizeBtn .dot {
-    display: block; border-radius: 50%; background: #fff;
+    display: block; flex: 0 0 auto; border-radius: 50%; background: #fff;
     width: var(--dsz, 6px); height: var(--dsz, 6px);
   }
 
