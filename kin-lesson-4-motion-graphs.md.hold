@@ -1,0 +1,208 @@
+---
+theme: default
+colorSchema: light
+title: Kinematics — Motion Graphs
+info: |
+  Grade 6–7 Physics · KIN · Lesson 4 of 4
+fonts:
+  sans: Patrick Hand
+  local:
+    - Patrick Hand
+  provider: none
+learning_outcomes:
+  - KIN-49
+  - KIN-50
+  - KIN-51
+  - KIN-52
+  - KIN-53
+  - KIN-54
+  - KIN-55
+  - KIN-56
+  - KIN-57
+---
+
+# Kinematics — Motion Graphs
+
+Lesson 4 of 4
+
+---
+
+## Learning Objective
+
+Students will be able to read position-time and velocity-time graphs, find velocity and acceleration from slopes, and find displacement from the area under a velocity-time graph.
+
+---
+
+## Review: Acceleration
+
+- **Acceleration** is the rate at which velocity changes: $a = \dfrac{v - v_0}{t}$.
+- Units: $\frac{\mathrm{m}}{\mathrm{s}^2}$.
+- Same direction as motion → speeding up; opposite → slowing down.
+- With constant acceleration: $v = v_0 + a t$.
+
+---
+class: g7
+---
+
+## Motion Graphs
+
+The motion of an object can be shown on a graph with **time** on the $x$-axis:
+
+- **Position-time graph** — how position changes with time
+- **Velocity-time graph** — how velocity changes with time
+
+---
+class: g7
+---
+
+## Position vs Time
+
+<img src="/x-t_graphs.excalidraw.svg" width="720" />
+
+- The $y$-value tells you the **position** at a given time.
+- Read across from the time, then up to the line.
+
+---
+class: g7
+---
+
+## Velocity from a Position-Time Graph
+
+On a **position-time** graph, the **slope** is the velocity.
+
+$$v = \frac{\Delta x}{t} = \frac{x - x_0}{t}$$
+
+- A steeper slope means a **greater velocity**.
+> The subscript "$_0$" means _initial_ while no subscript means final.
+> Initial position $=x_0$ and final position $=x$.
+
+---
+class: g7
+---
+
+## Comparing Steepness: Velocity
+
+<img src="/x-t_graphs.excalidraw.svg" width="720" />
+
+<v-clicks>
+
+- The **steeper** the line, the **greater** the velocity.
+- A **flat** line means the object is **at rest** ($v = 0$).
+
+</v-clicks>
+
+---
+class: g7
+---
+
+## Velocity vs Time
+
+<img src="/v-t_graphs.excalidraw.svg" width="720" />
+
+- The $y$-value tells you the **velocity** at a given time.
+- Read across from the time, then up to the line.
+
+---
+class: g7
+---
+
+## Constant vs Changing Motion
+
+On a **velocity-time** graph:
+
+<v-clicks>
+
+- A **flat (horizontal) line** → velocity is **constant** (not changing).
+- A **sloped line** → velocity is **changing** (the object is accelerating).
+
+</v-clicks>
+
+---
+class: g7
+---
+
+## Acceleration from a Velocity-Time Graph
+
+On a **velocity-time** graph, the **slope** is the acceleration.
+
+$$a = \frac{\Delta v}{t} = \frac{v - v_0}{t}$$
+> Initial velocity $=v_0$ and final velocity $=v$.
+
+---
+class: g7
+---
+
+## Comparing Steepness: Acceleration
+
+<img src="/v-t_graphs.excalidraw.svg" width="720" />
+
+<v-clicks>
+
+- The **steeper** the line, the **greater** the acceleration.
+- A **flat** line means **zero acceleration** (constant velocity).
+
+</v-clicks>
+
+---
+class: g7
+---
+
+## Example
+
+Use the velocity-time graph to answer:
+
+<v-clicks>
+
+- Which part of the graph shows **constant velocity**?
+- Which part shows the object **speeding up**?
+
+</v-clicks>
+
+<img src="/v-t_graphs.excalidraw.svg" width="600" />
+
+---
+class: g7
+---
+
+## Area Under the Curve
+
+The **area** between the line on a velocity-time graph and the horizontal axis equals the **displacement**.
+
+<v-clicks>
+
+- Rectangle: area $= \text{base} \times \text{height} = t \times v$
+- Triangle: area $= \tfrac{1}{2} \times \text{base} \times \text{height}$
+
+</v-clicks>
+
+---
+class: g7
+---
+
+## Units of Area Under the Curve
+
+$$ \text{area} = \text{velocity} \times \text{time} = \frac{\mathrm{m}}{\mathrm{s}} \times \mathrm{s} = \mathrm{m} $$
+
+- The units are **meters** — the units of **displacement**.
+
+---
+class: g7
+---
+
+## Example: Area and Displacement
+
+A cart moves at a constant $v = 4 \frac{\mathrm{m}}{\mathrm{s}}$ for $3 \mathrm{s}$.
+
+$$ \text{area} = 4 \frac{\mathrm{m}}{\mathrm{s}} \times 3 \mathrm{s} = 12 \mathrm{m} $$
+
+The displacement is $12 \mathrm{m}$.
+
+---
+
+## Summary
+
+- **Position-time** graphs show position; **velocity-time** graphs show velocity.
+- On a **position-time** graph, **slope = velocity**.
+- On a **velocity-time** graph, **slope = acceleration**.
+- A flat line on a velocity-time graph means **constant velocity**.
+- **Area** under a velocity-time graph = **displacement**; its units are meters.

@@ -220,3 +220,49 @@
 #page-root nav.flex.flex-col > div .flex.relative:has(button[title="Change sync settings"]) {
   display: none;
 }
+
+/* --- Grade 7 enrichment slides in the merged KIN decks ---
+   A slide marked with per-slide frontmatter `class: g7` gets a pale-orange
+   background and a small "G7" tag. Shared and Grade 6-only slides stay plain. */
+
+.slidev-layout.g7 {
+  position: relative;
+  background: #ffe0b2;
+}
+
+.slidev-layout.g7::after {
+  content: 'G7';
+  position: absolute;
+  top: 0.6rem;
+  right: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #b45309;
+  opacity: 0.75;
+}
+
+/* --- Watermark: "Designed by Sunquist in Park Lane Harbor" ---
+   Rendered by the global layer global-bottom.vue in the bottom-right corner of
+   every slide of every deck (including G7 slides). `z-index` lifts it above the
+   opaque G7 background; `pointer-events: none` keeps it from blocking clicks.
+   A sans-serif stack is set explicitly because the decks otherwise use the
+   Patrick Hand handwriting font. */
+
+.deck-watermark {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.35rem;
+  z-index: 20;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-align: right;
+  color: #9ca3af;
+  opacity: 0.75;
+  pointer-events: none;
+  user-select: none;
+}

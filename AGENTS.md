@@ -39,6 +39,25 @@ to them all.
 
 - Lesson decks: `sci-lesson-{N}-{slug}.md` — e.g.
   `sci-lesson-1-observations.md`, `sci-lesson-4-problem-solving.md`.
+- KIN decks are merged across grades and run as a **4-lesson unit**:
+  - `kin-lesson-1-position-and-reference-frames.md` — position, 1-D/2-D
+    coordinate systems, reference points and frames of reference, distance vs
+    displacement, adding displacement vectors (KIN-01–13, 15–19).
+  - `kin-lesson-2-speed-and-velocity.md` — speed, average speed, velocity,
+    displacement from velocity, resultant and relative velocity
+    (KIN-14, 20–37).
+  - `kin-lesson-3-acceleration.md` — acceleration definition, equation, units,
+    sign, gravity (KIN-38–48).
+  - `kin-lesson-4-motion-graphs.md` — position-time and velocity-time graphs,
+    slope and area under the curve (KIN-49–57).
+  Each deck covers **both Grade 6 and Grade 7**. Grade 7-only slides are marked
+  with per-slide frontmatter `class: g7`, which renders a pale-orange background
+  and a small "G7" tag (defined in `styles/index.css`); shared and Grade 6-only
+  slides stay unmarked. A slide is Grade 7-only when **every LO it teaches is
+  G7-only in the physics project's `shared/lo_master.csv`** (no `PHY0600.*`
+  code). Displacement is `\Delta x`; final position is `x` and initial position
+  `x_0`; final velocity is `v` and initial velocity `v_0`; time is always `t`
+  (never `\Delta t` or `t_0`).
 - The unit's intro deck: `welcome-lesson-1-class-introduction.md`.
 
 ## Frontmatter
@@ -196,6 +215,11 @@ image can accompany the prompt.
 - Global styling in `styles/index.css` (auto-loaded by Slidev convention,
   `./style.css` / `./styles/index.css`); keep classroom light-mode look — don't
   add per-deck style overrides.
+- Every deck is watermarked "Designed by Sunquist in Park Lane Harbor" in the
+  bottom-right corner of every slide. This is done once for all decks via the
+  project-root global layer `global-bottom.vue` plus the `.deck-watermark`
+  rules in `styles/index.css` — new decks inherit it automatically, so don't
+  add per-deck watermark markup.
 - Interactive elements use `<v-click>` / `<v-clicks>` / `<kbd>`.
 - Math uses KaTeX inline `$...$` and display `$$...$$`.
 - Markdown tables are styled globally (striped, bordered) — no extra work.
