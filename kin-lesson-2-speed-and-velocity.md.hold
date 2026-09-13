@@ -1,0 +1,275 @@
+---
+theme: default
+colorSchema: light
+title: Kinematics — Speed and Velocity
+info: |
+  Grade 6–7 Physics · KIN · Lesson 2 of 4
+fonts:
+  sans: Patrick Hand
+  local:
+    - Patrick Hand
+  provider: none
+learning_outcomes:
+  - KIN-14
+  - KIN-20
+  - KIN-21
+  - KIN-22
+  - KIN-23
+  - KIN-24
+  - KIN-25
+  - KIN-26
+  - KIN-27
+  - KIN-28
+  - KIN-29
+  - KIN-30
+  - KIN-31
+  - KIN-32
+  - KIN-33
+  - KIN-34
+  - KIN-35
+  - KIN-36
+  - KIN-37
+---
+
+# Kinematics — Speed and Velocity
+
+Lesson 2 of 4
+
+---
+
+## Learning Objective
+
+Students will be able to define and calculate speed, average speed, and velocity, and add velocity vectors to find resultant and relative velocities.
+
+---
+
+## Review: Position and Reference Frames
+
+- **Scalar** = magnitude only; **vector** = magnitude + direction.
+- **Position** is described using a coordinate system, which has an origin, axes, units, scale.
+- **Distance** is a scalar; **displacement** is a vector.
+- A **reference point** is the origin used to measure position.
+- How motion is described depends on the **frame of reference**.
+
+---
+
+## Time
+
+_Time_ ($t$) is the duration between two states.
+A _state_ defined as the quantities an object has at one moment.
+
+
+<v-click>
+
+- The chicken needed 35 minutes to change from **raw** to **cooked**.
+
+</v-click>
+<v-click>
+
+- A student walked from the **math classroom** to the **biology classroom** in 120 seconds.
+
+</v-click>
+<v-click>
+
+- Earth **completes one rotation** in 23 hours, 56 minutes, and 4 seconds (state change = do one rotation).
+
+</v-click>
+
+---
+
+### Kinematic equations that use time
+
+
+| Grade 6 | Grade 7 |
+|-------- | ------- |
+| $\bar v=\frac{\Delta x}{\red t}$ | $\bar v=\frac{\Delta x}{\red t}$ |
+| $s=\frac{d}{\red t}$ | $s=\frac{d}{\red t}$ |
+| $a=\frac{\Delta v}{\red t}=\frac{v-v_0}{\red t}$ | $v=v_0+a\red t$ |
+| $\gray{\Delta x=x-x_0}$        | $\Delta x=v_0 \red t + \frac{1}{2}a\red t^2$ |
+|         | $\gray{v^2=v_0^2+2a\Delta x}$  |
+
+---
+
+## Speed vs Velocity
+
+- **Speed** tells you how fast: $40 \frac{\mathrm{km}}{\mathrm{h}}$.
+- **Velocity** tells you how fast **and in which direction**: $40 \frac{\mathrm{km}}{\mathrm{h}}$ north.
+- A car driving in a circle at constant speed still has **changing velocity** (its direction changes).
+
+<center>
+<img src="/car_circle_path.excalidraw.svg" width="200" />
+</center>
+
+---
+
+## Speed and Velocity Equations
+
+$$s = \frac{d}{t} \qquad\qquad v = \frac{\Delta x}{t}$$
+
+- $s$ = speed, $d$ = distance; $\Delta x$ = displacement, $t$ = time.
+
+- SI unit: $\frac{\mathrm{m}}{\mathrm{s}}$.
+
+---
+
+## Problem Solving Steps
+
+1. **What am I given? What am I finding?**
+2. **What equation connects them?**
+3. **Plug in and solve.**
+4. **Check the units and direction (if applicable).**
+
+---
+
+## Example: Speed
+
+A train travels $2000\ \mathrm{m}$ in $60\ \mathrm{s}$. What is its speed?
+
+<Transform :scale="0.85">
+<v-clicks>
+
+1. $d = 2000\ \mathrm{m}$, $t = 60\ \mathrm{s}$, $s = ?$
+
+2. $s = \dfrac{d}{t}$
+
+3. $s = \dfrac{2000\ \mathrm{m}}{60\ \mathrm{s}} = 33.3\ \frac{\mathrm{m}}{\mathrm{s}}$
+
+4. $\frac{m}{s}$✓ scalar✓
+
+</v-clicks>
+</Transform>
+
+---
+
+## Example: Velocity
+
+A bird flies $500\ \mathrm{m}$ east in $25\ \mathrm{s}$. What is its velocity?
+
+<Transform :scale="0.85">
+<v-clicks>
+
+1. $\Delta x = 500\ \mathrm{m}$ (east), $t = 25\ \mathrm{s}$, $v=?$.
+
+2. $v = \dfrac{\Delta x}{t}$
+
+3. $v = \dfrac{500\ \mathrm{m}}{25\ \mathrm{s}} = 20\ \frac{\mathrm{m}}{\mathrm{s}}$ east
+
+4. $\frac{\mathrm{m}}{\mathrm{s}}$✓ east✓
+
+</v-clicks>
+</Transform>
+
+---
+
+## Displacement, Velocity, and Position
+
+- **Displacement** is the change in position: $\Delta x = x - x_0$.
+- **Velocity** is how quickly the position changes: $v = \dfrac{\Delta x}{t}$.
+- A change in position over time is what velocity measures.
+
+---
+class: g7
+---
+
+## Displacement Using a Kinematics Equation
+
+When velocity and time are known (constant velocity):
+
+$$\Delta x = v t$$
+
+A car travels at $15 \frac{\mathrm{m}}{\mathrm{s}}$ east for $4\ \mathrm{s}$:
+
+$$\Delta x = 15 \times 4 = 60\ \mathrm{m}\ \text{east}$$
+
+---
+class: g7
+---
+
+## Adding Displacement Vectors from Velocity and Time
+
+Find each displacement with $\Delta x = v t$, then add them as vectors.
+
+A car travels $15 \frac{\mathrm{m}}{\mathrm{s}}$ east for $4\ \mathrm{s}$, then $10 \frac{\mathrm{m}}{\mathrm{s}}$ west for $2\ \mathrm{s}$.
+
+<v-clicks>
+
+- First leg: $\Delta x_1 = 15 \times 4 = +60\ \mathrm{m}$
+- Second leg: $\Delta x_2 = 10 \times 2 = -20\ \mathrm{m}$
+- Total: $\Delta x = 60 - 20 = +40\ \mathrm{m}$ east
+
+</v-clicks>
+
+---
+class: g7
+---
+
+## Constant, Average, and Instantaneous Speed/Velocity
+
+- **Constant**: the value does not change — speed/velocity is the same the whole time.
+- **Average**: total distance (or displacement) divided by total time.
+- **Instantaneous**: the speed/velocity at one exact moment.
+
+<v-clicks>
+
+- A car with cruise control has nearly **constant** speed.
+- A trip with stops has an **average** speed lower than its top speed.
+- A speedometer shows **instantaneous** speed.
+
+</v-clicks>
+
+---
+class: g7
+---
+
+## Resultant Velocity Example
+
+A boat moves $3 \frac{\mathrm{m}}{\mathrm{s}}$ east while the current pushes $1 \frac{\mathrm{m}}{\mathrm{s}}$ east.
+
+$$v_{\text{resultant}} = 3 + 1 = 4\ \frac{\mathrm{m}}{\mathrm{s}}\ \text{east}$$
+
+---
+class: g7
+---
+
+## Opposite Velocity Vectors Example
+
+A swimmer moves $3 \frac{\mathrm{m}}{\mathrm{s}}$ east against a current of $1 \frac{\mathrm{m}}{\mathrm{s}}$ west.
+
+$$v_{\text{resultant}} = 3 - 1 = 2\ \frac{\mathrm{m}}{\mathrm{s}}\ \text{east}$$
+
+---
+class: g7
+---
+
+## Relative Velocity
+
+A passenger walks forward at $1 \frac{\mathrm{m}}{\mathrm{s}}$ on a train moving at $10 \frac{\mathrm{m}}{\mathrm{s}}$.
+
+<v-clicks>
+
+- Relative to the **train**: the passenger moves at $1 \frac{\mathrm{m}}{\mathrm{s}}$.
+- Relative to the **ground**: the passenger moves at $10 + 1 = 11 \frac{\mathrm{m}}{\mathrm{s}}$.
+
+</v-clicks>
+
+---
+
+## Exercise
+
+<v-clicks>
+
+- A plane flies $200 \frac{\mathrm{m}}{\mathrm{s}}$ north with a tailwind of $50 \frac{\mathrm{m}}{\mathrm{s}}$ north. Find the resultant velocity.
+- A person walks $1.5 \frac{\mathrm{m}}{\mathrm{s}}$ toward the back of a bus moving $12 \frac{\mathrm{m}}{\mathrm{s}}$ forward. What is their velocity relative to the ground?
+- A cyclist rides $300\ \mathrm{m}$ east in $20\ \mathrm{s}$. What is their average speed? What is their velocity?
+
+</v-clicks>
+
+---
+
+## Summary
+
+- **Speed** = how fast (scalar); **velocity** = how fast and which way (vector).
+- $s = \dfrac{d}{t}$ and $v = \dfrac{\Delta x}{t}$; average speed uses total distance and total time.
+- Units of speed and velocity: $\frac{\mathrm{m}}{\mathrm{s}}$.
+- **Collinear velocity vectors**: add when the same direction, subtract when opposite.
+- Relative velocity depends on the **frame of reference**.

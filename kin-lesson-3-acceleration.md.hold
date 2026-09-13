@@ -1,0 +1,207 @@
+---
+theme: default
+colorSchema: light
+title: Kinematics — Acceleration
+info: |
+  Grade 6–7 Physics · KIN · Lesson 3 of 4
+fonts:
+  sans: Patrick Hand
+  local:
+    - Patrick Hand
+  provider: none
+learning_outcomes:
+  - KIN-38
+  - KIN-39
+  - KIN-40
+  - KIN-41
+  - KIN-42
+  - KIN-43
+  - KIN-44
+  - KIN-45
+  - KIN-46
+  - KIN-47
+  - KIN-48
+---
+
+# Kinematics — Acceleration
+
+Lesson 3 of 4
+
+---
+
+## Learning Objective
+
+Students will be able to define acceleration, state and apply the acceleration equation, and interpret positive and negative acceleration.
+
+---
+
+## Review: Speed and Velocity
+
+- **Speed** = how fast (scalar); **velocity** = how fast and which way (vector).
+- $s = \dfrac{d}{t}$ and $v = \dfrac{\Delta x}{t}$.
+- Units of speed and velocity: $\frac{\mathrm{m}}{\mathrm{s}}$.
+- Collinear velocity vectors add (same direction) or subtract (opposite).
+
+---
+
+## What is Acceleration?
+
+- **Acceleration** is the **rate at which velocity changes**.
+- An object accelerates when it:
+  - **speeds up**,
+  - **slows down**, or
+  - **changes direction**.
+- Acceleration is a **vector**.
+
+---
+
+## Acceleration Equation
+
+$$a = \frac{\Delta v}{t} = \frac{v - v_0}{t}$$
+
+- $v_0$ = initial velocity, $v$ = final velocity, $t$ = time.
+- $\Delta v = v - v_0$ is the **change in velocity**.
+
+---
+
+## Units of Acceleration
+
+$$[a] = \frac{\mathrm{m}/\mathrm{s}}{\mathrm{s}} = \frac{\mathrm{m}}{\mathrm{s}^2}$$
+
+- Read as "meters per second per second" (also written $\mathrm{m}/\mathrm{s}/\mathrm{s}$).
+- Example: $+2 \frac{\mathrm{m}}{\mathrm{s}^2}$ means the velocity increases by $2 \frac{\mathrm{m}}{\mathrm{s}}$ every second.
+
+---
+
+## Positive and Negative Acceleration
+
+<v-clicks>
+
+- **Positive** acceleration → velocity becomes more positive.
+- **Negative** acceleration → velocity becomes less positive.
+- When moving in the positive direction:
+  - positive $a$ → **speeding up**
+  - negative $a$ → **slowing down**
+
+</v-clicks>
+
+---
+class: g7
+---
+
+## Relating Speed Change to Acceleration Direction
+
+Compare the direction of **travel** with the direction of **acceleration**:
+
+| Acceleration direction  | Speed              |
+| ----------------------- | ------------------ |
+| Same as motion          | increasing         |
+| Opposite to motion      | decreasing         |
+| Perpendicular to motion | changing direction |
+
+- Acceleration is **not** always "speeding up" — it is any change in velocity.
+
+---
+class: g7
+---
+
+## Constant Acceleration and Gravity
+
+- **Constant acceleration**: acceleration stays the same, so velocity changes at a steady rate.
+- Near Earth's surface, falling objects have a constant downward acceleration:
+
+$$g \approx 9.8 \frac{\mathrm{m}}{\mathrm{s}^2}\ \text{down}$$
+
+- Ignoring air resistance, all objects fall with the same acceleration.
+
+---
+
+## Problem Solving Steps
+
+1. **What am I given? What am I finding?**
+2. **What equation connects them?**
+3. **Plug in and solve.**
+4. **Check the units and direction (if applicable).**
+
+---
+
+## Example: Calculating Acceleration
+
+A car goes from $10 \frac{\mathrm{m}}{\mathrm{s}}$ to $30 \frac{\mathrm{m}}{\mathrm{s}}$ in $5\ \mathrm{s}$. What is its acceleration?
+
+<v-clicks>
+
+- Given: $v_0 = 10 \frac{\mathrm{m}}{\mathrm{s}}$, $v = 30 \frac{\mathrm{m}}{\mathrm{s}}$, $t = 5\ \mathrm{s}$; find $a$.
+- Equation: $a = \dfrac{v - v_0}{t}$
+- Solve: $a = \dfrac{30 - 10}{5} = +4 \frac{\mathrm{m}}{\mathrm{s}^2}$
+- Check: $\frac{\mathrm{m}}{\mathrm{s}^2}$ is valid; $a > 0$ means speeding up.
+
+</v-clicks>
+
+---
+
+## Example: Acceleration from Rest
+
+A cyclist starts from rest and reaches $6 \frac{\mathrm{m}}{\mathrm{s}}$ in $3\ \mathrm{s}$. What is the acceleration?
+
+<v-clicks>
+
+- Given: $v_0 = 0 \frac{\mathrm{m}}{\mathrm{s}}$, $v = 6 \frac{\mathrm{m}}{\mathrm{s}}$, $t = 3\ \mathrm{s}$; find $a$.
+- Equation: $a = \dfrac{v - v_0}{t}$
+- Solve: $a = \dfrac{6 - 0}{3} = +2 \frac{\mathrm{m}}{\mathrm{s}^2}$
+- Check: $\frac{\mathrm{m}}{\mathrm{s}^2}$ is valid; starting from rest, positive $a$ means speeding up.
+
+</v-clicks>
+
+---
+class: g7
+---
+
+## Instantaneous Velocity
+
+With **constant acceleration**, velocity changes at a steady rate:
+
+$$v = v_0 + a t$$
+
+- $v_0$ = initial velocity, $a$ = acceleration, $t$ = time.
+- Example: starting at $v_0 = 2 \frac{\mathrm{m}}{\mathrm{s}}$ with $a = 3 \frac{\mathrm{m}}{\mathrm{s}^2}$, after $4\ \mathrm{s}$:
+
+$$v = 2 + 3 \times 4 = 14 \frac{\mathrm{m}}{\mathrm{s}}$$
+
+---
+class: g7
+---
+
+## Initial and Final Velocity
+
+Rearrange the acceleration equation to find an unknown velocity:
+
+$$v = v_0 + a t \qquad\qquad v_0 = v - a t$$
+
+- A car at $20 \frac{\mathrm{m}}{\mathrm{s}}$ brakes at $-4 \frac{\mathrm{m}}{\mathrm{s}^2}$ for $3\ \mathrm{s}$:
+
+$$v = 20 + (-4)(3) = 20 - 12 = 8 \frac{\mathrm{m}}{\mathrm{s}}$$
+
+- The car is still moving forward, but more slowly.
+
+---
+
+## Exercise
+
+<v-clicks>
+
+- A train speeds up from $8 \frac{\mathrm{m}}{\mathrm{s}}$ to $20 \frac{\mathrm{m}}{\mathrm{s}}$ in $6\ \mathrm{s}$. Find its acceleration.
+- A ball dropped from rest falls with $a = 9.8 \frac{\mathrm{m}}{\mathrm{s}^2}$ down. What is its velocity after $3\ \mathrm{s}$?
+- A car at $25 \frac{\mathrm{m}}{\mathrm{s}}$ slows at $-5 \frac{\mathrm{m}}{\mathrm{s}^2}$. How long until it stops?
+
+</v-clicks>
+
+---
+
+## Summary
+
+- **Acceleration** is the rate at which velocity changes: $a = \dfrac{v - v_0}{t}$.
+- Units: $\frac{\mathrm{m}}{\mathrm{s}^2}$.
+- Acceleration is a **vector**; it can be positive or negative.
+- Same direction as motion → speeding up; opposite → slowing down.
+- With constant acceleration: $v = v_0 + a t$; gravity gives $g \approx 9.8 \frac{\mathrm{m}}{\mathrm{s}^2}$ down.
