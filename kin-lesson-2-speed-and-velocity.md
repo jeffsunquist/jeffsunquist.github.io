@@ -39,7 +39,7 @@ Lesson 2 of 4
 
 ## Learning Objective
 
-Students will be able to define and calculate speed, average speed, and velocity, and add velocity vectors to find resultant and relative velocities.
+Students will be able to define and calculate speed, average speed, and velocity, and (G7) add velocity vectors to find resultant and relative velocities.
 
 ---
 
@@ -61,17 +61,17 @@ A _state_ defined as the quantities an object has at one moment.
 
 <v-click>
 
-- The chicken needed 35 minutes to change from **raw** to **cooked**.
+- The chicken needed **35 minutes** to change from **raw** to **cooked**.
 
 </v-click>
 <v-click>
 
-- A student walked from the **math classroom** to the **biology classroom** in 120 seconds.
+- A student walked from the **math classroom** to the **biology classroom** in **120 seconds**.
 
 </v-click>
 <v-click>
 
-- Earth **completes one rotation** in 23 hours, 56 minutes, and 4 seconds (state change = do one rotation).
+- Earth **completes one rotation** in **23 hours, 56 minutes, and 4 seconds** (state change = do one rotation).
 
 </v-click>
 
@@ -139,6 +139,27 @@ A train travels $2000\ \mathrm{m}$ in $60\ \mathrm{s}$. What is its speed?
 </v-clicks>
 </Transform>
 
+
+---
+
+## Example: Distance
+
+A dog runs at a constant speed of $5 \frac{m}{s}$ for a time of $30\ \mathrm{s}$. What is the distance traveled?
+
+<Transform :scale="0.85">
+<v-clicks>
+
+1. $s=5 \frac{m}{s}$, $t = 30\ \mathrm{s}$, $d=?$
+
+2. $d = st$
+
+3. $d = 5 \frac{m}{s} \cdot 30\ \mathrm{s} = 150\ \mathrm{m}$ 
+
+4. $\mathrm{m}$✓ scalar✓
+
+</v-clicks>
+</Transform>
+
 ---
 
 ## Example: Velocity
@@ -148,11 +169,11 @@ A bird flies $500\ \mathrm{m}$ east in $25\ \mathrm{s}$. What is its velocity?
 <Transform :scale="0.85">
 <v-clicks>
 
-1. $\Delta x = 500\ \mathrm{m}$ (east), $t = 25\ \mathrm{s}$, $v=?$.
+1. $\Delta x = 500\ \mathrm{m}$ (east), $t = 25\ \mathrm{s}$, $v=?$
 
 2. $v = \dfrac{\Delta x}{t}$
 
-3. $v = \dfrac{500\ \mathrm{m}}{25\ \mathrm{s}} = 20\ \frac{\mathrm{m}}{\mathrm{s}}$ east
+3. $v = \dfrac{500\ \mathrm{m}}{25\ \mathrm{s}} = 20\ \frac{\mathrm{m}}{\mathrm{s}}\ \mathrm{east}$
 
 4. $\frac{\mathrm{m}}{\mathrm{s}}$✓ east✓
 
@@ -161,81 +182,43 @@ A bird flies $500\ \mathrm{m}$ east in $25\ \mathrm{s}$. What is its velocity?
 
 ---
 
-## Displacement, Velocity, and Position
+## Example: Displacement
 
-- **Displacement** is the change in position: $\Delta x = x - x_0$.
-- **Velocity** is how quickly the position changes: $v = \dfrac{\Delta x}{t}$.
-- A change in position over time is what velocity measures.
+A balloon floats upward at a constant velocity of $2.5\frac{\mathrm{m}}{\mathrm{s}}$ for a time of $20\ \mathrm{s}$. What is its displacement?
 
----
-class: g7
----
-
-## Displacement Using a Kinematics Equation
-
-When velocity and time are known (constant velocity):
-
-$$\Delta x = v t$$
-
-A car travels at $15 \frac{\mathrm{m}}{\mathrm{s}}$ east for $4\ \mathrm{s}$:
-
-$$\Delta x = 15 \times 4 = 60\ \mathrm{m}\ \text{east}$$
-
----
-class: g7
----
-
-## Adding Displacement Vectors from Velocity and Time
-
-Find each displacement with $\Delta x = v t$, then add them as vectors.
-
-A car travels $15 \frac{\mathrm{m}}{\mathrm{s}}$ east for $4\ \mathrm{s}$, then $10 \frac{\mathrm{m}}{\mathrm{s}}$ west for $2\ \mathrm{s}$.
-
+<Transform :scale="0.85">
 <v-clicks>
 
-- First leg: $\Delta x_1 = 15 \times 4 = +60\ \mathrm{m}$
-- Second leg: $\Delta x_2 = 10 \times 2 = -20\ \mathrm{m}$
-- Total: $\Delta x = 60 - 20 = +40\ \mathrm{m}$ east
+1. $v=2.5\frac{\mathrm{m}}{\mathrm{s}}$, $t = 20\ \mathrm{s}$, $\Delta x = ?$
+
+2. $\Delta x=vt$
+
+3. $\Delta x=2.5\frac{\mathrm{m}}{\mathrm{s}}\cdot20\ \mathrm{s}=50\ \mathrm{m\ up}$
+
+4. $\frac{\mathrm{m}}{\mathrm{s}}$✓ up✓
 
 </v-clicks>
+</Transform>
 
 ---
 class: g7
 ---
 
-## Constant, Average, and Instantaneous Speed/Velocity
-
-- **Constant**: the value does not change — speed/velocity is the same the whole time.
-- **Average**: total distance (or displacement) divided by total time.
-- **Instantaneous**: the speed/velocity at one exact moment.
-
-<v-clicks>
-
-- A car with cruise control has nearly **constant** speed.
-- A trip with stops has an **average** speed lower than its top speed.
-- A speedometer shows **instantaneous** speed.
-
-</v-clicks>
-
----
-class: g7
----
-
-## Resultant Velocity Example
+## Resultant Velocity (Same Direction)
 
 A boat moves $3 \frac{\mathrm{m}}{\mathrm{s}}$ east while the current pushes $1 \frac{\mathrm{m}}{\mathrm{s}}$ east.
 
-$$v_{\text{resultant}} = 3 + 1 = 4\ \frac{\mathrm{m}}{\mathrm{s}}\ \text{east}$$
+$$v_{\text{resultant}} = 3\frac{\mathrm{m}}{\mathrm{s}} + 1\frac{\mathrm{m}}{\mathrm{s}} = 4\ \frac{\mathrm{m}}{\mathrm{s}}\ \text{east}$$
 
 ---
 class: g7
 ---
 
-## Opposite Velocity Vectors Example
+## Resultant Velocity (Opposite Direction)
 
 A swimmer moves $3 \frac{\mathrm{m}}{\mathrm{s}}$ east against a current of $1 \frac{\mathrm{m}}{\mathrm{s}}$ west.
 
-$$v_{\text{resultant}} = 3 - 1 = 2\ \frac{\mathrm{m}}{\mathrm{s}}\ \text{east}$$
+$$v_{\text{resultant}} = 3\frac{\mathrm{m}}{\mathrm{s}} - 1\frac{\mathrm{m}}{\mathrm{s}} = 2\ \frac{\mathrm{m}}{\mathrm{s}}\ \text{east}$$
 
 ---
 class: g7
@@ -247,20 +230,10 @@ A passenger walks forward at $1 \frac{\mathrm{m}}{\mathrm{s}}$ on a train moving
 
 <v-clicks>
 
-- Relative to the **train**: the passenger moves at $1 \frac{\mathrm{m}}{\mathrm{s}}$.
-- Relative to the **ground**: the passenger moves at $10 + 1 = 11 \frac{\mathrm{m}}{\mathrm{s}}$.
-
-</v-clicks>
-
----
-
-## Exercise
-
-<v-clicks>
-
-- A plane flies $200 \frac{\mathrm{m}}{\mathrm{s}}$ north with a tailwind of $50 \frac{\mathrm{m}}{\mathrm{s}}$ north. Find the resultant velocity.
-- A person walks $1.5 \frac{\mathrm{m}}{\mathrm{s}}$ toward the back of a bus moving $12 \frac{\mathrm{m}}{\mathrm{s}}$ forward. What is their velocity relative to the ground?
-- A cyclist rides $300\ \mathrm{m}$ east in $20\ \mathrm{s}$. What is their average speed? What is their velocity?
+- Relative to the **train**:
+   - the passenger moves at $1 \frac{\mathrm{m}}{\mathrm{s}}$.
+- Relative to the **ground**: 
+   - the passenger moves at $10\frac{\mathrm{m}}{\mathrm{s}} + 1\frac{\mathrm{m}}{\mathrm{s}} = 11 \frac{\mathrm{m}}{\mathrm{s}}$.
 
 </v-clicks>
 
@@ -269,7 +242,7 @@ A passenger walks forward at $1 \frac{\mathrm{m}}{\mathrm{s}}$ on a train moving
 ## Summary
 
 - **Speed** = how fast (scalar); **velocity** = how fast and which way (vector).
-- $s = \dfrac{d}{t}$ and $v = \dfrac{\Delta x}{t}$; average speed uses total distance and total time.
+- $s = \dfrac{d}{t}$ and $v = \dfrac{\Delta x}{t}$
 - Units of speed and velocity: $\frac{\mathrm{m}}{\mathrm{s}}$.
 - **Collinear velocity vectors**: add when the same direction, subtract when opposite.
 - Relative velocity depends on the **frame of reference**.
