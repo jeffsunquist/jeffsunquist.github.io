@@ -323,6 +323,20 @@ $\Delta x=x_2 - x_0$ ($x_2$ is negative)
 
 ---
 
+## Practice 2-D Displacement
+
+<img src="/axes_2D.excalidraw.svg" width="560" />
+
+
+---
+
+## Practice Track Displacement
+
+<img src="/blank_track.excalidraw.svg" width="640" />
+
+
+---
+
 ## Distance vs Displacement
 
 | Distance                        | Displacement                          |
