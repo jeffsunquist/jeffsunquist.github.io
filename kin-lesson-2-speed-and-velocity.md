@@ -39,7 +39,7 @@ Lesson 2 of 4
 
 ## Learning Objective
 
-Students will be able to define and calculate speed, average speed, and velocity, and (G7) add velocity vectors to find resultant and relative velocities.
+Students will be able to define and calculate speed and velocity, and (G7) add velocity vectors to find resultant and relative velocities.
 
 ---
 
