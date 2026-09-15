@@ -61,17 +61,14 @@ A _state_ defined as the quantities an object has at one moment.
 
 <v-click>
 
-- The chicken needed **35 minutes** to change from **raw** to **cooked**.
+- Change of temperature:
+  - A liter of water needed **7 minutes** to change from **19°C** to **100°C**.
 
 </v-click>
 <v-click>
 
-- A student walked from the **math classroom** to the **biology classroom** in **120 seconds**.
-
-</v-click>
-<v-click>
-
-- Earth **completes one rotation** in **23 hours, 56 minutes, and 4 seconds** (state change = do one rotation).
+- Change of position: 
+  - A student walked from the **math classroom** to the **biology classroom** in **120 seconds**.
 
 </v-click>
 
@@ -90,25 +87,27 @@ A _state_ defined as the quantities an object has at one moment.
 
 ---
 
-## Speed vs Velocity
+## Speed
 
-- **Speed** tells you how fast: $40 \frac{\mathrm{km}}{\mathrm{h}}$.
-- **Velocity** tells you how fast **and in which direction**: $40 \frac{\mathrm{km}}{\mathrm{h}}$ north.
-- A car driving in a circle at constant speed still has **changing velocity** (its direction changes).
+- **Speed** is a **scalar** and it tells you how fast something is moving.
+- $\mathrm{speed}=\frac{\mathrm{distance}}{\mathrm{time}}$
 
-<center>
-<img src="/car_circle_path.excalidraw.svg" width="200" />
-</center>
+- $s = \frac{d}{t}$
+
+- example: The speed of the bus is $40 \frac{\mathrm{m}}{\mathrm{s}}$
 
 ---
 
 ## Speed and Velocity Equations
 
-$$s = \frac{d}{t} \qquad\qquad v = \frac{\Delta x}{t}$$
+- **Velocity** is a **vector** and it tells you how fast something is moving and _in what direction_.
 
-- $s$ = speed, $d$ = distance; $\Delta x$ = displacement, $t$ = time.
+- $\mathrm{velocity}=\frac{\mathrm{displacement}}{\mathrm{time}}$
 
-- SI unit: $\frac{\mathrm{m}}{\mathrm{s}}$.
+- $v = \frac{\Delta x}{t}$
+
+
+- example: The velocity of the bus is $40\frac{\mathrm{m}}{\mathrm{s}}\ \mathrm{east}$
 
 ---
 
@@ -169,7 +168,7 @@ A bird flies $500\ \mathrm{m}$ east in $25\ \mathrm{s}$. What is its velocity?
 <Transform :scale="0.85">
 <v-clicks>
 
-1. $\Delta x = 500\ \mathrm{m}$ (east), $t = 25\ \mathrm{s}$, $v=?$
+1. $\Delta x = 500\ \mathrm{m\ east}$, $t = 25\ \mathrm{s}$, $v=?$
 
 2. $v = \dfrac{\Delta x}{t}$
 
