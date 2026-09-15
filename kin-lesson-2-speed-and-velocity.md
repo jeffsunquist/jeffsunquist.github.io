@@ -203,11 +203,23 @@ A balloon floats upward at a constant velocity of $2.5\frac{\mathrm{m}}{\mathrm{
 class: g7
 ---
 
+## Resultant Velocity
+
+**Resultant velocity** is the single velocity you get when you combine two or more velocity vectors acting on the **same object**.
+
+---
+class: g7
+---
+
 ## Resultant Velocity (Same Direction)
 
 A boat moves $3 \frac{\mathrm{m}}{\mathrm{s}}$ east while the current pushes $1 \frac{\mathrm{m}}{\mathrm{s}}$ east.
 
-$$v_{\text{resultant}} = 3\frac{\mathrm{m}}{\mathrm{s}} + 1\frac{\mathrm{m}}{\mathrm{s}} = 4\ \frac{\mathrm{m}}{\mathrm{s}}\ \text{east}$$
+<v-click>
+
+$v_{\text{resultant}} = 3\frac{\mathrm{m}}{\mathrm{s}} + 1\frac{\mathrm{m}}{\mathrm{s}} = 4\ \frac{\mathrm{m}}{\mathrm{s}}\ \text{east}$
+
+</v-click>
 
 ---
 class: g7
@@ -215,9 +227,25 @@ class: g7
 
 ## Resultant Velocity (Opposite Direction)
 
-A swimmer moves $3 \frac{\mathrm{m}}{\mathrm{s}}$ east against a current of $1 \frac{\mathrm{m}}{\mathrm{s}}$ west.
+A boat moves $3 \frac{\mathrm{m}}{\mathrm{s}}$ east while the current pushes $1  \frac{\mathrm{m}}{\mathrm{s}}$ west. 
 
-$$v_{\text{resultant}} = 3\frac{\mathrm{m}}{\mathrm{s}} - 1\frac{\mathrm{m}}{\mathrm{s}} = 2\ \frac{\mathrm{m}}{\mathrm{s}}\ \text{east}$$
+<v-click>
+
+$v_{\text{resultant}} = 3 \frac{\mathrm{m}}{\mathrm{s}} - 1 \frac{\mathrm{m}}{\mathrm{s}} = 2 \frac{\mathrm{m}}{\mathrm{s}} \ \text{east}$
+
+</v-click>
+
+---
+class: g7
+---
+
+## Resultant Velocity — Video
+
+A cyclist pushes to the right while the train rolls to the left.
+
+<center>
+<iframe width="640" height="360" src="https://www.youtube.com/embed/TP_0Vv5F29I" title="Resultant velocity example" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</center>
 
 ---
 class: g7
@@ -225,18 +253,41 @@ class: g7
 
 ## Relative Velocity
 
-A passenger walks forward at $1 \frac{\mathrm{m}}{\mathrm{s}}$ on a train moving at $10 \frac{\mathrm{m}}{\mathrm{s}}$.
+**Relative velocity** is the velocity of one object measured from the **frame of reference** of another object.
+
+---
+class: g7
+---
+
+## Relative Velocity (Same Direction)
+
+Two ships move east: ship A at $10 \ \mathrm{m/s}$ and ship B at $15 \ \mathrm{m/s}$.
+
+<Transform :scale="0.85">
 
 <v-clicks>
 
-- Relative to the **train**:
-   - the passenger moves at $1 \frac{\mathrm{m}}{\mathrm{s}}$.
-- Relative to the **ground**: 
-   - the passenger moves at $10\frac{\mathrm{m}}{\mathrm{s}} + 1\frac{\mathrm{m}}{\mathrm{s}} = 11 \frac{\mathrm{m}}{\mathrm{s}}$.
+Velocity of B relative to A:
+- $v_{BA} = v_B-v_A = 15 \frac{\mathrm{m}}{\mathrm{s}} - 10\frac{\mathrm{m}}{\mathrm{s}} = 5\frac{\mathrm{m}}{\mathrm{s}}$ east.
+
+Velocity of A relative to B:
+- $v_{AB} = v_A - v_B = 10 \ \frac{\mathrm{m}}{\mathrm{s}} - 15 \ \frac{\mathrm{m}}{\mathrm{s}} = 5 \frac{\mathrm{m}}{\mathrm{s}}$ west.
 
 </v-clicks>
 
-https://www.youtube.com/watch?v=TP_0Vv5F29I
+</Transform>
+
+---
+class: g7
+---
+
+## Relative Velocity — Video
+
+The helicopter pilot describes his velocity relative to the car.
+
+<center>
+<iframe width="640" height="360" src="https://www.youtube.com/embed/5tU6y9R1tVA" title="Relative velocity example" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</center>
 
 ---
 
