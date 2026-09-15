@@ -56,21 +56,15 @@ Students will be able to define and calculate speed, average speed, and velocity
 ## Time
 
 _Time_ ($t$) is the duration between two states.
-A _state_ defined as the quantities an object has at one moment.
+A _state_ defined as the quantities (e.g. position, velocity) an object has at one moment.
 
+<v-clicks>
 
-<v-click>
+- $\Delta x$: _A student walked from the **math classroom** to the **biology classroom** in **120 seconds**._
 
-- Change of temperature:
-  - A liter of water needed **7 minutes** to change from **19°C** to **100°C**.
+- $\Delta v$: _A plane needed **30 seconds** to accelerate from **rest** to **100 m/s**._
 
-</v-click>
-<v-click>
-
-- Change of position: 
-  - A student walked from the **math classroom** to the **biology classroom** in **120 seconds**.
-
-</v-click>
+</v-clicks>
 
 ---
 
