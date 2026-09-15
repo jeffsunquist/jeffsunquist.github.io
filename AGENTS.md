@@ -46,8 +46,12 @@ to them all.
   - `kin-lesson-2-speed-and-velocity.md` — speed, average speed, velocity,
     displacement from velocity, resultant and relative velocity
     (KIN-14, 20–37).
-  - `kin-lesson-3-acceleration.md` — acceleration definition, equation, units,
-    sign, gravity (KIN-38–48).
+  - `kin-lesson-3-acceleration.md` — opens with a review of L2 (average speed
+    and average velocity from a multi-leg journey, and constant vs. average
+    speed/velocity), then introduces acceleration three ways (a change in
+    speed, a change in the magnitude of velocity, and a change in the direction
+    of velocity) before the definition, equation, units, sign, and gravity
+    (KIN-38–48).
   - `kin-lesson-4-motion-graphs.md` — position-time and velocity-time graphs,
     slope and area under the curve (KIN-49–57).
   Each deck covers **both Grade 6 and Grade 7**. Grade 7-only slides are marked
@@ -100,25 +104,7 @@ Every lesson deck follows this slide order:
 Lesson 1 of 6
 ```
 
-### 2. CJ opener (Communication Journal)
-
-The daily agenda slide. Heading is `## Physics` (or `## CJ`), with the four
-journal lines as bullets:
-
-```md
-## Physics
-
-- HW: get a calculator with fractions
-- IC: observations
-- A: N/A
-- Do Now: cats or dogs, which pet is objectively better?
-```
-
-- `IC` = In Class (today's topic), `HW` = Homework, `A` = Announcements.
-- Keep this slide first (or immediately after the title) so it stays the day's
-  opener.
-
-### 3. Learning Objective
+### 2. Learning Objective
 
 ```md
 ## Learning Objective
@@ -130,7 +116,7 @@ observations, and between objective and subjective statements.
 Either a single "Students will be able to …" sentence or a short bullet list
 of LO-derived verbs.
 
-### 4. Review of the previous lesson
+### 3. Review of the previous lesson
 
 **Required** for every lesson except the first of the unit. A single concise
 recap slide of the previous lesson's main points, placed **after the Learning
@@ -146,7 +132,7 @@ Objective and before any new content**:
 
 Keep it short (3–6 bullets or a small table) — it recaps, it does not reteach.
 
-### 5. Fresh content
+### 4. Fresh content
 
 One concept per slide; heading is the concept name:
 
@@ -166,7 +152,7 @@ One concept per slide; heading is the concept name:
   `<img src="/qualitative-pikachu.png" width="240" />`. Excalidraw SVGs
   (`*.excalidraw.svg`) are used directly and render fine in Slidev.
 
-### 6. Guided practice
+### 5. Guided practice
 
 Worked examples and exercises:
 
@@ -181,7 +167,7 @@ quantities → pick the equation → plug in and solve → check units/direction
 with each step on its own slide or revealed via `<v-click>`. Exercises get a
 `## Exercise N` heading.
 
-### 7. Summary
+### 6. Summary
 
 A brief recap near the end of the deck:
 
@@ -196,22 +182,10 @@ A brief recap near the end of the deck:
 
 (Also seen as `## Review: The Metric System`, `## Rule of Science`.)
 
-### 8. Exit Ticket
-
-```md
-## Exit Ticket
-
-Write one new statement that is objective and qualitative.
-```
-
-A single prompt; follow-up questions can be revealed with `<v-clicks>`, and an
-image can accompany the prompt.
-
 ## Slidev conventions
 
 - Slides are separated by `---` lines; the first frontmatter block is the deck
-  config. A single blank slide start is used for the agenda (before the first
-  `---`).
+  config.
 - Global styling in `styles/index.css` (auto-loaded by Slidev convention,
   `./style.css` / `./styles/index.css`); keep classroom light-mode look — don't
   add per-deck style overrides.
