@@ -277,7 +277,7 @@ class: g7
 
 ## Relative Velocity — Video
 
-The helicopter pilot describes his velocity relative to the car.
+The helicopter pilot minimizes his relative velocity to the car.
 
 <center>
 <iframe width="640" height="360" src="https://www.youtube.com/embed/5tU6y9R1tVA" title="Relative velocity example" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -292,3 +292,4 @@ The helicopter pilot describes his velocity relative to the car.
 - Units of speed and velocity: $\frac{\mathrm{m}}{\mathrm{s}}$.
 - **Collinear velocity vectors**: add when the same direction, subtract when opposite.
 - Relative velocity depends on the **frame of reference**.
+e**.
