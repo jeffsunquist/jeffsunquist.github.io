@@ -223,6 +223,15 @@ image can accompany the prompt.
 - Interactive elements use `<v-click>` / `<v-clicks>` / `<kbd>`.
 - Math uses KaTeX inline `$...$` and display `$$...$$`.
 - Markdown tables are styled globally (striped, bordered) — no extra work.
+- The drawing toolbar is customized **globally via patch-package**: Slidev's
+  built-in pen/stylus tool is replaced by a `draw`-mode pencil tool (default
+  freehand mode `draw`, toolbar icon `i-ph:pencil`, label "Draw"; stylus is
+  removed). The patch is `patches/@slidev+client+52.19.1.patch` and is applied by
+  the `postinstall` script (`patch-package`) on every `npm install`/`npm ci`, so
+  it survives the GitHub Actions deploy. `@slidev/cli` is **pinned to `52.19.1`**;
+  on a Slidev upgrade, re-apply the two source edits
+  (`composables/useDrawings.ts`, `internals/DrawingControls.vue`) and regenerate
+  the patch with `npx patch-package @slidev/client`.
 
 ## Build & verify
 

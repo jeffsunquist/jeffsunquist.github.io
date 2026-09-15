@@ -5,12 +5,14 @@
   "scripts": {
     "dev": "slidev",
     "build": "slidev build",
-    "export": "slidev export"
+    "export": "slidev export",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@slidev/theme-default": "latest"
   },
   "devDependencies": {
-    "@slidev/cli": "^52.19.1"
+    "@slidev/cli": "52.19.1",
+    "patch-package": "^8.0.1"
   }
 }

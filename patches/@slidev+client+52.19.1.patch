@@ -1,0 +1,56 @@
+diff --git a/node_modules/@slidev/client/composables/useDrawings.ts b/node_modules/@slidev/client/composables/useDrawings.ts
+index 8786bda..74d5d85 100644
+--- a/node_modules/@slidev/client/composables/useDrawings.ts
++++ b/node_modules/@slidev/client/composables/useDrawings.ts
+@@ -25,7 +25,7 @@ export const useDrawings = createSharedComposable(() => {
+   const brush = useLocalStorage<Brush>('slidev-drawing-brush', {
+     color: brushColors[0],
+     size: 4,
+-    mode: 'stylus',
++    mode: 'draw',
+   })
+ 
+   const isDrawing = ref(false)
+@@ -33,7 +33,7 @@ export const useDrawings = createSharedComposable(() => {
+   const canRedo = ref(false)
+   const canClear = ref(false)
+ 
+-  const _mode = ref<DrawingMode | 'arrow'>('stylus')
++  const _mode = ref<DrawingMode | 'arrow'>('draw')
+   const syncUp = computed(() => configs.drawings.syncAll || isPresenter.value)
+   let disableDump = false
+ 
+@@ -137,9 +137,6 @@ export const useDrawings = createSharedComposable(() => {
+     else if (e.code === 'KeyA' && noModifier) {
+       drawingMode.value = 'arrow'
+     }
+-    else if (e.code === 'KeyS' && noModifier) {
+-      drawingMode.value = 'stylus'
+-    }
+     else if (e.code === 'KeyR' && noModifier) {
+       drawingMode.value = 'rectangle'
+     }
+diff --git a/node_modules/@slidev/client/internals/DrawingControls.vue b/node_modules/@slidev/client/internals/DrawingControls.vue
+index 98ba060..fb31dd0 100644
+--- a/node_modules/@slidev/client/internals/DrawingControls.vue
++++ b/node_modules/@slidev/client/internals/DrawingControls.vue
+@@ -43,7 +43,7 @@ function redo() {
+   drauu.redo()
+ }
+ 
+-let lastDrawingMode: typeof drawingMode.value = 'stylus'
++let lastDrawingMode: typeof drawingMode.value = 'draw'
+ function setDrawingMode(mode: typeof drawingMode.value) {
+   drawingMode.value = mode
+   drawingEnabled.value = true
+@@ -66,8 +66,8 @@ function setBrushColor(color: string) {
+     :initial-x="10"
+     :initial-y="10"
+   >
+-    <IconButton title="Draw with stylus" :class="{ shallow: drawingMode !== 'stylus' }" @click="setDrawingMode('stylus')">
+-      <div class="i-carbon:pen" />
++    <IconButton title="Draw" :class="{ shallow: drawingMode !== 'draw' }" @click="setDrawingMode('draw')">
++      <div class="i-ph:pencil" />
+     </IconButton>
+     <IconButton title="Draw a line" :class="{ shallow: drawingMode !== 'line' }" @click="setDrawingMode('line')">
+       <svg width="1em" height="1em" class="-mt-0.5" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
