@@ -290,6 +290,6 @@ The helicopter pilot minimizes his relative velocity to the car.
 - **Speed** = how fast (scalar); **velocity** = how fast and which way (vector).
 - $s = \dfrac{d}{t}$ and $v = \dfrac{\Delta x}{t}$
 - Units of speed and velocity: $\frac{\mathrm{m}}{\mathrm{s}}$.
-- **Collinear velocity vectors**: add when the same direction, subtract when opposite.
-- Relative velocity depends on the **frame of reference**.
+- **Resultant velocity** is the sum of two velocities on the object.
+- **Relative velocity** is the difference of velocity between two objects.
 e**.
