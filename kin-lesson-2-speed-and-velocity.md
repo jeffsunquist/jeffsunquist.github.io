@@ -292,4 +292,3 @@ The helicopter pilot minimizes his relative velocity to the car.
 - Units of speed and velocity: $\frac{\mathrm{m}}{\mathrm{s}}$.
 - **Resultant velocity** is the sum of two velocities on the object.
 - **Relative velocity** is the difference of velocity between two objects.
-e**.
