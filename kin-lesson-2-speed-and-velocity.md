@@ -39,7 +39,15 @@ Lesson 2 of 4
 
 ## Learning Objective
 
-Students will be able to define and calculate speed and velocity, and (G7) add velocity vectors to find resultant and relative velocities.
+Students will be able to define and calculate speed and velocity.
+
+---
+class: g7
+---
+
+## Learning Objective (Grade 7)
+
+Students will be able to add velocity vectors to find resultant and relative velocities.
 
 ---
 
@@ -70,14 +78,20 @@ A _state_ defined as the quantities (e.g. position, velocity) an object has at o
 
 ### Kinematic equations that use time
 
+- $\bar v=\dfrac{\Delta x}{\textcolor{red}{t}}$
+- $s=\dfrac{d}{\textcolor{red}{t}}$
+- $a=\dfrac{\Delta v}{\textcolor{red}{t}}=\dfrac{v-v_0}{\textcolor{red}{t}}$
+- $\Delta x=x-x_0$
 
-| Grade 6 | Grade 7 |
-|-------- | ------- |
-| $\bar v=\frac{\Delta x}{\red t}$ | $\bar v=\frac{\Delta x}{\red t}$ |
-| $s=\frac{d}{\red t}$ | $s=\frac{d}{\red t}$ |
-| $a=\frac{\Delta v}{\red t}=\frac{v-v_0}{\red t}$ | $v=v_0+a\red t$ |
-| $\gray{\Delta x=x-x_0}$        | $\Delta x=v_0 \red t + \frac{1}{2}a\red t^2$ |
-|         | $\gray{v^2=v_0^2+2a\Delta x}$  |
+---
+class: g7
+---
+
+### Kinematic equations that use time (Grade 7)
+
+- $v=v_0+a\textcolor{red}{t}$
+- $\Delta x=v_0\textcolor{red}{t}+\frac{1}{2}a\textcolor{red}{t}^2$
+- $v^2=v_0^2+2a\Delta x$
 
 ---
 
@@ -290,5 +304,12 @@ The helicopter pilot minimizes his relative velocity to the car.
 - **Speed** = how fast (scalar); **velocity** = how fast and which way (vector).
 - $s = \dfrac{d}{t}$ and $v = \dfrac{\Delta x}{t}$
 - Units of speed and velocity: $\frac{\mathrm{m}}{\mathrm{s}}$.
+
+---
+class: g7
+---
+
+## Summary (Grade 7)
+
 - **Resultant velocity** is the sum of two velocities on the object. $v_{resultant}=v_1+v_2$
 - **Relative velocity** is the difference of velocity between two objects. $v_{BA}=v_B-v_A$ (How B sees A)

@@ -222,12 +222,12 @@
 }
 
 /* --- Grade 7 enrichment slides in the merged KIN decks ---
-   A slide marked with per-slide frontmatter `class: g7` gets a pale-orange
-   background and a small "G7" tag. Shared and Grade 6-only slides stay plain. */
+   A slide marked with per-slide frontmatter `class: g7` gets a small "G7" tag
+   in the top-right corner. The Grade 6 build strips these slides entirely
+   (scripts/strip_g7.py); the Grade 7 build keeps them, marked by the tag. */
 
 .slidev-layout.g7 {
   position: relative;
-  background: #ffe0b2;
 }
 
 .slidev-layout.g7::after {

@@ -39,7 +39,15 @@ Lesson 3 of 4
 
 ## Learning Objective
 
-Students will be able to distinguish constant, average, and instantaneous speed and velocity, and describe acceleration as _speeding up_, _slowing down_, or _changing direction_.
+Students will be able to distinguish constant and average speed and velocity, and describe acceleration as _speeding up_, _slowing down_, or _changing direction_.
+
+---
+class: g7
+---
+
+## Learning Objective (Grade 7)
+
+Students will be able to distinguish constant, average, and instantaneous speed and velocity.
 
 ---
 
@@ -210,6 +218,14 @@ $$[a] = \frac{\frac{\mathrm{m}}{\mathrm{s}}}{\mathrm{s}} = \frac{\mathrm{m}}{\ma
 ## Summary
 
 - **Average speed** uses total **distance**; **average velocity** uses total **displacement**.
-- **Constant** means never changes; **average** is for the whole trip; **instantaneous** is one moment.
+- **Constant** means never changes; **average** is for the whole trip.
 - An object accelerates when it **speeds up**, **slows down**, or **changes direction**.
 - **Acceleration**: $a = \dfrac{v - v_0}{t}$
+
+---
+class: g7
+---
+
+## Summary (Grade 7)
+
+- **Instantaneous** speed or velocity is the value at one exact moment.
