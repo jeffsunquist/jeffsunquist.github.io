@@ -19,7 +19,7 @@ learning_outcomes:
   - KIN-51
 ---
 
-# Scientific Inquiry — Graphing
+# Scientific Inquiry — Graphs
 
 Lesson 5 of 6
 

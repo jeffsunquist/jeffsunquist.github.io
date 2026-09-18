@@ -5,13 +5,14 @@
 # Slidev rewrites its asset paths (JS/CSS and the public/ images referenced with
 # a leading slash) against that base automatically.
 #
-# Grade-specific decks carry a `-g6` / `-g7` filename suffix and appear only in
+# Grade-specific decks carry a `_G6` / `_G7` filename suffix and appear only in
 # the matching column of the landing page; decks without a suffix are shared and
-# appear in both columns.
+# appear in both columns. Link text is the filename with underscores shown as
+# spaces (hyphens stay hyphens).
 #
 # The landing index.html has a "Lessons" section and a "Handouts" section, each
 # split into a Grade 6 and a Grade 7 column, with the Aura tracker full width
-# below. Handouts are classified by their `_g6` / `_g7` filename token (a file
+# below. Handouts are classified by their `_G6` / `_G7` filename token (a file
 # with neither token appears in both columns).
 #
 # Used by .github/workflows/deploy.yml and for manual local builds.
@@ -44,8 +45,8 @@ for f in *.md; do
   npx slidev build "$f" --base "/$slug/" --router-mode hash --out "dist/$slug"
 
   case "$slug" in
-    *-g6) g6_decks+=("$slug") ;;
-    *-g7) g7_decks+=("$slug") ;;
+    *_G6) g6_decks+=("$slug") ;;
+    *_G7) g7_decks+=("$slug") ;;
     *)    shared_decks+=("$slug") ;;
   esac
 done
@@ -87,7 +88,7 @@ if [ -f data/aura.csv ]; then
   aura_data_js="[$values]"
 fi
 
-# Classify handouts by grade token: `_g6` -> Grade 6 only, `_g7` -> Grade 7
+# Classify handouts by grade token: `_G6` -> Grade 6 only, `_G7` -> Grade 7
 # only, neither -> both columns.
 g6_handouts=()
 g7_handouts=()
@@ -95,9 +96,9 @@ if [ -d pdfs ]; then
   shopt -s nullglob
   for pdf in pdfs/*.pdf; do
     name="${pdf##*/}"
-    if [[ "$name" == *_g6* ]]; then
+    if [[ "$name" == *_G6* ]]; then
       g6_handouts+=("$name")
-    elif [[ "$name" == *_g7* ]]; then
+    elif [[ "$name" == *_G7* ]]; then
       g7_handouts+=("$name")
     else
       g6_handouts+=("$name")
@@ -144,9 +145,8 @@ HTML
     esac
     printf '    <section>\n      <h3>%s</h3>\n      <ul>\n' "$heading"
     for slug in $slugs; do
-      label="${slug%-g6}"
-      label="${label%-g7}"
-      label="$(printf '%s' "$label" | tr '_-' ' ')"
+      # Display name: underscores become spaces; hyphens stay.
+      label="$(printf '%s' "$slug" | tr '_' ' ')"
       printf '        <li><a href="/%s/">%s</a></li>\n' "$slug" "$label"
     done
     printf '      </ul>\n    </section>\n'
@@ -162,7 +162,8 @@ HTML
     printf '    <section>\n      <h3>%s</h3>\n      <ul>\n' "$heading"
     for name in "${handouts[@]}"; do
       [ -z "$name" ] && continue
-      base="${name%.pdf}"
+      # Display name: underscores become spaces; hyphens stay.
+      base="$(printf '%s' "${name%.pdf}" | tr '_' ' ')"
       printf '        <li><a href="/pdfs/annotate.html?pdf=/pdfs/%s">%s</a></li>\n' "$name" "$base"
     done
     printf '      </ul>\n    </section>\n'
