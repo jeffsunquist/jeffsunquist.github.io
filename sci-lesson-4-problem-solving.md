@@ -3,7 +3,7 @@ theme: default
 colorSchema: light
 title: Scientific Inquiry — Problem Solving
 info: |
-  Grade 7 Physics · Lesson 4 of 6
+  Grade 6–7 Physics · Lesson 4 of 6
 fonts:
   sans: Patrick Hand
   local:

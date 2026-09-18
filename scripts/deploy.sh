@@ -1,17 +1,13 @@
 #!/bin/bash
 # Build all Slidev decks for deployment to GitHub Pages (user site at the root).
 #
-# Every deck is built TWICE, once per grade. The merged KIN decks contain Grade 6
-# content plus Grade 7 enrichment slides (per-slide frontmatter `class: g7`), and
-# scripts/grade_variant.py produces the per-grade source:
+# Every *.md deck is built to dist/<slug>/ with base /<slug>/ and hash routing;
+# Slidev rewrites its asset paths (JS/CSS and the public/ images referenced with
+# a leading slash) against that base automatically.
 #
-#   dist/g6/<slug>/   Grade 6 - G7 slides dropped, G7-only LOs filtered
-#   dist/g7/<slug>/   Grade 7 - full deck
-#
-# Both variants get their `info:` grade label normalized ("Grade 6 Physics" /
-# "Grade 7 Physics"). Shared decks (the SCI unit) are identical in both builds
-# but are still built twice, because Slidev bakes the absolute `--base` path into
-# every asset URL.
+# Grade-specific decks carry a `-g6` / `-g7` filename suffix and appear only in
+# the matching column of the landing page; decks without a suffix are shared and
+# appear in both columns.
 #
 # The landing index.html has a "Lessons" section and a "Handouts" section, each
 # split into a Grade 6 and a Grade 7 column, with the Aura tracker full width
@@ -36,33 +32,27 @@ if [ -d pdfs ]; then
   cp -r pdfs dist/pdfs
 fi
 
-# The per-grade variants are written next to the decks as hidden dotfiles (so
-# the `*.md` glob below ignores them) because Slidev resolves public/ and
-# styles/ relative to the entry file's directory. Clean them up on exit.
-tmp_files=()
-cleanup() {
-  for f in "${tmp_files[@]:-}"; do
-    [ -n "$f" ] && rm -f "$f"
-  done
-}
-trap cleanup EXIT
-
-decks=()
+g6_decks=()
+g7_decks=()
+shared_decks=()
 for f in *.md; do
   case "$f" in
     AGENTS.md|README.md|slides.md) continue ;;   # docs / Slidev scaffold, not lesson decks
   esac
   slug="${f%.md}"
-  decks+=("$slug")
+  echo "Building $f -> /$slug/"
+  npx slidev build "$f" --base "/$slug/" --router-mode hash --out "dist/$slug"
 
-  for grade in 6 7; do
-    echo "Building $f -> /g$grade/$slug/ (Grade $grade)"
-    variant=".$slug.g$grade.md"
-    python3 scripts/grade_variant.py "$f" "$variant" --grade "$grade"
-    tmp_files+=("$variant")
-    npx slidev build "$variant" --base "/g$grade/$slug/" --router-mode hash --out "dist/g$grade/$slug"
-  done
+  case "$slug" in
+    *-g6) g6_decks+=("$slug") ;;
+    *-g7) g7_decks+=("$slug") ;;
+    *)    shared_decks+=("$slug") ;;
+  esac
 done
+
+# Grade columns: grade-specific decks plus the shared decks, sorted by slug.
+g6_sorted=$(printf '%s\n' "${g6_decks[@]:-}" "${shared_decks[@]:-}" | sed '/^$/d' | sort)
+g7_sorted=$(printf '%s\n' "${g7_decks[@]:-}" "${shared_decks[@]:-}" | sed '/^$/d' | sort)
 
 # Aura tracker data is a build-time input from data/aura.csv (date,value rows).
 # Build JS array literals; empty CSV -> empty chart.
@@ -149,13 +139,15 @@ HTML
 
   for grade in g6 g7; do
     case "$grade" in
-      g6) heading="Grade 6" ;;
-      g7) heading="Grade 7" ;;
+      g6) heading="Grade 6"; slugs="$g6_sorted" ;;
+      g7) heading="Grade 7"; slugs="$g7_sorted" ;;
     esac
     printf '    <section>\n      <h3>%s</h3>\n      <ul>\n' "$heading"
-    for slug in "${decks[@]}"; do
-      label="$(printf '%s' "$slug" | tr '_-' ' ')"
-      printf '        <li><a href="/%s/%s/">%s</a></li>\n' "$grade" "$slug" "$label"
+    for slug in $slugs; do
+      label="${slug%-g6}"
+      label="${label%-g7}"
+      label="$(printf '%s' "$label" | tr '_-' ' ')"
+      printf '        <li><a href="/%s/">%s</a></li>\n' "$slug" "$label"
     done
     printf '      </ul>\n    </section>\n'
   done

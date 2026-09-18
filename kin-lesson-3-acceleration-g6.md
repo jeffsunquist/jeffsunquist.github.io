@@ -3,7 +3,7 @@ theme: default
 colorSchema: light
 title: Kinematics — Speed, Velocity, and Acceleration
 info: |
-  Grade 6–7 Physics · KIN · Lesson 3 of 4
+  Grade 6 Physics · KIN · Lesson 3 of 4
 fonts:
   sans: Patrick Hand
   local:
@@ -23,12 +23,10 @@ learning_outcomes:
   - KIN-32
   - KIN-33
   - KIN-35
-  - KIN-36
   - KIN-40
   - KIN-41
   - KIN-42
   - KIN-43
-  - KIN-50
 ---
 
 # Kinematics — Speed, Velocity, and Acceleration
@@ -40,14 +38,6 @@ Lesson 3 of 4
 ## Learning Objective
 
 Students will be able to distinguish constant and average speed and velocity, and describe acceleration as _speeding up_, _slowing down_, or _changing direction_.
-
----
-class: g7
----
-
-## Learning Objective (Grade 7)
-
-Students will be able to distinguish constant, average, and instantaneous speed and velocity.
 
 ---
 
@@ -121,39 +111,6 @@ A van travels **120 m east** in 10 s, then **80 m east** in 5 s, then **100 m we
 </v-clicks>
 
 ---
-class: g7
----
-
-## Instantaneous Speed and Velocity
-- On a trip, an object's speed or direction can change from moment to moment.
-
-- **Instantaneous speed** is the speed at one exact instant.
-- **Instantaneous velocity** is the velocity (speed **and** direction) at one instant.
-
-
-
-
-
----
-class: g7
-zoom: 0.9
----
-
-## Constant vs Average vs Instantaneous
-
-
-<center>
-<img src="/velocity_constant_average_instantaneous.excalidraw.svg" width="800" />
-</center>
-
-- slope = velocity
-- constant velocity has a constant slope
-- average velocity the slope between the final and initial positions
-- instantaneous velocity may be different at every time
-
-
-
----
 
 ## Speeding Up vs Slowing Down
 
@@ -222,10 +179,3 @@ $$[a] = \frac{\frac{\mathrm{m}}{\mathrm{s}}}{\mathrm{s}} = \frac{\mathrm{m}}{\ma
 - An object accelerates when it **speeds up**, **slows down**, or **changes direction**.
 - **Acceleration**: $a = \dfrac{v - v_0}{t}$
 
----
-class: g7
----
-
-## Summary (Grade 7)
-
-- **Instantaneous** speed or velocity is the value at one exact moment.

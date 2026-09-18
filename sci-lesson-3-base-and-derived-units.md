@@ -3,7 +3,7 @@ theme: default
 colorSchema: light
 title: Scientific Inquiry — Base Units & Derived Units
 info: |
-  Grade 7 Physics · Lesson 3 of 6
+  Grade 6–7 Physics · Lesson 3 of 6
 fonts:
   sans: Patrick Hand
   local:

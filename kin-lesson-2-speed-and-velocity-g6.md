@@ -3,7 +3,7 @@ theme: default
 colorSchema: light
 title: Kinematics — Speed and Velocity
 info: |
-  Grade 6–7 Physics · KIN · Lesson 2 of 4
+  Grade 6 Physics · KIN · Lesson 2 of 4
 fonts:
   sans: Patrick Hand
   local:
@@ -11,7 +11,6 @@ fonts:
   provider: none
 learning_outcomes:
   - KIN-14
-  - KIN-20
   - KIN-21
   - KIN-22
   - KIN-23
@@ -27,8 +26,6 @@ learning_outcomes:
   - KIN-33
   - KIN-34
   - KIN-35
-  - KIN-36
-  - KIN-37
 ---
 
 # Kinematics — Speed and Velocity
@@ -40,14 +37,6 @@ Lesson 2 of 4
 ## Learning Objective
 
 Students will be able to define and calculate speed and velocity.
-
----
-class: g7
----
-
-## Learning Objective (Grade 7)
-
-Students will be able to add velocity vectors to find resultant and relative velocities.
 
 ---
 
@@ -82,16 +71,6 @@ A _state_ defined as the quantities (e.g. position, velocity) an object has at o
 - $s=\dfrac{d}{\textcolor{red}{t}}$
 - $a=\dfrac{\Delta v}{\textcolor{red}{t}}=\dfrac{v-v_0}{\textcolor{red}{t}}$
 - $\Delta x=x-x_0$
-
----
-class: g7
----
-
-### Kinematic equations that use time (Grade 7)
-
-- $v=v_0+a\textcolor{red}{t}$
-- $\Delta x=v_0\textcolor{red}{t}+\frac{1}{2}a\textcolor{red}{t}^2$
-- $v^2=v_0^2+2a\Delta x$
 
 ---
 
@@ -208,96 +187,6 @@ A balloon floats upward at a constant velocity of $2.5\frac{\mathrm{m}}{\mathrm{
 </Transform>
 
 ---
-class: g7
----
-
-## Resultant Velocity
-
-**Resultant velocity** is the single velocity you get when you combine two or more velocity vectors acting on the **same object**.
-
----
-class: g7
----
-
-## Resultant Velocity (Same Direction)
-
-A boat moves $3 \frac{\mathrm{m}}{\mathrm{s}}$ east while the current pushes $1 \frac{\mathrm{m}}{\mathrm{s}}$ east.
-
-<v-click>
-
-$v_{\text{resultant}} = 3\frac{\mathrm{m}}{\mathrm{s}} + 1\frac{\mathrm{m}}{\mathrm{s}} = 4\ \frac{\mathrm{m}}{\mathrm{s}}\ \text{east}$
-
-</v-click>
-
----
-class: g7
----
-
-## Resultant Velocity (Opposite Direction)
-
-A boat moves $3 \frac{\mathrm{m}}{\mathrm{s}}$ east while the current pushes $1  \frac{\mathrm{m}}{\mathrm{s}}$ west. 
-
-<v-click>
-
-$v_{\text{resultant}} = 3 \frac{\mathrm{m}}{\mathrm{s}} - 1 \frac{\mathrm{m}}{\mathrm{s}} = 2 \frac{\mathrm{m}}{\mathrm{s}} \ \text{east}$
-
-</v-click>
-
----
-class: g7
----
-
-## Resultant Velocity — Video
-
-A cyclist pushes to the right while the train rolls to the left.
-
-<center>
-<iframe width="640" height="360" src="https://www.youtube.com/embed/TP_0Vv5F29I" title="Resultant velocity example" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-</center>
-
----
-class: g7
----
-
-## Relative Velocity
-
-**Relative velocity** is the velocity of one object measured from the **frame of reference** of another object.
-
----
-class: g7
----
-
-## Relative Velocity (Same Direction)
-
-Two ships move east: ship A at $10 \ \mathrm{m/s}$ and ship B at $15 \ \mathrm{m/s}$.
-
-<Transform :scale="0.85">
-
-<v-clicks>
-
-Velocity of B relative to A:
-- $v_{BA} = v_B-v_A = 15 \frac{\mathrm{m}}{\mathrm{s}} - 10\frac{\mathrm{m}}{\mathrm{s}} = 5\frac{\mathrm{m}}{\mathrm{s}}$ east.
-
-Velocity of A relative to B:
-- $v_{AB} = v_A - v_B = 10 \ \frac{\mathrm{m}}{\mathrm{s}} - 15 \ \frac{\mathrm{m}}{\mathrm{s}} = 5 \frac{\mathrm{m}}{\mathrm{s}}$ west.
-
-</v-clicks>
-
-</Transform>
-
----
-class: g7
----
-
-## Relative Velocity — Video
-
-The helicopter pilot minimizes his relative velocity to the car.
-
-<center>
-<iframe width="640" height="360" src="https://www.youtube.com/embed/5tU6y9R1tVA" title="Relative velocity example" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-</center>
-
----
 
 ## Summary
 
@@ -305,11 +194,3 @@ The helicopter pilot minimizes his relative velocity to the car.
 - $s = \dfrac{d}{t}$ and $v = \dfrac{\Delta x}{t}$
 - Units of speed and velocity: $\frac{\mathrm{m}}{\mathrm{s}}$.
 
----
-class: g7
----
-
-## Summary (Grade 7)
-
-- **Resultant velocity** is the sum of two velocities on the object. $v_{resultant}=v_1+v_2$
-- **Relative velocity** is the difference of velocity between two objects. $v_{BA}=v_B-v_A$ (How B sees A)

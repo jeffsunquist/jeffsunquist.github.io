@@ -221,33 +221,12 @@
   display: none;
 }
 
-/* --- Grade 7 enrichment slides in the merged KIN decks ---
-   A slide marked with per-slide frontmatter `class: g7` gets a small "G7" tag
-   in the top-right corner. The Grade 6 build strips these slides entirely
-   (scripts/strip_g7.py); the Grade 7 build keeps them, marked by the tag. */
-
-.slidev-layout.g7 {
-  position: relative;
-}
-
-.slidev-layout.g7::after {
-  content: 'G7';
-  position: absolute;
-  top: 0.6rem;
-  right: 1rem;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: #b45309;
-  opacity: 0.75;
-}
-
 /* --- Watermark: "Designed by Sunquist in Park Lane Harbor" ---
    Rendered by the global layer global-bottom.vue in the bottom-right corner of
-   every slide of every deck (including G7 slides). `z-index` lifts it above the
-   opaque G7 background; `pointer-events: none` keeps it from blocking clicks.
-   A sans-serif stack is set explicitly because the decks otherwise use the
-   Patrick Hand handwriting font. */
+   every slide of every deck. `z-index` lifts it above slide backgrounds;
+   `pointer-events: none` keeps it from blocking clicks. A sans-serif stack is
+   set explicitly because the decks otherwise use the Patrick Hand handwriting
+   font. */
 
 .deck-watermark {
   position: absolute;
