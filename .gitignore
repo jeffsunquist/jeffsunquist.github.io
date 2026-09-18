@@ -2,3 +2,6 @@
 dist/
 node_modules/
 .slidev/
+
+# Agent instructions (kept locally, not committed)
+AGENTS.md
