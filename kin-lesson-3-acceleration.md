@@ -47,7 +47,7 @@ Students will be able to distinguish constant, average, and instantaneous speed 
 
 - **Speed** = how fast (scalar), $s = \dfrac{d}{t}$
 - **Velocity** = how fast and which way (vector), $v = \dfrac{\Delta x}{t}$
-- Speed is the **rate of distance traveled**; velocity is the **rate of change of displacement**.
+- Speed is the **rate of distance traveled**; velocity is the **rate of change of position**.
 - Units of speed and velocity: $\frac{\mathrm{m}}{\mathrm{s}}$.
 
 ---
