@@ -1,8 +1,14 @@
 diff --git a/node_modules/@slidev/client/composables/useDrawings.ts b/node_modules/@slidev/client/composables/useDrawings.ts
-index 8786bda..74d5d85 100644
+index 8786bda..6272a71 100644
 --- a/node_modules/@slidev/client/composables/useDrawings.ts
 +++ b/node_modules/@slidev/client/composables/useDrawings.ts
-@@ -25,7 +25,7 @@ export const useDrawings = createSharedComposable(() => {
+@@ -20,12 +20,12 @@ export const useDrawings = createSharedComposable(() => {
+     '#000000',
+   ]
+ 
+-  const drawingEnabled = useLocalStorage('slidev-drawing-enabled', false)
++  const drawingEnabled = ref(true)
+   const drawingPinned = useLocalStorage('slidev-drawing-pinned', false)
    const brush = useLocalStorage<Brush>('slidev-drawing-brush', {
      color: brushColors[0],
      size: 4,
@@ -20,7 +26,25 @@ index 8786bda..74d5d85 100644
    const syncUp = computed(() => configs.drawings.syncAll || isPresenter.value)
    let disableDump = false
  
-@@ -137,9 +137,6 @@ export const useDrawings = createSharedComposable(() => {
+@@ -58,7 +58,7 @@ export const useDrawings = createSharedComposable(() => {
+ 
+   const drauuOptions: DrauuOptions = reactive({
+     brush,
+-    acceptsInputTypes: computed(() => (drawingEnabled.value && (!configs.drawings.presenterOnly || isPresenter.value)) ? undefined : ['pen' as const]),
++    acceptsInputTypes: computed(() => undefined),
+     coordinateTransform: false,
+   })
+ 
+@@ -128,18 +128,12 @@ export const useDrawings = createSharedComposable(() => {
+       else
+         drauu.undo()
+     }
+-    else if (e.code === 'Escape') {
+-      drawingEnabled.value = false
+-    }
+     else if (e.code === 'KeyL' && noModifier) {
+       drawingMode.value = 'line'
+     }
      else if (e.code === 'KeyA' && noModifier) {
        drawingMode.value = 'arrow'
      }
@@ -30,11 +54,59 @@ index 8786bda..74d5d85 100644
      else if (e.code === 'KeyR' && noModifier) {
        drawingMode.value = 'rectangle'
      }
+diff --git a/node_modules/@slidev/client/internals/Controls.vue b/node_modules/@slidev/client/internals/Controls.vue
+index 3d8d08a..fc8654f 100644
+--- a/node_modules/@slidev/client/internals/Controls.vue
++++ b/node_modules/@slidev/client/internals/Controls.vue
+@@ -1,6 +1,5 @@
+ <script setup lang="ts">
+ import { shallowRef } from 'vue'
+-import { useNav } from '../composables/useNav'
+ import { configs } from '../env'
+ import { showInfoDialog, showRecordingDialog } from '../state'
+ import ContextMenu from './ContextMenu.vue'
+@@ -8,12 +7,6 @@ import Goto from './Goto.vue'
+ import InfoDialog from './InfoDialog.vue'
+ import QuickOverview from './QuickOverview.vue'
+ 
+-const { isEmbedded } = useNav()
+-const drawingEnabled = __SLIDEV_FEATURE_DRAWINGS__ && !configs.drawings.presenterOnly && !isEmbedded.value
+-const DrawingControls = shallowRef<any>()
+-if (drawingEnabled)
+-  import('../internals/DrawingControls.vue').then(v => DrawingControls.value = v.default)
+-
+ const WebCamera = shallowRef<any>()
+ const RecordingDialog = shallowRef<any>()
+ if (__SLIDEV_FEATURE_RECORD__) {
+@@ -23,7 +16,6 @@ if (__SLIDEV_FEATURE_RECORD__) {
+ </script>
+ 
+ <template>
+-  <DrawingControls v-if="DrawingControls" />
+   <QuickOverview />
+   <Goto />
+   <WebCamera v-if="WebCamera" />
 diff --git a/node_modules/@slidev/client/internals/DrawingControls.vue b/node_modules/@slidev/client/internals/DrawingControls.vue
-index 98ba060..fb31dd0 100644
+index 98ba060..09dbc4a 100644
 --- a/node_modules/@slidev/client/internals/DrawingControls.vue
 +++ b/node_modules/@slidev/client/internals/DrawingControls.vue
-@@ -43,7 +43,7 @@ function redo() {
+@@ -2,7 +2,6 @@
+ import { Dropdown } from 'floating-vue'
+ import { ref } from 'vue'
+ import { useDrawings } from '../composables/useDrawings'
+-import Draggable from './Draggable.vue'
+ import IconButton from './IconButton.vue'
+ import VerticalDivider from './VerticalDivider.vue'
+ 
+@@ -15,7 +14,6 @@ const {
+   drauu,
+   drawingEnabled,
+   drawingMode,
+-  drawingPinned,
+   brushColors,
+ } = useDrawings()
+ 
+@@ -43,7 +41,7 @@ function redo() {
    drauu.redo()
  }
  
@@ -43,9 +115,19 @@ index 98ba060..fb31dd0 100644
  function setDrawingMode(mode: typeof drawingMode.value) {
    drawingMode.value = mode
    drawingEnabled.value = true
-@@ -66,8 +66,8 @@ function setBrushColor(color: string) {
-     :initial-x="10"
-     :initial-y="10"
+@@ -58,16 +56,11 @@ function setBrushColor(color: string) {
+ </script>
+ 
+ <template>
+-  <Draggable
+-    v-if="drawingEnabled || drawingPinned"
+-    class="flex flex-wrap text-xl p-2 gap-1 rounded-md bg-main shadow transition-opacity duration-200 z-nav  border border-main"
+-    :class="!drawingEnabled && drawingPinned ? 'opacity-40 hover:opacity-90' : ''"
+-    storage-key="slidev-drawing-pos"
+-    :initial-x="10"
+-    :initial-y="10"
++  <div
++    class="drawing-toolbar flex flex-wrap text-xl p-2 gap-0.5 rounded-md bg-main shadow z-nav border border-main"
    >
 -    <IconButton title="Draw with stylus" :class="{ shallow: drawingMode !== 'stylus' }" @click="setDrawingMode('stylus')">
 -      <div class="i-carbon:pen" />
@@ -54,3 +136,335 @@ index 98ba060..fb31dd0 100644
      </IconButton>
      <IconButton title="Draw a line" :class="{ shallow: drawingMode !== 'line' }" @click="setDrawingMode('line')">
        <svg width="1em" height="1em" class="-mt-0.5" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
+@@ -77,18 +70,35 @@ function setBrushColor(color: string) {
+     <IconButton title="Draw an arrow" :class="{ shallow: drawingMode !== 'arrow' }" @click="setDrawingMode('arrow')">
+       <div class="i-carbon:arrow-up-right" />
+     </IconButton>
+-    <IconButton title="Draw an ellipse" :class="{ shallow: drawingMode !== 'ellipse' }" @click="setDrawingMode('ellipse')">
+-      <div class="i-carbon:radio-button" />
+-    </IconButton>
+-    <IconButton title="Draw a rectangle" :class="{ shallow: drawingMode !== 'rectangle' }" @click="setDrawingMode('rectangle')">
+-      <div class="i-carbon:checkbox" />
+-    </IconButton>
+     <IconButton title="Erase" :class="{ shallow: drawingMode !== 'eraseLine' }" @click="setDrawingMode('eraseLine')">
+       <div class="i-carbon:erase" />
+     </IconButton>
+ 
+     <VerticalDivider />
+ 
++    <IconButton title="Undo" :class="{ disabled: !canUndo }" @click="undo()">
++      <div class="i-carbon:undo" />
++    </IconButton>
++    <IconButton title="Redo" :class="{ disabled: !canRedo }" @click="redo()">
++      <div class="i-carbon:redo" />
++    </IconButton>
++
++    <VerticalDivider />
++
++    <IconButton
++      v-for="color of brushColors"
++      :key="color"
++      title="Set brush color"
++      :class="brush.color === color && drawingMode !== 'eraseLine' ? 'active' : 'shallow'"
++      @click="setBrushColor(color)"
++    >
++      <div
++        class="w-6 h-6 transition-all transform border"
++        :class="brush.color !== color ? 'rounded-1/2 scale-85 border-white' : 'rounded-md border-gray-300/50'"
++        :style="drawingEnabled ? { background: color } : { borderColor: color }"
++      />
++    </IconButton>
++
+     <Dropdown v-model:shown="strokeWidthDropdownShown" :triggers="[]">
+       <IconButton title="Adjust stroke width" :class="{ shallow: drawingMode === 'eraseLine' }" @click="showStrokeWidthDropdown" @pointerdown="showStrokeWidthDropdownForPointer" @pointerup="showStrokeWidthDropdownForPointer" @touchend="showStrokeWidthDropdown">
+         <svg viewBox="0 0 32 32" width="1.2em" height="1.2em">
+@@ -108,47 +118,13 @@ function setBrushColor(color: string) {
+         </div>
+       </template>
+     </Dropdown>
+-    <IconButton
+-      v-for="color of brushColors"
+-      :key="color"
+-      title="Set brush color"
+-      :class="brush.color === color && drawingMode !== 'eraseLine' ? 'active' : 'shallow'"
+-      @click="setBrushColor(color)"
+-    >
+-      <div
+-        class="w-6 h-6 transition-all transform border"
+-        :class="brush.color !== color ? 'rounded-1/2 scale-85 border-white' : 'rounded-md border-gray-300/50'"
+-        :style="drawingEnabled ? { background: color } : { borderColor: color }"
+-      />
+-    </IconButton>
+ 
+     <VerticalDivider />
+ 
+-    <IconButton title="Undo" :class="{ disabled: !canUndo }" @click="undo()">
+-      <div class="i-carbon:undo" />
+-    </IconButton>
+-    <IconButton title="Redo" :class="{ disabled: !canRedo }" @click="redo()">
+-      <div class="i-carbon:redo" />
+-    </IconButton>
+     <IconButton title="Delete" :class="{ disabled: !canClear }" @click="clear()">
+       <div class="i-carbon:trash-can" />
+     </IconButton>
+-
+-    <VerticalDivider />
+-    <IconButton :title="drawingPinned ? 'Unpin drawing' : 'Pin drawing'" :class="{ shallow: !drawingPinned }" @click="drawingPinned = !drawingPinned">
+-      <div v-show="drawingPinned" class="i-carbon:pin-filled transform -rotate-45" />
+-      <div v-show="!drawingPinned" class="i-carbon:pin" />
+-    </IconButton>
+-    <IconButton
+-      v-if="drawingEnabled"
+-      :title="drawingPinned ? 'Drawing pinned' : 'Drawing unpinned'"
+-      :class="{ shallow: !drawingEnabled }"
+-      @click="drawingEnabled = !drawingEnabled"
+-    >
+-      <div v-show="drawingPinned" class="i-carbon:error" />
+-      <div v-show="!drawingPinned" class="i-carbon:close-outline" />
+-    </IconButton>
+-  </Draggable>
++  </div>
+ </template>
+ 
+ <style>
+diff --git a/node_modules/@slidev/client/internals/NavControls.vue b/node_modules/@slidev/client/internals/NavControls.vue
+index 3bf07e7..b36c3ef 100644
+--- a/node_modules/@slidev/client/internals/NavControls.vue
++++ b/node_modules/@slidev/client/internals/NavControls.vue
+@@ -1,18 +1,12 @@
+ <script setup lang="ts">
+-import { computed, ref, shallowRef } from 'vue'
++import { computed, ref } from 'vue'
+ import CustomNavControls from '#slidev/custom-nav-controls'
+-import { useDrawings } from '../composables/useDrawings'
+ import { useNav } from '../composables/useNav'
+-import { configs } from '../env'
+-import { isColorSchemaConfigured, isDark, toggleDark } from '../logic/dark'
+-import { activeElement, breakpoints, cursorStyle, fullscreen, hasViewerCssFilter, presenterLayout, showEditor, showInfoDialog, showPresenterCursor, toggleOverview, togglePresenterCursor, togglePresenterLayout } from '../state'
+-import { downloadPDF } from '../utils'
++import { activeElement, fullscreen, hasViewerCssFilter, showEditor, toggleOverview } from '../state'
++import DrawingControls from './DrawingControls.vue'
+ import IconButton from './IconButton.vue'
+ import MenuButton from './MenuButton.vue'
+ import Settings from './Settings.vue'
+-import SyncControls from './SyncControls.vue'
+-
+-import VerticalDivider from './VerticalDivider.vue'
+ 
+ const props = defineProps({
+   persist: {
+@@ -25,20 +19,11 @@ const {
+   hasNext,
+   hasPrev,
+   isEmbedded,
+-  isPresenter,
+-  isPresenterAvailable,
+   next,
+   prev,
+   total,
+-  enterPresenter,
+-  exitPresenter,
+ } = useNav()
+-const {
+-  brush,
+-  drawingEnabled,
+-} = useDrawings()
+ 
+-const md = breakpoints.smaller('md')
+ const { isFullscreen, toggle: toggleFullscreen } = fullscreen
+ 
+ const root = ref<HTMLDivElement>()
+@@ -50,129 +35,30 @@ function onMouseLeave() {
+ const barStyle = computed(() => props.persist
+   ? 'text-$slidev-controls-foreground bg-transparent'
+   : 'rounded-md bg-main shadow-xl border border-main')
+-
+-const RecordingControls = shallowRef<any>()
+-if (__SLIDEV_FEATURE_RECORD__)
+-  import('./RecordingControls.vue').then(v => RecordingControls.value = v.default)
+ </script>
+ 
+ <template>
+   <nav ref="root" class="flex flex-col">
+-    <div
+-      class="flex flex-wrap-reverse text-xl gap-0.5 p-1 lg:p-2"
+-      :class="barStyle"
+-      @mouseleave="onMouseLeave"
+-    >
+-      <IconButton v-if="!isEmbedded" :title="isFullscreen ? 'Close fullscreen' : 'Enter fullscreen'" @click="toggleFullscreen">
+-        <div v-if="isFullscreen" class="i-carbon:minimize" />
+-        <div v-else class="i-carbon:maximize" />
+-      </IconButton>
+-      <IconButton :disabled="!hasPrev" title="Go to previous slide" @click="prev">
+-        <div class="i-carbon:arrow-left" />
+-      </IconButton>
+-      <IconButton :disabled="!hasNext" title="Go to next slide" @click="next">
+-        <div class="i-carbon:arrow-right" />
+-      </IconButton>
+-      <IconButton v-if="!isEmbedded" title="Show slide overview" @click="toggleOverview()">
+-        <div class="i-carbon:apps" />
+-      </IconButton>
+-      <IconButton
+-        v-if="!isColorSchemaConfigured"
+-        :title="isDark ? 'Switch to light mode theme' : 'Switch to dark mode theme'"
+-        @click="toggleDark()"
+-      >
+-        <div v-if="isDark" class="i-carbon-moon" />
+-        <div v-else class="i-carbon-sun" />
+-      </IconButton>
+-
+-      <VerticalDivider />
+-
+-      <template v-if="!isEmbedded">
+-        <template v-if="!isPresenter && !md && RecordingControls">
+-          <RecordingControls />
+-          <VerticalDivider />
+-        </template>
+-
+-        <IconButton
+-          v-if="isPresenter"
+-          :title="cursorStyle === 'laser'
+-            ? (showPresenterCursor ? 'Disable laser pointer' : 'Enable laser pointer')
+-            : (showPresenterCursor ? 'Hide presenter cursor' : 'Show presenter cursor')"
+-          :active="showPresenterCursor"
+-          @click="togglePresenterCursor()"
+-        >
+-          <template v-if="cursorStyle === 'laser'">
+-            <div v-if="showPresenterCursor" class="i-carbon-magic-wand-filled color-red-600 dark:color-red-400" />
+-            <div v-else class="i-carbon-magic-wand" />
+-          </template>
+-          <template v-else>
+-            <div v-if="showPresenterCursor" class="i-ph-cursor-fill" />
+-            <div v-else class="i-ph-cursor-duotone" />
+-          </template>
+-        </IconButton>
+-        <IconButton
+-          v-if="__SLIDEV_FEATURE_DRAWINGS__ && (!configs.drawings.presenterOnly || isPresenter)"
+-          class="relative"
+-          :title="drawingEnabled ? 'Hide drawing toolbar' : 'Show drawing toolbar'"
+-          :active="drawingEnabled"
+-          @click="drawingEnabled = !drawingEnabled"
+-        >
+-          <div class="i-carbon:pen" />
+-          <div
+-            v-if="drawingEnabled"
+-            class="absolute left-1 right-1 bottom-0 h-0.7 rounded-full"
+-            :style="{ background: brush.color }"
+-          />
+-        </IconButton>
+-
+-        <VerticalDivider />
+-
+-        <IconButton v-if="isPresenter" title="Play Mode" @click="exitPresenter">
+-          <div class="i-carbon:presentation-file" />
+-        </IconButton>
+-        <IconButton v-if="__SLIDEV_FEATURE_PRESENTER__ && isPresenterAvailable" title="Presenter Mode" @click="enterPresenter">
+-          <div class="i-carbon:user-speaker" />
+-        </IconButton>
+-        <IconButton
+-          v-if="__DEV__ && __SLIDEV_FEATURE_EDITOR__"
+-          :title="showEditor ? 'Hide editor' : 'Show editor'"
+-          class="lt-md:hidden"
+-          @click="showEditor = !showEditor"
+-        >
+-          <div class="i-carbon:text-annotation-toggle" />
++    <div class="nav-bottom">
++      <div class="nav-left flex flex-wrap text-xl gap-0.5 p-1 lg:p-2" :class="barStyle" @mouseleave="onMouseLeave">
++        <IconButton v-if="!isEmbedded" :title="isFullscreen ? 'Close fullscreen' : 'Enter fullscreen'" @click="toggleFullscreen">
++          <div v-if="isFullscreen" class="i-carbon:minimize" />
++          <div v-else class="i-carbon:maximize" />
+         </IconButton>
+-      </template>
+-
+-      <template v-if="!__DEV__">
+-        <IconButton v-if="configs.download" title="Download as PDF" @click="downloadPDF">
+-          <div class="i-carbon:download" />
++        <IconButton :disabled="!hasPrev" title="Go to previous slide" @click="prev">
++          <div class="i-carbon:arrow-left" />
+         </IconButton>
+-      </template>
+-
+-      <template v-if="__SLIDEV_FEATURE_BROWSER_EXPORTER__ && !isEmbedded && !isPresenter">
+-        <IconButton title="Browser Exporter" to="/export">
+-          <div class="i-carbon:document-pdf" />
++        <IconButton :disabled="!hasNext" title="Go to next slide" @click="next">
++          <div class="i-carbon:arrow-right" />
+         </IconButton>
+-      </template>
+-
+-      <IconButton
+-        v-if="!isPresenter && configs.info && !isEmbedded"
+-        title="Show info"
+-        @click="showInfoDialog = !showInfoDialog"
+-      >
+-        <div class="i-carbon:information" />
+-      </IconButton>
+-
+-      <template v-if="!isEmbedded">
+-        <VerticalDivider />
+-
+-        <IconButton v-if="isPresenter" title="Toggle Presenter Layout" class="aspect-ratio-initial flex items-center" @click="togglePresenterLayout">
+-          <div class="i-carbon:template" />
+-          {{ presenterLayout }}
++        <IconButton v-if="!isEmbedded" title="Show slide overview" @click="toggleOverview()">
++          <div class="i-carbon:apps" />
+         </IconButton>
++      </div>
+ 
+-        <SyncControls v-if="__SLIDEV_FEATURE_PRESENTER__" />
++      <DrawingControls />
+ 
++      <div class="nav-right flex flex-wrap text-xl gap-0.5 p-1 lg:p-2" :class="barStyle">
+         <MenuButton>
+           <template #button="{ value }">
+             <IconButton title="More Options" :active="value">
+@@ -184,16 +70,20 @@ if (__SLIDEV_FEATURE_RECORD__)
+             <Settings />
+           </template>
+         </MenuButton>
+-      </template>
+-
+-      <VerticalDivider v-if="!isEmbedded" />
+-
+-      <div class="px2 my-auto">
+-        <span class="text-lg">{{ currentSlideNo }}</span>
+-        <span class="opacity-50 text-sm"> / {{ total }}</span>
++        <IconButton
++          v-if="__DEV__ && __SLIDEV_FEATURE_EDITOR__"
++          :title="showEditor ? 'Hide editor' : 'Show editor'"
++          class="lt-md:hidden"
++          @click="showEditor = !showEditor"
++        >
++          <div class="i-carbon:text-annotation-toggle" />
++        </IconButton>
++        <CustomNavControls />
++        <div class="px2 my-auto">
++          <span class="text-lg">{{ currentSlideNo }}</span>
++          <span class="opacity-50 text-sm"> / {{ total }}</span>
++        </div>
+       </div>
+-
+-      <CustomNavControls />
+     </div>
+   </nav>
+ </template>
+diff --git a/node_modules/@slidev/client/pages/presenter.vue b/node_modules/@slidev/client/pages/presenter.vue
+index 67f057d..ed664c5 100644
+--- a/node_modules/@slidev/client/pages/presenter.vue
++++ b/node_modules/@slidev/client/pages/presenter.vue
+@@ -12,7 +12,6 @@ import { slidesTitle } from '../env'
+ import ClicksSlider from '../internals/ClicksSlider.vue'
+ import ContextMenu from '../internals/ContextMenu.vue'
+ import CurrentProgressBar from '../internals/CurrentProgressBar.vue'
+-import DrawingControls from '../internals/DrawingControls.vue'
+ import Goto from '../internals/Goto.vue'
+ import IconButton from '../internals/IconButton.vue'
+ import LaserPointer from '../internals/LaserPointer.vue'
+@@ -419,7 +418,6 @@ onMounted(() => {
+         <div flex-auto />
+         <TimerInlined />
+       </div>
+-      <DrawingControls v-if="__SLIDEV_FEATURE_DRAWINGS__" />
+     </div>
+   </div>
+   <Goto />
