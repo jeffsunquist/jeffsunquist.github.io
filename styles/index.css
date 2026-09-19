@@ -133,32 +133,34 @@
    - play page (pages/play.vue) hides the toolbar with Tailwind's
      `opacity-0 hover:opacity-100` on a wrapper div inside #page-root.
    The CSS override below pins the toolbar's opacity to 1 and restyles it
-   as a play-mode-only vertical rail on the left edge.
+   as a play-mode-only horizontal bar, flush with the bottom-left corner
+   (works better than a full-height left rail on mobile).
    NOTE: couples to Slidev's internal class names (nav.flex.flex-col,
    #page-root) — re-verify after a Slidev upgrade. */
 
 #page-root div:has(> nav.flex.flex-col) {
   opacity: 1 !important;
-  top: 0 !important;
-  bottom: auto !important;
+  top: auto !important;
+  bottom: 0 !important;
   left: 0 !important;
   right: auto !important;
-  height: 100%;
+  height: auto;
   display: flex;
-  align-items: center;
-  padding: 0.5rem;
+  align-items: flex-end;
+  padding: 0;
 }
 
-/* --- Bottom nav toolbar: semitransparent gray for the play-page rail --- */
+/* --- Bottom nav toolbar: semitransparent gray, horizontal, flush bottom-left --- */
 
 #page-root nav.flex.flex-col > div {
   background: rgb(80 80 80 / 0.4);
   color: #fff;
-  border-radius: 0.5rem;
+  border-radius: 0.5rem 0.5rem 0.5rem 0;  /* square the bottom-left corner */
   backdrop-filter: blur(4px);
-  flex-direction: column !important;
-  flex-wrap: nowrap !important;
-  width: 3rem;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  width: auto;
+  max-width: 100vw;
   gap: 0.75rem;
   overflow: visible;
 }
@@ -182,7 +184,7 @@
   justify-content: center;
 }
 
-/* --- Slide counter: small, fixed-width so the rail doesn't grow/shrink --- */
+/* --- Slide counter: small, fixed-width so the bar doesn't grow/shrink --- */
 
 #page-root nav.flex.flex-col > div > div.px2 {
   width: 2.4em;
@@ -200,12 +202,12 @@
   line-height: 1;
 }
 
-/* Home link (custom-nav-controls) to the top of the rail */
+/* Home link (custom-nav-controls) to the left of the bar */
 #page-root nav.flex.flex-col > div [title="Open basado.org"] {
   order: -1;
 }
 
-/* --- Hide selected nav buttons (play-page rail) --- */
+/* --- Hide selected nav buttons (play-page bar) --- */
 
 #page-root nav.flex.flex-col [title="Show info"],
 #page-root nav.flex.flex-col [title="Browser Exporter"],
