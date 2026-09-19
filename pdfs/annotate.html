@@ -15,7 +15,7 @@
     padding: 8px 10px; background: #202124; color: #fff;
     font-size: 14px;
   }
-  #toolbar button, #toolbar input[type=color] {
+  #toolbar button {
     height: 38px; min-width: 40px; padding: 0 10px; border: 0; border-radius: 6px;
     background: #3c4043; color: #fff; font: inherit; cursor: pointer; touch-action: manipulation;
   }
@@ -25,7 +25,6 @@
     width: 40px; min-width: 40px; padding: 0;
     display: inline-flex; align-items: center; justify-content: center;
   }
-  #toolbar input[type=color] { padding: 0 4px; }
   #toolbar label { display: flex; align-items: center; gap: 6px; }
   #toolbar .spacer { flex: 1; }
   #status {
@@ -80,18 +79,14 @@
     <button class="wide" id="btnMode" title="Toggle draw / scroll">Draw</button>
     <button id="t-draw" class="active" title="Pen">🖊️</button>
     <button id="t-line" title="Line">╱</button>
-    <button id="t-rect" title="Rectangle">▭</button>
-    <button id="t-ellipse" title="Ellipse">◯</button>
+    <button id="t-arrow" title="Arrow">→</button>
     <button id="t-erase" title="Eraser">⌫</button>
     <span id="palette"></span>
-    <input type="color" id="color" value="#ff595e" title="Custom color" />
     <span id="sizes" title="Size"></span>
     <button id="btnUndo" title="Undo">↶</button>
     <button id="btnRedo" title="Redo">↷</button>
     <button id="btnClear" title="Clear this page">🗑</button>
     <span class="spacer"></span>
-    <button id="btnSave" title="Export annotations (JSON)">⬇</button>
-    <button id="btnLoad" title="Import annotations (JSON)">⬆</button>
     <button id="btnFull" title="Fullscreen">⛶</button>
     <a id="btnHome" class="home-btn" href="https://www.basado.org/" title="Home">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20" fill="currentColor"><path d="M16.612 2.214a1.01 1.01 0 0 0-1.242 0L1 13.419l1.243 1.572L4 13.621V26a2.004 2.004 0 0 0 2 2h20a2.004 2.004 0 0 0 2-2V13.63L29.757 15L31 13.428ZM18 26h-4v-8h4Zm2 0v-8a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v8H6V12.062l10-7.79l10 7.8V26Z"/></svg>
@@ -107,7 +102,6 @@
   </div>
 
   <input type="file" id="file" accept="application/pdf" hidden />
-  <input type="file" id="import" accept="application/json" hidden />
   <span id="status"></span>
 
   <script type="importmap">
@@ -146,10 +140,19 @@
     }
 
     let lastPointerType = "";
+    function brushFor() {
+      const arrow = state.tool === "arrow";
+      return {
+        color: state.color,
+        size: state.size,
+        mode: arrow ? "line" : state.tool,
+        arrowEnd: arrow,
+      };
+    }
     function makeDrauu(svg, wrap) {
       const d = createDrauu({
         el: svg,
-        brush: { color: state.color, size: state.size, mode: state.tool },
+        brush: brushFor(),
         acceptsInputTypes: ["mouse", "touch", "pen"],
         coordinateTransform: false,
       });
@@ -162,29 +165,31 @@
     }
 
     const TOOL_IDS = {
-      draw: "t-draw", line: "t-line",
-      rectangle: "t-rect", ellipse: "t-ellipse", eraseLine: "t-erase",
+      draw: "t-draw", line: "t-line", arrow: "t-arrow", eraseLine: "t-erase",
     };
 
     function setTool(t) {
       state.tool = t;
-      pages.forEach(p => { p.drauu.mode = t; });
+      pages.forEach(p => {
+        const b = brushFor();
+        p.drauu.mode = b.mode;
+        p.drauu.brush = b;
+      });
       document.querySelectorAll("[id^=t-]").forEach(b => b.classList.remove("active"));
       const btn = document.getElementById(TOOL_IDS[t]);
       if (btn) btn.classList.add("active");
     }
     function setColor(c) {
       state.color = c;
-      pages.forEach(p => { p.drauu.brush = { color: c, size: state.size, mode: state.tool }; });
+      pages.forEach(p => { p.drauu.brush = brushFor(); });
       document.querySelectorAll("#palette .swatch").forEach(s => s.classList.toggle("active", s.dataset.color === c));
-      document.getElementById("color").value = c;
     }
     function setSize(s) {
       state.size = s;
       document.querySelectorAll("#sizes .sizeBtn").forEach(b => {
         b.classList.toggle("active", +b.dataset.size === s);
       });
-      pages.forEach(p => { p.drauu.brush = { color: state.color, size: s, mode: state.tool }; });
+      pages.forEach(p => { p.drauu.brush = brushFor(); });
     }
     function applyDrawMode() {
       const inputs = state.drawMode ? ["mouse", "touch", "pen"] : ["pen"];
@@ -255,31 +260,6 @@
 
     function updateStatus(msg) { statusEl.textContent = msg; }
 
-    function exportJson() {
-      const out = { pdf: pdfName, pages: {} };
-      pages.forEach((p, i) => { out.pages[i] = p.drauu.dump(); });
-      download(JSON.stringify(out), pdfName + ".annotations.json");
-    }
-    function importJson(file) {
-      file.text().then(txt => {
-        try {
-          const obj = JSON.parse(txt);
-          Object.keys(obj.pages || {}).forEach(k => {
-            const idx = +k;
-            if (pages[idx]) { try { pages[idx].drauu.load(obj.pages[k]); } catch {} }
-          });
-          updateStatus("Imported");
-        } catch (e) { updateStatus("Import failed"); }
-      });
-    }
-    function download(content, filename) {
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(new Blob([content], { type: "application/json" }));
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(a.href);
-    }
-
     // wire toolbar
     const modeButton = document.getElementById("btnMode");
     modeButton.onclick = () => { state.drawMode = !state.drawMode; applyDrawMode(); };
@@ -304,9 +284,8 @@
       palEl.appendChild(b);
     });
     setColor(state.color);
-    document.getElementById("color").oninput = e => setColor(e.target.value);
 
-    const SIZES = [1, 2, 4, 8, 16, 24];
+    const SIZES = [1, 2, 4, 8, 16];
     const sizeEl = document.getElementById("sizes");
     SIZES.forEach(s => {
       const b = document.createElement("button");
@@ -325,9 +304,6 @@
     document.getElementById("btnUndo").onclick = () => pages.forEach(p => p.drauu.undo());
     document.getElementById("btnRedo").onclick = () => pages.forEach(p => p.drauu.redo());
     document.getElementById("btnClear").onclick = () => pages.forEach(p => { p.drauu.clear(); scheduleSave(); });
-    document.getElementById("btnSave").onclick = exportJson;
-    document.getElementById("btnLoad").onclick = () => document.getElementById("import").click();
-    document.getElementById("import").onchange = e => { const f = e.target.files[0]; if (f) importJson(f); e.target.value = ""; };
 
     // Fullscreen (toggle icon + title on state change)
     const fullBtn = document.getElementById("btnFull");
