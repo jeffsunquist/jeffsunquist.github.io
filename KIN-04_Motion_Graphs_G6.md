@@ -46,7 +46,6 @@ $$a = \dfrac{v - v_0}{t}$$
 The motion of an object can be shown on a graph with **time** on the $x$-axis:
 
 - **Position-time graph** — how position changes with time
-- **Velocity-time graph** — how velocity changes with time (Grade 7)
 
 ---
 
@@ -122,7 +121,6 @@ $$v = \dfrac{\Delta x}{t} = \dfrac{x - x_0}{t} \textcolor{#888888}{\left( \dfrac
 *This can happen anywhere. Position does not need to be positive.
 
 ---
-
 zoom: 0.75
 ---
 
