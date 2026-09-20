@@ -34,7 +34,6 @@ Students will be able to find displacement from the area under a velocity-time g
 - The **slope** of the line tells you the **acceleration**.
 
 ---
-
 zoom: 0.90
 ---
 
@@ -57,7 +56,6 @@ $$ \text{area} = \text{velocity} \cdot \text{time} = \frac{\mathrm{m}}{\mathrm{s
 - The unit are **meter** which is the unit of **displacement**.
 
 ---
-
 zoom: 0.90
 ---
 

@@ -124,7 +124,6 @@ $$v = \dfrac{\Delta x}{t} = \dfrac{x - x_0}{t} \textcolor{#888888}{\left( \dfrac
 *This can happen anywhere. Position does not need to be positive.
 
 ---
-
 zoom: 0.75
 ---
 
@@ -192,7 +191,6 @@ $$a = \frac{\Delta v}{t} = \frac{v - v_0}{t}\textcolor{#888888}{\left( \dfrac{\t
 </center>
 
 ---
-
 zoom: 0.80
 ---
 
