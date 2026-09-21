@@ -269,7 +269,13 @@
       color: var(--accent, var(--ink));
     }
 
-    .card-icon svg { width: 24px; height: 24px; }
+    .card-glyph {
+      width: 24px;
+      height: 24px;
+      background-color: var(--accent, var(--ink));
+      -webkit-mask: var(--icon) center / contain no-repeat;
+      mask: var(--icon) center / contain no-repeat;
+    }
 
     .card-body { min-width: 0; flex: 1; }
 
@@ -320,6 +326,10 @@
     .card.handout .card-icon {
       background: #f3f4f6;
       color: #4b5563;
+    }
+
+    .card.handout .card-glyph {
+      background-color: #4b5563;
     }
 
     .empty {
@@ -428,30 +438,12 @@
     const AURA_LABELS = __AURA_LABELS__;
     const AURA_DATA = __AURA_DATA__;
 
-    /* --- Icons: simple stroke glyphs keyed by lesson code --- */
-    const ICONS = {
-      'KIN-01': '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
-      'KIN-02': '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
-      'KIN-03': '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
-      'KIN-04': '<path d="M3 3v18h18"/><path d="M6 15l4-5 3 3 5-7"/>',
-      'KIN-05': '<path d="M3 3v18h18"/><path d="M6 15l4-5 3 3 5-7"/><path d="M6 15h12v4H6z"/>',
-      'KIN-06': '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="12" x2="8" y2="12"/><line x1="12" y1="12" x2="12" y2="12"/><line x1="16" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="12" y1="16" x2="12" y2="16"/>',
-      'SCI-01': '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
-      'SCI-02': '<path d="M2 12l10-10 10 10-10 10z"/><line x1="8" y1="12" x2="16" y2="12"/>',
-      'SCI-03': '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
-      'SCI-04': '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/>',
-      'SCI-05': '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
-      'SCI-06': '<path d="M9 2v6L4 18a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3L15 8V2"/><line x1="8" y1="2" x2="16" y2="2"/>'
-    };
-    const DEFAULT_ICON =
-      '<circle cx="12" cy="12" r="1.5"/><ellipse cx="12" cy="12" rx="10" ry="4.5"/><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(120 12 12)"/>';
-    const DOC_ICON =
-      '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>';
+    /* --- Icons: standalone monochrome SVGs in public/icons/, tinted via CSS mask --- */
 
-    function svg(paths) {
-      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
-        'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ' +
-        'aria-hidden="true">' + paths + '</svg>';
+    function iconGlyph(url) {
+      return '<span class="card-icon">' +
+        '<span class="card-glyph" style="--icon:url(' + esc(url) + ')"></span>' +
+        '</span>';
     }
 
     function esc(s) {
@@ -469,7 +461,7 @@
       a.dataset.search = [l.code, l.topic, l.objective].join(' ').toLowerCase();
       const no = l.total ? 'Lesson ' + l.lesson + ' \u00b7 ' + l.total : '';
       a.innerHTML =
-        '<span class="card-icon">' + svg(ICONS[l.code] || DEFAULT_ICON) + '</span>' +
+        iconGlyph(l.icon) +
         '<div class="card-body">' +
           '<div class="card-top">' +
             '<span class="code">' + esc(l.code) + '</span>' +
@@ -487,7 +479,7 @@
       a.href = h.url;
       a.dataset.search = h.label.toLowerCase();
       a.innerHTML =
-        '<span class="card-icon">' + svg(DOC_ICON) + '</span>' +
+        iconGlyph(h.icon) +
         '<div class="card-body">' +
           '<div class="card-top"><span class="code">Handout</span></div>' +
           '<h4 class="card-title">' + esc(h.label) + '</h4>' +

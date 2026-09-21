@@ -40,6 +40,14 @@ if [ -d public/fonts ]; then
   cp -r public/fonts/. dist/fonts/
 fi
 
+# Landing-page icons (public/icons/ -> dist/icons/). Each lesson code has an
+# optional <CODE>.svg; default.svg is the fallback and handout.svg is used for
+# all handout cards.
+if [ -d public/icons ]; then
+  mkdir -p dist/icons
+  cp -r public/icons/. dist/icons/
+fi
+
 for f in *.md; do
   case "$f" in
     AGENTS.md|README.md|slides.md) continue ;;   # docs / Slidev scaffold, not lesson decks
@@ -151,9 +159,15 @@ for f in *.md; do
   objective="$(printf '%s' "$objective" \
     | sed -e 's/\*\*//g' -e 's/_//g' -e 's/`//g' -e 's/[[:space:]]*$//')"
 
+  if [ -f "public/icons/$code.svg" ]; then
+    icon="/icons/$code.svg"
+  else
+    icon="/icons/default.svg"
+  fi
+
   [ "$first" -eq 1 ] || lessons_json+=','
   first=0
-  lessons_json+="{\"slug\":$(json_str "$slug"),\"url\":$(json_str "/$slug/"),\"code\":$(json_str "$code"),\"topic\":$(json_str "$topic"),\"lesson\":$lesson_num,\"total\":$lesson_total,\"g6\":$g6,\"g7\":$g7,\"objective\":$(json_str "$objective")}"
+  lessons_json+="{\"slug\":$(json_str "$slug"),\"url\":$(json_str "/$slug/"),\"code\":$(json_str "$code"),\"icon\":$(json_str "$icon"),\"topic\":$(json_str "$topic"),\"lesson\":$lesson_num,\"total\":$lesson_total,\"g6\":$g6,\"g7\":$g7,\"objective\":$(json_str "$objective")}"
 done
 lessons_json+=']'
 
@@ -172,7 +186,7 @@ if [ -d pdfs ]; then
     esac
     [ "$first" -eq 1 ] || handouts_json+=','
     first=0
-    handouts_json+="{\"name\":$(json_str "$name"),\"label\":$(json_str "$label"),\"url\":$(json_str "/pdfs/annotate.html?pdf=/pdfs/$name"),\"g6\":$g6,\"g7\":$g7}"
+    handouts_json+="{\"name\":$(json_str "$name"),\"label\":$(json_str "$label"),\"url\":$(json_str "/pdfs/annotate.html?pdf=/pdfs/$name"),\"icon\":$(json_str "/icons/handout.svg"),\"g6\":$g6,\"g7\":$g7}"
   done
   shopt -u nullglob
 fi
