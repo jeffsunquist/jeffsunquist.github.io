@@ -23,9 +23,9 @@ Lesson 1 of 6
 
 ---
 
-## Learning Objective
+## Objectives
 
-Students will be able to differentiate between qualitative and quantitative observations, and between objective and subjective statements.
+Distinguish qualitative from quantitative observations and objective from subjective statements, and explain what makes a statement scientific.
 
 ---
 

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Physics Lesson Slides</title>
+  <meta name="description" content="Grade 6 and 7 Physics lesson decks and handouts." />
+  <style>
+    /* --- Self-hosted handwriting font (Patrick Hand, SIL OFL) ---
+       Copied into dist/fonts/ by scripts/deploy.sh. */
+    @font-face {
+      font-family: 'Patrick Hand';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('/fonts/PatrickHand-Regular.ttf') format('truetype');
+    }
+
+    :root {
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --faint: #9ca3af;
+      --line: #e5e7eb;
+      --paper: #fbfaf6;
+      --card: #ffffff;
+      --link: #0b57d0;
+      --g6: #0d9488;
+      --g6-soft: #ccfbf1;
+      --g7: #d97706;
+      --g7-soft: #fef3c7;
+      --hand: 'Patrick Hand', ui-sans-serif, system-ui, sans-serif;
+      --sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+        Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(#eceae2 1px, transparent 1px),
+        linear-gradient(90deg, #eceae2 1px, transparent 1px);
+      background-size: 26px 26px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--link); text-decoration: none; }
+
+    /* --- Hero --- */
+
+    .hero {
+      text-align: center;
+      padding: 3.5rem 1rem 2.25rem;
+      background: linear-gradient(180deg, #ffffff 0%, rgba(251, 250, 246, 0) 100%);
+    }
+
+    .hero h1 {
+      font-family: var(--hand);
+      font-weight: 400;
+      font-size: clamp(2.6rem, 6vw, 4rem);
+      line-height: 1.05;
+      letter-spacing: 0.01em;
+      margin: 0;
+      color: var(--ink);
+    }
+
+    .hero .subtitle {
+      font-family: var(--hand);
+      font-size: clamp(1.15rem, 2.5vw, 1.5rem);
+      color: var(--muted);
+      margin: 0.5rem 0 0;
+    }
+
+    .hero .watermark {
+      margin: 1.1rem 0 0;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      color: var(--faint);
+      opacity: 0.85;
+    }
+
+    /* --- Toolbar (search + grade filter) --- */
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.7rem 1rem;
+      background: rgba(251, 250, 246, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .toolbar-inner {
+      width: 100%;
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .search {
+      flex: 1 1 220px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.8rem;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    }
+
+    .search svg { flex: 0 0 auto; width: 18px; height: 18px; color: var(--faint); }
+
+    .search input {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: none;
+      background: transparent;
+      font: inherit;
+      font-size: 0.95rem;
+      color: var(--ink);
+    }
+
+    .segmented {
+      display: inline-flex;
+      padding: 3px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    }
+
+    .segmented button {
+      border: 0;
+      background: transparent;
+      font: inherit;
+      font-size: 0.85rem;
+      color: var(--muted);
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .segmented button:hover { color: var(--ink); }
+
+    .segmented button.active {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    /* --- Page layout --- */
+
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 4rem;
+    }
+
+    section { margin-top: 2.25rem; }
+    section[hidden] { display: none; }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+      margin: 0 0 1.1rem;
+    }
+
+    .section-head h2 {
+      font-family: var(--hand);
+      font-weight: 400;
+      font-size: 2rem;
+      margin: 0;
+      color: var(--ink);
+    }
+
+    .section-head .rule {
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    .columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    @media (max-width: 780px) {
+      .columns { grid-template-columns: 1fr; gap: 1.5rem; }
+    }
+
+    .column[hidden] { display: none; }
+
+    .column[data-grade='6'] { --accent: var(--g6); --accent-soft: var(--g6-soft); }
+    .column[data-grade='7'] { --accent: var(--g7); --accent-soft: var(--g7-soft); }
+
+    .column > h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--hand);
+      font-weight: 400;
+      font-size: 1.4rem;
+      color: var(--accent);
+      margin: 0 0 0.9rem;
+    }
+
+    .grade-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+
+    /* --- Cards --- */
+
+    .card {
+      display: flex;
+      gap: 0.9rem;
+      padding: 0.95rem 1.05rem;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--accent, var(--ink));
+      border-radius: 0.8rem;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+      color: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 22px rgba(16, 24, 40, 0.1);
+    }
+
+    .card[hidden] { display: none; }
+
+    .card-icon {
+      flex: 0 0 auto;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: var(--accent-soft, #f3f4f6);
+      color: var(--accent, var(--ink));
+    }
+
+    .card-icon svg { width: 24px; height: 24px; }
+
+    .card-body { min-width: 0; flex: 1; }
+
+    .card-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .code {
+      font-family: var(--hand);
+      font-size: 1rem;
+      letter-spacing: 0.03em;
+      color: var(--accent, var(--ink));
+    }
+
+    .lesson-no {
+      flex: 0 0 auto;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--faint);
+      white-space: nowrap;
+    }
+
+    .card-title {
+      font-family: var(--hand);
+      font-weight: 400;
+      font-size: 1.3rem;
+      line-height: 1.2;
+      margin: 0.1rem 0 0.25rem;
+      color: var(--ink);
+    }
+
+    .card-desc {
+      margin: 0;
+      font-size: 0.84rem;
+      line-height: 1.4;
+      color: var(--muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Handout cards are a touch more compact. */
+    .card.handout .card-icon {
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+
+    .empty {
+      margin: 0.5rem 0 0;
+      font-size: 0.9rem;
+      color: var(--faint);
+    }
+
+    /* --- Aura tracker --- */
+
+    .chart-wrap {
+      height: 360px;
+      padding: 0.75rem;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 0.8rem;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--faint);
+      padding: 0 1rem 2.5rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1>Physics Lesson Slides</h1>
+    <p class="subtitle">Grade 6 &amp; 7 Physics &middot; Scientific Inquiry &amp; Kinematics</p>
+    <p class="watermark">Designed by Sunquist in Park Lane Harbor</p>
+  </header>
+
+  <div class="toolbar">
+    <div class="toolbar-inner">
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input id="search" type="search" placeholder="Search lessons and handouts&hellip;"
+               aria-label="Search lessons and handouts" />
+      </label>
+      <div class="segmented" role="group" aria-label="Filter by grade">
+        <button type="button" data-grade="all" class="active">All</button>
+        <button type="button" data-grade="6">Grade 6</button>
+        <button type="button" data-grade="7">Grade 7</button>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <section id="lessons-section">
+      <div class="section-head">
+        <h2>Lessons</h2>
+        <span class="rule"></span>
+      </div>
+      <div class="columns">
+        <div class="column" data-grade="6">
+          <h3><span class="grade-dot"></span>Grade 6</h3>
+          <div class="cards" id="lessons-g6"></div>
+        </div>
+        <div class="column" data-grade="7">
+          <h3><span class="grade-dot"></span>Grade 7</h3>
+          <div class="cards" id="lessons-g7"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="handouts-section">
+      <div class="section-head">
+        <h2>Handouts</h2>
+        <span class="rule"></span>
+      </div>
+      <div class="columns">
+        <div class="column" data-grade="6">
+          <h3><span class="grade-dot"></span>Grade 6</h3>
+          <div class="cards" id="handouts-g6"></div>
+        </div>
+        <div class="column" data-grade="7">
+          <h3><span class="grade-dot"></span>Grade 7</h3>
+          <div class="cards" id="handouts-g7"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="aura-section">
+      <div class="section-head">
+        <h2>Aura Tracker</h2>
+        <span class="rule"></span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="auraChart"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <footer>Physics Lesson Slides &middot; basado.org</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const LESSONS = __LESSONS_JSON__;
+    const HANDOUTS = __HANDOUTS_JSON__;
+    const AURA_LABELS = __AURA_LABELS__;
+    const AURA_DATA = __AURA_DATA__;
+
+    /* --- Icons: simple stroke glyphs keyed by lesson code --- */
+    const ICONS = {
+      'KIN-01': '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+      'KIN-02': '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+      'KIN-03': '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+      'KIN-04': '<path d="M3 3v18h18"/><path d="M6 15l4-5 3 3 5-7"/>',
+      'KIN-05': '<path d="M3 3v18h18"/><path d="M6 15l4-5 3 3 5-7"/><path d="M6 15h12v4H6z"/>',
+      'KIN-06': '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="12" x2="8" y2="12"/><line x1="12" y1="12" x2="12" y2="12"/><line x1="16" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="12" y1="16" x2="12" y2="16"/>',
+      'SCI-01': '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+      'SCI-02': '<path d="M2 12l10-10 10 10-10 10z"/><line x1="8" y1="12" x2="16" y2="12"/>',
+      'SCI-03': '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+      'SCI-04': '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/>',
+      'SCI-05': '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+      'SCI-06': '<path d="M9 2v6L4 18a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3L15 8V2"/><line x1="8" y1="2" x2="16" y2="2"/>'
+    };
+    const DEFAULT_ICON =
+      '<circle cx="12" cy="12" r="1.5"/><ellipse cx="12" cy="12" rx="10" ry="4.5"/><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(120 12 12)"/>';
+    const DOC_ICON =
+      '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>';
+
+    function svg(paths) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+        'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ' +
+        'aria-hidden="true">' + paths + '</svg>';
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    /* --- Render --- */
+
+    function lessonCard(l) {
+      const a = document.createElement('a');
+      a.className = 'card lesson';
+      a.href = l.url;
+      a.dataset.search = [l.code, l.topic, l.objective].join(' ').toLowerCase();
+      const no = l.total ? 'Lesson ' + l.lesson + ' \u00b7 ' + l.total : '';
+      a.innerHTML =
+        '<span class="card-icon">' + svg(ICONS[l.code] || DEFAULT_ICON) + '</span>' +
+        '<div class="card-body">' +
+          '<div class="card-top">' +
+            '<span class="code">' + esc(l.code) + '</span>' +
+            '<span class="lesson-no">' + esc(no) + '</span>' +
+          '</div>' +
+          '<h4 class="card-title">' + esc(l.topic) + '</h4>' +
+          '<p class="card-desc">' + esc(l.objective) + '</p>' +
+        '</div>';
+      return a;
+    }
+
+    function handoutCard(h) {
+      const a = document.createElement('a');
+      a.className = 'card handout';
+      a.href = h.url;
+      a.dataset.search = h.label.toLowerCase();
+      a.innerHTML =
+        '<span class="card-icon">' + svg(DOC_ICON) + '</span>' +
+        '<div class="card-body">' +
+          '<div class="card-top"><span class="code">Handout</span></div>' +
+          '<h4 class="card-title">' + esc(h.label) + '</h4>' +
+        '</div>';
+      return a;
+    }
+
+    function fill(id, items, make) {
+      const box = document.getElementById(id);
+      items.forEach(function (it) { box.appendChild(make(it)); });
+    }
+
+    fill('lessons-g6', LESSONS.filter(function (l) { return l.g6; }), lessonCard);
+    fill('lessons-g7', LESSONS.filter(function (l) { return l.g7; }), lessonCard);
+    fill('handouts-g6', HANDOUTS.filter(function (h) { return h.g6; }), handoutCard);
+    fill('handouts-g7', HANDOUTS.filter(function (h) { return h.g7; }), handoutCard);
+
+    /* --- Search + grade filter --- */
+
+    const searchInput = document.getElementById('search');
+    const gradeButtons = Array.prototype.slice.call(
+      document.querySelectorAll('.segmented button'));
+    let currentGrade = 'all';
+
+    function applyFilters() {
+      const q = searchInput.value.trim().toLowerCase();
+      ['lessons-section', 'handouts-section'].forEach(function (sectionId) {
+        const section = document.getElementById(sectionId);
+        let anyVisible = false;
+        section.querySelectorAll('.column').forEach(function (col) {
+          const gradeOk = currentGrade === 'all' || currentGrade === col.dataset.grade;
+          let colVisible = false;
+          col.querySelectorAll('.card').forEach(function (card) {
+            const show = gradeOk && (!q || card.dataset.search.indexOf(q) !== -1);
+            card.hidden = !show;
+            if (show) colVisible = true;
+          });
+          col.hidden = !colVisible;
+          if (colVisible) anyVisible = true;
+        });
+        section.hidden = !anyVisible;
+      });
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    gradeButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        currentGrade = btn.dataset.grade;
+        gradeButtons.forEach(function (b) { b.classList.toggle('active', b === btn); });
+        applyFilters();
+      });
+    });
+
+    /* --- Aura tracker --- */
+
+    const bestFitData = (function () {
+      const n = AURA_DATA.length;
+      if (!n) return [];
+      const sx = (n - 1) * n / 2;
+      let sy = 0, sxy = 0, sx2 = 0;
+      AURA_DATA.forEach(function (y, x) { sy += y; sxy += x * y; sx2 += x * x; });
+      const slope = (n * sxy - sx * sy) / (n * sx2 - sx * sx);
+      const intercept = (sy - slope * sx) / n;
+      return AURA_DATA.map(function (_, x) { return intercept + slope * x; });
+    })();
+
+    new Chart(document.getElementById('auraChart'), {
+      type: 'line',
+      data: {
+        labels: AURA_LABELS,
+        datasets: [{
+          data: AURA_DATA,
+          borderColor: 'black',
+          tension: 0.3,
+          pointRadius: 3
+        }, {
+          label: 'line of best fit',
+          data: bestFitData,
+          borderColor: '#0b57d0',
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+          tension: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          title: { display: true, text: 'Aura Intensity vs Time' },
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            title: { display: true, text: 'Aura Intensity (cd)' },
+            min: 0,
+            max: 100
+          },
+          x: {
+            title: { display: true, text: 'Day' }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

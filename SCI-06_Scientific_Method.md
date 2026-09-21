@@ -30,9 +30,9 @@ Lesson 6 of 6
 
 ---
 
-## Learning Objective
+## Objectives
 
-Students will be able to write a hypothesis, identify the variables and groups in an experiment, and comment on the hypothesis after the conclusion.
+Write a hypothesis, identify variables and control and experimental groups, and evaluate the hypothesis after the experiment.
 
 ---
 

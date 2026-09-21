@@ -36,9 +36,9 @@ Lesson 1 of 4
 
 ---
 
-## Learning Objective
+## Objectives
 
-Students will be able to describe position using 1-D and 2-D coordinate systems, define reference points and reference frames, and distinguish distance from displacement.
+Describe position with 1-D and 2-D coordinate systems and frames of reference, add vectors, and distinguish distance from displacement.
 
 ---
 

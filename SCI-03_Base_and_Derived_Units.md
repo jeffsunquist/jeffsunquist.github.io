@@ -22,11 +22,9 @@ Lesson 3 of 6
 
 ---
 
-## Learning Objective
+## Objectives
 
-- **Distinguish** between base units and derived units
-- **Derive** the unit of any quantity from its formula
-- **Explain** how derived units are built from base units
+Distinguish base units from derived units and derive the unit of a quantity from its formula.
 
 ---
 

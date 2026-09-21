@@ -20,7 +20,11 @@ learning_outcomes:
 
 Lesson 2 of 6
 
-Objective: Students will be able to measure using measurement tools, differentiate between data sets that are accurate or precise, and convert between metric prefixes.
+---
+
+## Objectives
+
+Measure with the correct tools, distinguish accuracy from precision, and convert between metric prefixes and scientific notation.
 
 ---
 

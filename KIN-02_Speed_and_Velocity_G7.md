@@ -37,15 +37,9 @@ Lesson 2 of 4
 
 ---
 
-## Learning Objective
+## Objectives
 
-Students will be able to define and calculate speed and velocity.
-
----
-
-## Learning Objective (Grade 7)
-
-Students will be able to add velocity vectors to find resultant and relative velocities.
+Calculate speed and velocity, and combine velocity vectors to find resultant and relative velocities.
 
 ---
 

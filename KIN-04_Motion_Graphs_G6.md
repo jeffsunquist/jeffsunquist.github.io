@@ -23,9 +23,9 @@ Lesson 4 of 4
 
 ---
 
-## Learning Objective
+## Objectives
 
-Students will be able to read a position-time graph: find the position at a given time, describe the motion from the shape of the line, and find velocity from the slope.
+Read position-time graphs to find position, use the slope to find velocity, and describe speeding up, slowing down, and changing direction.
 
 ---
 

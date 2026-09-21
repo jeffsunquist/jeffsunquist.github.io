@@ -20,9 +20,9 @@ Lesson 5 of 5
 
 ---
 
-## Learning Objective
+## Objectives
 
-Students will be able to find displacement from the area under a velocity-time graph.
+Find displacement from the area under a velocity-time graph, including its units and sign.
 
 ---
 

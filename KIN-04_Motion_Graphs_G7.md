@@ -25,9 +25,9 @@ Lesson 4 of 5
 
 ---
 
-## Learning Objective
+## Objectives
 
-Students will be able to read position-time and velocity-time graphs, and find velocity and acceleration from slopes.
+Read position-time and velocity-time graphs, using slopes to find velocity and acceleration.
 
 ---
 

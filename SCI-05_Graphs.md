@@ -25,9 +25,9 @@ Lesson 5 of 6
 
 ---
 
-## Learning Objective
+## Objectives
 
-Students will be able to identify the physical quantities on each axis, read values from a graph, and create clear graphs using SULTAN.
+Build and read graphs with SULTAN, find the line of best fit, y-intercept, and slope, and extrapolate from a graph.
 
 ---
 

@@ -37,15 +37,9 @@ Lesson 3 of 4
 
 ---
 
-## Learning Objective
+## Objectives
 
-Students will be able to distinguish constant and average speed and velocity, and describe acceleration as _speeding up_, _slowing down_, or _changing direction_.
-
----
-
-## Learning Objective (Grade 7)
-
-Students will be able to distinguish constant, average, and instantaneous speed and velocity.
+Distinguish constant, average, and instantaneous speed and velocity, and describe acceleration as speeding up, slowing down, or changing direction.
 
 ---
 

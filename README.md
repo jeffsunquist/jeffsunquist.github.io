@@ -13,12 +13,13 @@ Grade-specific decks carry a `_G6` / `_G7` filename suffix:
 Decks **without** a suffix are shared and appear in both grade columns. Merged
 source decks are kept as `.md.hold` reference copies and are not built.
 
-The landing `index.html` has a **Lessons** section and a **Handouts** section,
-each split into a Grade 6 and a Grade 7 column, with the Aura tracker full width
-below. Link text is the filename with underscores shown as spaces and hyphens
-kept (e.g. `KIN-01_Position_and_Reference_Frames` → "KIN-01 Position and
-Reference Frames"). Handouts are classified by their `_G6` / `_G7` filename
-token (a file with neither token appears in both columns).
+The landing `index.html` is rendered from `scripts/index.template.html` and has a
+**Lessons** section and a **Handouts** section, each split into a Grade 6 and a
+Grade 7 column, with the Aura tracker full width below. Lesson cards show an
+icon, the lesson code, "Lesson N of M", the topic, and the deck's objective,
+with a search box and an All / Grade 6 / Grade 7 filter. Handouts are
+classified by their `_G6` / `_G7` filename token (a file with neither token
+appears in both columns).
 
 The decks are built and published automatically by the Pages workflow in
 `.github/workflows/deploy.yml` — just commit and push to `main`.

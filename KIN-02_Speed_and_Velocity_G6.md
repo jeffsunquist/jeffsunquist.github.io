@@ -34,9 +34,9 @@ Lesson 2 of 4
 
 ---
 
-## Learning Objective
+## Objectives
 
-Students will be able to define and calculate speed and velocity.
+Define and calculate speed and velocity from distance, displacement, and time.
 
 ---
 

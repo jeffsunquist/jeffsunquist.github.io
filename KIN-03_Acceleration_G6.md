@@ -35,9 +35,9 @@ Lesson 3 of 4
 
 ---
 
-## Learning Objective
+## Objectives
 
-Students will be able to distinguish constant and average speed and velocity, and describe acceleration as _speeding up_, _slowing down_, or _changing direction_.
+Distinguish average from constant speed and velocity, and describe acceleration as speeding up, slowing down, or changing direction.
 
 ---
 

@@ -21,9 +21,9 @@ Lesson 4 of 6
 
 ---
 
-## Learning Objective
+## Objectives
 
-Students will be able to explain how they solved a physics problem, step by step. Students will use scalar and vector quantities.
+Classify quantities as scalars or vectors and explain the steps used to solve a physics problem.
 
 ---
 
