@@ -15,9 +15,10 @@ source decks are kept as `.md.hold` reference copies and are not built.
 
 The landing `index.html` is rendered from `scripts/index.template.html` and has a
 **Lessons** section and a **Handouts** section, each split into a Grade 6 and a
-Grade 7 column, with the Aura tracker full width below. Lesson cards show an
+Grade 7 column, plus an **Aura Tracker** section pairing the aura chart with an
+element tier list (from `data/element_tier.csv`). Lesson cards show an
 icon, the lesson code, "Lesson N of M", the topic, and the deck's objective,
-with a search box and an All / Grade 6 / Grade 7 filter. Handouts are
+with an All / Grade 6 / Grade 7 filter. Handouts are
 classified by their `_G6` / `_G7` filename token (a file with neither token
 appears in both columns).
 

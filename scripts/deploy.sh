@@ -192,11 +192,44 @@ if [ -d pdfs ]; then
 fi
 handouts_json+=']'
 
+# Element tier list from data/element_tier.csv (`tier,elements` rows; the
+# `elements` field is a space-separated list, so a tier can hold several).
+# Build-time input; empty file -> empty tier list.
+element_tiers_json='[]'
+if [ -f data/element_tier.csv ]; then
+  tiers=''
+  first=1
+  while IFS=, read -r tier elements; do
+    tier="$(clean "${tier:-}")"
+    elements="$(clean "${elements:-}")"
+    [ -z "$tier" ] && continue
+    [ "$tier" = "tier" ] && continue
+
+    elements_json='[]'
+    if [ -n "$elements" ]; then
+      elements_json='['
+      ef=1
+      for el in $elements; do
+        [ "$ef" -eq 1 ] || elements_json+=','
+        ef=0
+        elements_json+="$(json_str "$el")"
+      done
+      elements_json+=']'
+    fi
+
+    [ "$first" -eq 1 ] || tiers+=','
+    first=0
+    tiers+="{\"tier\":$(json_str "$tier"),\"elements\":$elements_json}"
+  done < data/element_tier.csv
+  element_tiers_json="[$tiers]"
+fi
+
 # Render the template. Bash parameter substitution is literal, so the JSON is
 # injected verbatim (no sed `&` / delimiter pitfalls).
 template="$(cat scripts/index.template.html)"
 template="${template//__LESSONS_JSON__/$lessons_json}"
 template="${template//__HANDOUTS_JSON__/$handouts_json}"
+template="${template//__ELEMENT_TIERS_JSON__/$element_tiers_json}"
 template="${template//__AURA_LABELS__/$aura_labels_js}"
 template="${template//__AURA_DATA__/$aura_data_js}"
 printf '%s\n' "$template" > dist/index.html

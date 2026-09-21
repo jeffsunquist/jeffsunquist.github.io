@@ -84,7 +84,7 @@
       opacity: 0.85;
     }
 
-    /* --- Toolbar (search + grade filter) --- */
+    /* --- Toolbar (grade filter) --- */
 
     .toolbar {
       position: sticky;
@@ -106,33 +106,9 @@
       margin: 0 auto;
       display: flex;
       flex-wrap: wrap;
+      justify-content: center;
       align-items: center;
       gap: 0.75rem;
-    }
-
-    .search {
-      flex: 1 1 220px;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.45rem 0.8rem;
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
-    }
-
-    .search svg { flex: 0 0 auto; width: 18px; height: 18px; color: var(--faint); }
-
-    .search input {
-      flex: 1;
-      min-width: 0;
-      border: 0;
-      outline: none;
-      background: transparent;
-      font: inherit;
-      font-size: 0.95rem;
-      color: var(--ink);
     }
 
     .segmented {
@@ -338,7 +314,18 @@
       color: var(--faint);
     }
 
-    /* --- Aura tracker --- */
+    /* --- Aura tracker + element tier list --- */
+
+    .aura-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    @media (max-width: 780px) {
+      .aura-grid { grid-template-columns: 1fr; }
+    }
 
     .chart-wrap {
       height: 360px;
@@ -347,6 +334,54 @@
       border: 1px solid var(--line);
       border-radius: 0.8rem;
       box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    }
+
+    /* Tier list (styled after the Tiermaker template). Colors come from
+       data/element_tier.csv via TIER_COLORS in the script below. */
+    .tierlist {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 4px;
+      background: #1b1a1a;
+    }
+
+    .tier-row { display: flex; gap: 4px; }
+
+    .tier-label {
+      flex: 0 0 auto;
+      width: 52px;
+      min-height: 52px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .tier-slots {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      gap: 6px;
+      padding: 6px;
+      background: #363636;
+    }
+
+    .el-tile {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      background: #f3f4f6;
+      color: #1f2937;
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1;
+      border-radius: 4px;
     }
 
     footer {
@@ -366,15 +401,6 @@
 
   <div class="toolbar">
     <div class="toolbar-inner">
-      <label class="search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <input id="search" type="search" placeholder="Search lessons and handouts&hellip;"
-               aria-label="Search lessons and handouts" />
-      </label>
       <div class="segmented" role="group" aria-label="Filter by grade">
         <button type="button" data-grade="all" class="active">All</button>
         <button type="button" data-grade="6">Grade 6</button>
@@ -420,11 +446,14 @@
 
     <section id="aura-section">
       <div class="section-head">
-        <h2>Aura Tracker</h2>
+        <h2>Aura Tracker &amp; Element Tier List</h2>
         <span class="rule"></span>
       </div>
-      <div class="chart-wrap">
-        <canvas id="auraChart"></canvas>
+      <div class="aura-grid">
+        <div class="tierlist" id="tierlist"></div>
+        <div class="chart-wrap">
+          <canvas id="auraChart"></canvas>
+        </div>
       </div>
     </section>
   </main>
@@ -437,6 +466,7 @@
     const HANDOUTS = __HANDOUTS_JSON__;
     const AURA_LABELS = __AURA_LABELS__;
     const AURA_DATA = __AURA_DATA__;
+    const ELEMENT_TIERS = __ELEMENT_TIERS_JSON__;
 
     /* --- Icons: standalone monochrome SVGs in public/icons/, tinted via CSS mask --- */
 
@@ -458,7 +488,6 @@
       const a = document.createElement('a');
       a.className = 'card lesson';
       a.href = l.url;
-      a.dataset.search = [l.code, l.topic, l.objective].join(' ').toLowerCase();
       const no = l.total ? 'Lesson ' + l.lesson + ' \u00b7 ' + l.total : '';
       a.innerHTML =
         iconGlyph(l.icon) +
@@ -477,7 +506,6 @@
       const a = document.createElement('a');
       a.className = 'card handout';
       a.href = h.url;
-      a.dataset.search = h.label.toLowerCase();
       a.innerHTML =
         iconGlyph(h.icon) +
         '<div class="card-body">' +
@@ -497,15 +525,13 @@
     fill('handouts-g6', HANDOUTS.filter(function (h) { return h.g6; }), handoutCard);
     fill('handouts-g7', HANDOUTS.filter(function (h) { return h.g7; }), handoutCard);
 
-    /* --- Search + grade filter --- */
+    /* --- Grade filter --- */
 
-    const searchInput = document.getElementById('search');
     const gradeButtons = Array.prototype.slice.call(
       document.querySelectorAll('.segmented button'));
     let currentGrade = 'all';
 
     function applyFilters() {
-      const q = searchInput.value.trim().toLowerCase();
       ['lessons-section', 'handouts-section'].forEach(function (sectionId) {
         const section = document.getElementById(sectionId);
         let anyVisible = false;
@@ -513,9 +539,8 @@
           const gradeOk = currentGrade === 'all' || currentGrade === col.dataset.grade;
           let colVisible = false;
           col.querySelectorAll('.card').forEach(function (card) {
-            const show = gradeOk && (!q || card.dataset.search.indexOf(q) !== -1);
-            card.hidden = !show;
-            if (show) colVisible = true;
+            card.hidden = !gradeOk;
+            if (gradeOk) colVisible = true;
           });
           col.hidden = !colVisible;
           if (colVisible) anyVisible = true;
@@ -524,7 +549,6 @@
       });
     }
 
-    searchInput.addEventListener('input', applyFilters);
     gradeButtons.forEach(function (btn) {
       btn.addEventListener('click', function () {
         currentGrade = btn.dataset.grade;
@@ -532,6 +556,42 @@
         applyFilters();
       });
     });
+
+    /* --- Element tier list --- */
+
+    const TIER_COLORS = {
+      S: '#e05534', A: '#f2aa48', B: '#f7cf51', C: '#50ab64',
+      D: '#4497f7', E: '#8d4cf6', F: '#e856f7'
+    };
+
+    function renderTierList() {
+      const root = document.getElementById('tierlist');
+      if (!root) return;
+      ELEMENT_TIERS.forEach(function (row) {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'tier-row';
+
+        const label = document.createElement('div');
+        label.className = 'tier-label';
+        label.textContent = row.tier;
+        label.style.background = TIER_COLORS[row.tier] || '#9ca3af';
+        rowEl.appendChild(label);
+
+        const slots = document.createElement('div');
+        slots.className = 'tier-slots';
+        (row.elements || []).forEach(function (symbol) {
+          const tile = document.createElement('div');
+          tile.className = 'el-tile';
+          tile.textContent = symbol;
+          slots.appendChild(tile);
+        });
+        rowEl.appendChild(slots);
+
+        root.appendChild(rowEl);
+      });
+    }
+
+    renderTierList();
 
     /* --- Aura tracker --- */
 
