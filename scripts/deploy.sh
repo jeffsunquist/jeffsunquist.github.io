@@ -224,6 +224,37 @@ if [ -f data/element_tier.csv ]; then
   element_tiers_json="[$tiers]"
 fi
 
+# 3D Club: publish 3d-club/ -> dist/3d-club/ and render a listing page.
+# Top-level files only; *.blend = model, image extensions = texture.
+club_files_json='[]'
+if [ -d 3d-club ]; then
+  mkdir -p dist/3d-club
+  cp -r 3d-club/. dist/3d-club/
+  club_items=''
+  cf=1
+  for f in 3d-club/*; do
+    [ -f "$f" ] || continue
+    base="${f##*/}"
+    [ "$base" = "index.html" ] && continue
+    ext="$(printf '%s' "${base##*.}" | tr '[:upper:]' '[:lower:]')"
+    case "$ext" in
+      blend) kind='model' ;;
+      png|jpg|jpeg|webp|gif|svg|tif|tiff|exr|hdr) kind='texture' ;;
+      *) continue ;;
+    esac
+    size="$(stat -c %s "$f" 2>/dev/null || printf '0')"
+    date="$(stat -c %y "$f" 2>/dev/null | cut -d' ' -f1)"
+    [ "$cf" -eq 1 ] || club_items+=','
+    cf=0
+    club_items+="{\"name\":$(json_str "$base"),\"type\":$(json_str "$kind"),\"size\":$size,\"date\":$(json_str "$date"),\"url\":$(json_str "/3d-club/$base")}"
+  done
+  club_files_json="[$club_items]"
+
+  club_template="$(cat scripts/3d-club.template.html)"
+  club_template="${club_template//__BLENDER_FILES_JSON__/$club_files_json}"
+  printf '%s\n' "$club_template" > dist/3d-club/index.html
+fi
+
 # Render the template. Bash parameter substitution is literal, so the JSON is
 # injected verbatim (no sed `&` / delimiter pitfalls).
 template="$(cat scripts/index.template.html)"

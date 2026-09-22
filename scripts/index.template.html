@@ -136,6 +136,41 @@
       color: #fff;
     }
 
+    /* --- Floating "3D Club" button --- */
+
+    .fab-3d {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 30;
+      display: inline-flex;
+      align-items: center;
+      padding: 0.45rem 0.9rem;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      box-shadow: 0 2px 6px rgba(16, 24, 40, 0.12);
+      color: var(--ink);
+      font-family: var(--hand);
+      font-size: 1rem;
+      line-height: 1;
+      transition: box-shadow 0.15s, transform 0.15s;
+    }
+
+    .fab-3d:hover {
+      box-shadow: 0 4px 12px rgba(16, 24, 40, 0.18);
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 560px) {
+      .fab-3d {
+        top: 0.5rem;
+        right: 0.5rem;
+        font-size: 0.9rem;
+        padding: 0.4rem 0.7rem;
+      }
+    }
+
     /* --- Page layout --- */
 
     main {
@@ -409,6 +444,8 @@
       </div>
     </div>
   </div>
+
+  <a class="fab-3d" href="/3d-club/">3D Club</a>
 
   <main>
     <section id="lessons-section">

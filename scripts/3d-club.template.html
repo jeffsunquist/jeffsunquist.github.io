@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>3D Club</title>
+<style>
+  :root {
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --faint: #9ca3af;
+    --line: #e5e7eb;
+    --paper: #ffffff;
+    --link: #0b57d0;
+    --hand: 'Patrick Hand', ui-sans-serif, system-ui, sans-serif;
+    --sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+      Helvetica, Arial, sans-serif;
+  }
+
+  @font-face {
+    font-family: 'Patrick Hand';
+    src: url('/fonts/PatrickHand-Regular.ttf') format('truetype');
+    font-display: swap;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .hero { text-align: center; padding: 3rem 1rem 1.25rem; }
+  .hero h1 {
+    font-family: var(--hand);
+    font-weight: 400;
+    font-size: clamp(2.2rem, 5vw, 3.2rem);
+    margin: 0;
+  }
+  .hero .subtitle {
+    font-family: var(--hand);
+    font-size: clamp(1rem, 2.4vw, 1.25rem);
+    color: var(--muted);
+    margin: 0.4rem 0 0;
+  }
+
+  main { max-width: 1040px; margin: 0 auto; padding: 0 1rem 4rem; }
+
+  .back { display: inline-block; font-size: 0.9rem; margin: 0.5rem 0 0; }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin: 2rem 0 0.9rem;
+  }
+  .section-head h2 {
+    font-family: var(--hand);
+    font-weight: 400;
+    font-size: 1.8rem;
+    margin: 0;
+  }
+  .section-head .rule { flex: 1; height: 1px; background: var(--line); }
+
+  .files {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 0.8rem;
+    overflow: hidden;
+  }
+  .files li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.9rem;
+    border-top: 1px solid var(--line);
+  }
+  .files li:first-child { border-top: 0; }
+  .files .name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .files .meta { color: var(--faint); font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: var(--muted); padding: 0.75rem 0; }
+
+  footer {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--faint);
+    padding: 0 1rem 2.5rem;
+  }
+</style>
+</head>
+<body>
+  <header class="hero">
+    <h1>3D Club</h1>
+    <p class="subtitle">Blender models &amp; textures</p>
+  </header>
+
+  <main>
+    <a class="back" href="/">&larr; Back</a>
+
+    <div class="section-head"><h2>Models</h2><span class="rule"></span></div>
+    <ul class="files" id="models"></ul>
+
+    <div class="section-head"><h2>Textures</h2><span class="rule"></span></div>
+    <ul class="files" id="textures"></ul>
+  </main>
+
+  <footer>Designed by Sunquist in Park Lane Harbor</footer>
+
+  <script>
+    const FILES = __BLENDER_FILES_JSON__;
+
+    function fmtSize(bytes) {
+      const b = Number(bytes) || 0;
+      if (b < 1024) return b + ' B';
+      const units = ['KB', 'MB', 'GB'];
+      let n = b, i = -1;
+      do { n /= 1024; i++; } while (n >= 1024 && i < units.length - 1);
+      return (n >= 10 ? n.toFixed(0) : n.toFixed(1)) + ' ' + units[i];
+    }
+
+    function fileRow(f) {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.className = 'name';
+      a.href = f.url;
+      a.textContent = f.name;
+      const meta = document.createElement('span');
+      meta.className = 'meta';
+      meta.textContent = fmtSize(f.size) + ' \u00b7 ' + f.date;
+      li.appendChild(a);
+      li.appendChild(meta);
+      return li;
+    }
+
+    function render(id, type) {
+      const list = document.getElementById(id);
+      const items = FILES.filter(function (f) { return f.type === type; });
+      if (!items.length) {
+        const p = document.createElement('p');
+        p.className = 'empty';
+        p.textContent = 'No files yet.';
+        list.replaceWith(p);
+        return;
+      }
+      items.forEach(function (f) { list.appendChild(fileRow(f)); });
+    }
+
+    render('models', 'model');
+    render('textures', 'texture');
+  </script>
+</body>
+</html>
