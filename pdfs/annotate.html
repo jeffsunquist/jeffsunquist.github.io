@@ -275,7 +275,7 @@
       }
       applyDrawMode();
       updateStatus("Ready — " + doc.numPages + " pages");
-      doc.destroy();
+      try { await loadingTask.destroy(); } catch {}
       } catch (e) {
         updateStatus("Error: " + (e && e.message ? e.message : e));
       }
