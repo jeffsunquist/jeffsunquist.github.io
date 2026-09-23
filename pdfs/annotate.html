@@ -69,6 +69,26 @@
 
   #empty { text-align: center; color: #5f6368; padding: 60px 20px; }
   #empty button { font-size: 16px; padding: 12px 22px; }
+
+  /* Print: show only the pages (with annotations), one per sheet. */
+  @media print {
+    #toolbar, #status, #empty { display: none !important; }
+    html, body { height: auto; background: #fff; }
+    body { display: block; }
+    #scroll { overflow: visible; padding: 0; }
+    #pages { max-width: none; }
+    .page {
+      width: 100% !important;
+      margin: 0;
+      box-shadow: none;
+      border-radius: 0;
+      break-inside: avoid;
+      break-after: page;
+    }
+    .page:last-child { break-after: auto; }
+    .page canvas { width: 100% !important; height: auto !important; }
+    @page { margin: 10mm; }
+  }
 </style>
 </head>
 <body>
@@ -87,6 +107,9 @@
     <button id="btnRedo" title="Redo">↷</button>
     <button id="btnClear" title="Clear this page">🗑</button>
     <span class="spacer"></span>
+    <button class="icon-btn" id="btnPrint" title="Print">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 8H5a3 3 0 0 0-3 3v4h4v4h12v-4h4v-4a3 3 0 0 0-3-3zm-3 9H8v-5h8v5zm3-6a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM18 3H6v4h12V3z"/></svg>
+    </button>
     <button id="btnFull" title="Fullscreen">⛶</button>
     <a id="btnHome" class="home-btn" href="https://www.basado.org/" title="Home">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20" fill="currentColor"><path d="M16.612 2.214a1.01 1.01 0 0 0-1.242 0L1 13.419l1.243 1.572L4 13.621V26a2.004 2.004 0 0 0 2 2h20a2.004 2.004 0 0 0 2-2V13.63L29.757 15L31 13.428ZM18 26h-4v-8h4Zm2 0v-8a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v8H6V12.062l10-7.79l10 7.8V26Z"/></svg>
@@ -303,7 +326,36 @@
 
     document.getElementById("btnUndo").onclick = () => pages.forEach(p => p.drauu.undo());
     document.getElementById("btnRedo").onclick = () => pages.forEach(p => p.drauu.redo());
-    document.getElementById("btnClear").onclick = () => pages.forEach(p => { p.drauu.clear(); scheduleSave(); });
+
+    // The page currently in view (nearest the scroller's vertical center).
+    function currentPage() {
+      const sc = document.getElementById("scroll").getBoundingClientRect();
+      const midY = sc.top + sc.height / 2;
+      let best = null, bestD = Infinity;
+      pages.forEach(p => {
+        const r = p.wrap.getBoundingClientRect();
+        if (r.bottom <= sc.top || r.top >= sc.bottom) return;
+        const d = Math.abs((r.top + r.height / 2) - midY);
+        if (d < bestD) { bestD = d; best = p; }
+      });
+      return best;
+    }
+
+    document.getElementById("btnClear").onclick = () => {
+      const p = currentPage();
+      if (!p) { updateStatus("No page in view"); return; }
+      if (!window.confirm(`Clear annotations on page ${p.index + 1}? This can't be undone.`)) return;
+      p.drauu.clear();
+      scheduleSave();
+      updateStatus(`Cleared page ${p.index + 1}`);
+    };
+
+    // Print (annotated view)
+    document.getElementById("btnPrint").onclick = () => {
+      if (!pages.length) { updateStatus("Open a PDF to print"); return; }
+      updateStatus("Preparing print…");
+      setTimeout(() => window.print(), 50);
+    };
 
     // Fullscreen (toggle icon + title on state change)
     const fullBtn = document.getElementById("btnFull");
