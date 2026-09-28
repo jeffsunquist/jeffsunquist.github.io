@@ -87,7 +87,7 @@ index 3d8d08a..fc8654f 100644
    <Goto />
    <WebCamera v-if="WebCamera" />
 diff --git a/node_modules/@slidev/client/internals/DrawingControls.vue b/node_modules/@slidev/client/internals/DrawingControls.vue
-index 98ba060..09dbc4a 100644
+index 98ba060..c024311 100644
 --- a/node_modules/@slidev/client/internals/DrawingControls.vue
 +++ b/node_modules/@slidev/client/internals/DrawingControls.vue
 @@ -2,7 +2,6 @@
@@ -228,10 +228,10 @@ index 98ba060..09dbc4a 100644
  
  <style>
 diff --git a/node_modules/@slidev/client/internals/NavControls.vue b/node_modules/@slidev/client/internals/NavControls.vue
-index 3bf07e7..b36c3ef 100644
+index 3bf07e7..ba06d4c 100644
 --- a/node_modules/@slidev/client/internals/NavControls.vue
 +++ b/node_modules/@slidev/client/internals/NavControls.vue
-@@ -1,18 +1,12 @@
+@@ -1,18 +1,10 @@
  <script setup lang="ts">
 -import { computed, ref, shallowRef } from 'vue'
 +import { computed, ref } from 'vue'
@@ -242,18 +242,18 @@ index 3bf07e7..b36c3ef 100644
 -import { isColorSchemaConfigured, isDark, toggleDark } from '../logic/dark'
 -import { activeElement, breakpoints, cursorStyle, fullscreen, hasViewerCssFilter, presenterLayout, showEditor, showInfoDialog, showPresenterCursor, toggleOverview, togglePresenterCursor, togglePresenterLayout } from '../state'
 -import { downloadPDF } from '../utils'
-+import { activeElement, fullscreen, hasViewerCssFilter, showEditor, toggleOverview } from '../state'
++import { activeElement, fullscreen, showEditor, toggleOverview } from '../state'
 +import DrawingControls from './DrawingControls.vue'
  import IconButton from './IconButton.vue'
- import MenuButton from './MenuButton.vue'
- import Settings from './Settings.vue'
+-import MenuButton from './MenuButton.vue'
+-import Settings from './Settings.vue'
 -import SyncControls from './SyncControls.vue'
 -
 -import VerticalDivider from './VerticalDivider.vue'
  
  const props = defineProps({
    persist: {
-@@ -25,20 +19,11 @@ const {
+@@ -25,20 +17,11 @@ const {
    hasNext,
    hasPrev,
    isEmbedded,
@@ -274,14 +274,14 @@ index 3bf07e7..b36c3ef 100644
  const { isFullscreen, toggle: toggleFullscreen } = fullscreen
  
  const root = ref<HTMLDivElement>()
-@@ -50,129 +35,30 @@ function onMouseLeave() {
- const barStyle = computed(() => props.persist
+@@ -51,88 +34,40 @@ const barStyle = computed(() => props.persist
    ? 'text-$slidev-controls-foreground bg-transparent'
    : 'rounded-md bg-main shadow-xl border border-main')
--
+ 
 -const RecordingControls = shallowRef<any>()
 -if (__SLIDEV_FEATURE_RECORD__)
 -  import('./RecordingControls.vue').then(v => RecordingControls.value = v.default)
++const printUrl = `${import.meta.env.BASE_URL}?print=true#/print`
  </script>
  
  <template>
@@ -337,7 +337,12 @@ index 3bf07e7..b36c3ef 100644
 -            <div v-if="showPresenterCursor" class="i-ph-cursor-fill" />
 -            <div v-else class="i-ph-cursor-duotone" />
 -          </template>
--        </IconButton>
++    <div class="nav-bottom">
++      <div class="nav-left flex flex-wrap text-xl gap-0.5 p-1 lg:p-2" :class="barStyle" @mouseleave="onMouseLeave">
++        <IconButton v-if="!isEmbedded" :title="isFullscreen ? 'Close fullscreen' : 'Enter fullscreen'" @click="toggleFullscreen">
++          <div v-if="isFullscreen" class="i-carbon:minimize" />
++          <div v-else class="i-carbon:maximize" />
+         </IconButton>
 -        <IconButton
 -          v-if="__SLIDEV_FEATURE_DRAWINGS__ && (!configs.drawings.presenterOnly || isPresenter)"
 -          class="relative"
@@ -351,45 +356,55 @@ index 3bf07e7..b36c3ef 100644
 -            class="absolute left-1 right-1 bottom-0 h-0.7 rounded-full"
 -            :style="{ background: brush.color }"
 -          />
--        </IconButton>
++        <IconButton :disabled="!hasPrev" title="Go to previous slide" @click="prev">
++          <div class="i-carbon:arrow-left" />
+         </IconButton>
 -
 -        <VerticalDivider />
 -
 -        <IconButton v-if="isPresenter" title="Play Mode" @click="exitPresenter">
 -          <div class="i-carbon:presentation-file" />
--        </IconButton>
++        <IconButton :disabled="!hasNext" title="Go to next slide" @click="next">
++          <div class="i-carbon:arrow-right" />
+         </IconButton>
 -        <IconButton v-if="__SLIDEV_FEATURE_PRESENTER__ && isPresenterAvailable" title="Presenter Mode" @click="enterPresenter">
 -          <div class="i-carbon:user-speaker" />
--        </IconButton>
--        <IconButton
--          v-if="__DEV__ && __SLIDEV_FEATURE_EDITOR__"
--          :title="showEditor ? 'Hide editor' : 'Show editor'"
--          class="lt-md:hidden"
--          @click="showEditor = !showEditor"
--        >
--          <div class="i-carbon:text-annotation-toggle" />
-+    <div class="nav-bottom">
-+      <div class="nav-left flex flex-wrap text-xl gap-0.5 p-1 lg:p-2" :class="barStyle" @mouseleave="onMouseLeave">
-+        <IconButton v-if="!isEmbedded" :title="isFullscreen ? 'Close fullscreen' : 'Enter fullscreen'" @click="toggleFullscreen">
-+          <div v-if="isFullscreen" class="i-carbon:minimize" />
-+          <div v-else class="i-carbon:maximize" />
++        <IconButton v-if="!isEmbedded" title="Show slide overview" @click="toggleOverview()">
++          <div class="i-carbon:apps" />
+         </IconButton>
++      </div>
++
++      <DrawingControls />
++
++      <div class="nav-right flex flex-wrap text-xl gap-0.5 p-1 lg:p-2" :class="barStyle">
++        <a
++          class="slidev-icon-btn"
++          :href="printUrl"
++          target="_blank"
++          rel="noopener"
++          title="Print"
++        >
++          <div class="i-carbon:printer" />
++        </a>
+         <IconButton
+           v-if="__DEV__ && __SLIDEV_FEATURE_EDITOR__"
+           :title="showEditor ? 'Hide editor' : 'Show editor'"
+@@ -141,59 +76,12 @@ if (__SLIDEV_FEATURE_RECORD__)
+         >
+           <div class="i-carbon:text-annotation-toggle" />
          </IconButton>
 -      </template>
 -
 -      <template v-if="!__DEV__">
 -        <IconButton v-if="configs.download" title="Download as PDF" @click="downloadPDF">
 -          <div class="i-carbon:download" />
-+        <IconButton :disabled="!hasPrev" title="Go to previous slide" @click="prev">
-+          <div class="i-carbon:arrow-left" />
-         </IconButton>
+-        </IconButton>
 -      </template>
 -
 -      <template v-if="__SLIDEV_FEATURE_BROWSER_EXPORTER__ && !isEmbedded && !isPresenter">
 -        <IconButton title="Browser Exporter" to="/export">
 -          <div class="i-carbon:document-pdf" />
-+        <IconButton :disabled="!hasNext" title="Go to next slide" @click="next">
-+          <div class="i-carbon:arrow-right" />
-         </IconButton>
+-        </IconButton>
 -      </template>
 -
 -      <IconButton
@@ -406,22 +421,21 @@ index 3bf07e7..b36c3ef 100644
 -        <IconButton v-if="isPresenter" title="Toggle Presenter Layout" class="aspect-ratio-initial flex items-center" @click="togglePresenterLayout">
 -          <div class="i-carbon:template" />
 -          {{ presenterLayout }}
-+        <IconButton v-if="!isEmbedded" title="Show slide overview" @click="toggleOverview()">
-+          <div class="i-carbon:apps" />
-         </IconButton>
-+      </div>
- 
+-        </IconButton>
+-
 -        <SyncControls v-if="__SLIDEV_FEATURE_PRESENTER__" />
-+      <DrawingControls />
- 
-+      <div class="nav-right flex flex-wrap text-xl gap-0.5 p-1 lg:p-2" :class="barStyle">
-         <MenuButton>
-           <template #button="{ value }">
-             <IconButton title="More Options" :active="value">
-@@ -184,16 +70,20 @@ if (__SLIDEV_FEATURE_RECORD__)
-             <Settings />
-           </template>
-         </MenuButton>
+-
+-        <MenuButton>
+-          <template #button="{ value }">
+-            <IconButton title="More Options" :active="value">
+-              <div class="i-carbon:settings-adjust" />
+-              <div v-if="hasViewerCssFilter" w-2 h-2 bg-primary rounded-full absolute top-0.5 right-0.5 />
+-            </IconButton>
+-          </template>
+-          <template #menu>
+-            <Settings />
+-          </template>
+-        </MenuButton>
 -      </template>
 -
 -      <VerticalDivider v-if="!isEmbedded" />
@@ -429,14 +443,6 @@ index 3bf07e7..b36c3ef 100644
 -      <div class="px2 my-auto">
 -        <span class="text-lg">{{ currentSlideNo }}</span>
 -        <span class="opacity-50 text-sm"> / {{ total }}</span>
-+        <IconButton
-+          v-if="__DEV__ && __SLIDEV_FEATURE_EDITOR__"
-+          :title="showEditor ? 'Hide editor' : 'Show editor'"
-+          class="lt-md:hidden"
-+          @click="showEditor = !showEditor"
-+        >
-+          <div class="i-carbon:text-annotation-toggle" />
-+        </IconButton>
 +        <CustomNavControls />
 +        <div class="px2 my-auto">
 +          <span class="text-lg">{{ currentSlideNo }}</span>
@@ -468,3 +474,58 @@ index 67f057d..ed664c5 100644
      </div>
    </div>
    <Goto />
+diff --git a/node_modules/@slidev/client/pages/print.vue b/node_modules/@slidev/client/pages/print.vue
+index 280b769..e34d082 100644
+--- a/node_modules/@slidev/client/pages/print.vue
++++ b/node_modules/@slidev/client/pages/print.vue
+@@ -1,11 +1,11 @@
+ <script setup lang="ts">
+ import { recomputeAllPoppers } from 'floating-vue'
+-import { onMounted, watchEffect } from 'vue'
++import { nextTick, onMounted, watchEffect } from 'vue'
+ import { useNav } from '../composables/useNav'
+ import PrintContainer from '../internals/PrintContainer.vue'
+ import { windowSize } from '../state'
+ 
+-const { isPrintMode } = useNav()
++const { isPrintMode, printRange, slides } = useNav()
+ 
+ watchEffect(() => {
+   if (isPrintMode)
+@@ -14,8 +14,22 @@ watchEffect(() => {
+     (document.body.parentNode as HTMLElement).classList.remove('print')
+ })
+ 
+-onMounted(() => {
++onMounted(async () => {
+   recomputeAllPoppers()
++
++  if (!isPrintMode.value)
++    return
++
++  await Promise.all(printRange.value.map(no => (slides.value[no - 1] as any)?.load?.()))
++  await nextTick()
++  await document.fonts.ready
++  await Promise.all(Array.from(document.images)
++    .filter(img => !img.complete)
++    .map(img => new Promise<void>((resolve) => {
++      img.addEventListener('load', () => resolve(), { once: true })
++      img.addEventListener('error', () => resolve(), { once: true })
++    })))
++  setTimeout(() => window.print(), 100)
+ })
+ </script>
+ 
+diff --git a/node_modules/@slidev/client/setup/routes.ts b/node_modules/@slidev/client/setup/routes.ts
+index d94ade0..b03ffe4 100644
+--- a/node_modules/@slidev/client/setup/routes.ts
++++ b/node_modules/@slidev/client/setup/routes.ts
+@@ -58,7 +58,7 @@ export default function setupRoutes() {
+     )
+   }
+ 
+-  if (__SLIDEV_FEATURE_PRINT__) {
++  if (true) {
+     routes.push(
+       {
+         name: 'print',
