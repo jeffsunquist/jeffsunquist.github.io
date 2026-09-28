@@ -340,6 +340,11 @@
       background-color: #4b5563;
     }
 
+    /* Sim cards get their own accent, independent of grade. */
+    .card.sim { border-left-color: #6d28d9; }
+    .card.sim .card-icon { background: #ede9fe; color: #6d28d9; }
+    .card.sim .card-glyph { background-color: #6d28d9; }
+
     .empty {
       margin: 0.5rem 0 0;
       font-size: 0.9rem;
@@ -482,6 +487,23 @@
       </div>
     </section>
 
+    <section id="sims-section">
+      <div class="section-head">
+        <h2>Sims (WIP)</h2>
+        <span class="rule"></span>
+      </div>
+      <div class="columns">
+        <div class="column" data-grade="6">
+          <h3><span class="grade-dot"></span>Grade 6</h3>
+          <div class="cards" id="sims-g6"></div>
+        </div>
+        <div class="column" data-grade="7">
+          <h3><span class="grade-dot"></span>Grade 7</h3>
+          <div class="cards" id="sims-g7"></div>
+        </div>
+      </div>
+    </section>
+
     <section id="aura-section">
       <div class="section-head">
         <h2>Aura Tracker &amp; Element Tier List</h2>
@@ -502,6 +524,7 @@
   <script>
     const LESSONS = __LESSONS_JSON__;
     const HANDOUTS = __HANDOUTS_JSON__;
+    const SIMS = __SIMS_JSON__;
     const AURA_LABELS = __AURA_LABELS__;
     const AURA_DATA = __AURA_DATA__;
     const ELEMENT_TIERS = __ELEMENT_TIERS_JSON__;
@@ -553,6 +576,20 @@
       return a;
     }
 
+    function simCard(s) {
+      const a = document.createElement('a');
+      a.className = 'card sim';
+      a.href = s.url;
+      a.innerHTML =
+        iconGlyph(s.icon) +
+        '<div class="card-body">' +
+          '<div class="card-top"><span class="code">Sim</span></div>' +
+          '<h4 class="card-title">' + esc(s.title) + '</h4>' +
+          '<p class="card-desc">' + esc(s.description) + '</p>' +
+        '</div>';
+      return a;
+    }
+
     function fill(id, items, make) {
       const box = document.getElementById(id);
       items.forEach(function (it) { box.appendChild(make(it)); });
@@ -562,6 +599,8 @@
     fill('lessons-g7', LESSONS.filter(function (l) { return l.g7; }), lessonCard);
     fill('handouts-g6', HANDOUTS.filter(function (h) { return h.g6; }), handoutCard);
     fill('handouts-g7', HANDOUTS.filter(function (h) { return h.g7; }), handoutCard);
+    fill('sims-g6', SIMS.filter(function (s) { return s.g6; }), simCard);
+    fill('sims-g7', SIMS.filter(function (s) { return s.g7; }), simCard);
 
     /* --- Grade filter --- */
 
@@ -570,7 +609,7 @@
     let currentGrade = 'all';
 
     function applyFilters() {
-      ['lessons-section', 'handouts-section'].forEach(function (sectionId) {
+      ['lessons-section', 'handouts-section', 'sims-section'].forEach(function (sectionId) {
         const section = document.getElementById(sectionId);
         let anyVisible = false;
         section.querySelectorAll('.column').forEach(function (col) {

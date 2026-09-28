@@ -48,6 +48,13 @@ if [ -d public/icons ]; then
   cp -r public/icons/. dist/icons/
 fi
 
+# Standalone p5.js simulations (sims/ -> dist/sims/). Each sim is a
+# self-contained page (p5 is vendored at sims/vendor/p5.min.js) linked from the
+# landing page's "Sims (WIP)" section. Not copied into the decks.
+if [ -d sims ]; then
+  cp -r sims dist/sims
+fi
+
 for f in *.md; do
   case "$f" in
     AGENTS.md|README.md|slides.md) continue ;;   # docs / Slidev scaffold, not lesson decks
@@ -224,6 +231,33 @@ if [ -f data/element_tier.csv ]; then
   element_tiers_json="[$tiers]"
 fi
 
+# Sims from data/sims.csv (`slug,title,grade,description`; grade is G6 / G7 /
+# both, default both). Links into the deployed sims/ tree.
+sims_json='[]'
+if [ -f data/sims.csv ]; then
+  sim_items=''
+  sf=1
+  while IFS=, read -r slug title grade description; do
+    slug="$(clean "${slug:-}")"
+    title="$(clean "${title:-}")"
+    grade="$(clean "${grade:-}")"
+    description="$(clean "${description:-}")"
+    [ -z "$slug" ] && continue
+    [ "$slug" = "slug" ] && continue
+
+    case "$grade" in
+      G6|g6|6) s_g6=true; s_g7=false ;;
+      G7|g7|7) s_g6=false; s_g7=true ;;
+      *)       s_g6=true; s_g7=true ;;
+    esac
+
+    [ "$sf" -eq 1 ] || sim_items+=','
+    sf=0
+    sim_items+="{\"slug\":$(json_str "$slug"),\"url\":$(json_str "/sims/$slug/"),\"title\":$(json_str "$title"),\"description\":$(json_str "$description"),\"icon\":$(json_str "/icons/sim.svg"),\"g6\":$s_g6,\"g7\":$s_g7}"
+  done < data/sims.csv
+  sims_json="[$sim_items]"
+fi
+
 # 3D Club: publish 3d-club/ -> dist/3d-club/ and render a listing page.
 # Top-level files only; *.blend = model, image extensions = texture.
 club_files_json='[]'
@@ -260,6 +294,7 @@ fi
 template="$(cat scripts/index.template.html)"
 template="${template//__LESSONS_JSON__/$lessons_json}"
 template="${template//__HANDOUTS_JSON__/$handouts_json}"
+template="${template//__SIMS_JSON__/$sims_json}"
 template="${template//__ELEMENT_TIERS_JSON__/$element_tiers_json}"
 template="${template//__AURA_LABELS__/$aura_labels_js}"
 template="${template//__AURA_DATA__/$aura_data_js}"
