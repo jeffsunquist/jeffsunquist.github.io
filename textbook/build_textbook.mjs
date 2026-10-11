@@ -277,6 +277,16 @@ async function deckTitle(stem) {
   return m ? m[1].trim() : stem
 }
 
+// The chapter title as it actually prints (the deck's first-slide heading),
+// which can differ from the frontmatter `title:` (e.g. "Graphs" vs "Graphing").
+async function deckHeading(stem) {
+  const source = await readFile(path.join(ROOT, `${stem}.md`), 'utf8')
+  const body = splitHeadmatter(source).replace(/^\n+/, '')
+  const first = body.split(SEP_RE)[0] || ''
+  const m = first.match(/^#{1,4}[ \t]+(.+)$/m)
+  return m ? m[1].trim() : deckTitle(stem)
+}
+
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
 // --------------------------------------------------------------------------
@@ -358,11 +368,12 @@ blockquote { background:#f9fafb; border-left:3px solid #d1d5db; margin:.5em 0; p
 
 // Production 2-column book style: the flowing STYLE plus column rules.
 const COLS_STYLE = STYLE + `
-/* 2-column portrait content: atomic slides, spanning chapter/unit headings. */
+/* 2-column content (title page + TOC stay single-column). Lesson headings and
+   objectives flow inside a column like everything else; no forced breaks. */
 .cols { column-count:2; column-gap:8mm; }
 .slide { break-inside:avoid; }
-.slide.span { column-span:all; }
-.unit { column-span:all; }
+.cover .byline { margin-top:2.5em; color:#6b7280; font-size:.9rem;
+  font-family:'Patrick Hand', sans-serif; }
 `
 
 const SPIKE_STYLE = `
@@ -559,7 +570,164 @@ async function printPdf(server, grade) {
   }
 }
 
+// --------------------------------------------------------------------------
+// SCI 2-column book build (title + TOC + 2-col content), native print, with a
+// post-step that reads the produced PDF to fill the TOC and number pages.
+async function buildColsBook(book, tocNums = {}) {
+  const num = id => (tocNums[id] != null ? String(tocNums[id]) : '')
+  const toc = ['<section class="toc"><h1>Contents</h1><ul>']
+  const body = []
+  let unitNo = 0
+  for (const [unit, decks] of book.units) {
+    unitNo += 1
+    const unitId = `${book.key}-unit-${unitNo}`
+    toc.push(`<li class="u"><a href="#${unitId}">${unit}`
+      + `<span class="num">${num(unitId)}</span></a></li>`)
+    body.push(`<section class="unit" id="${unitId}"><h1>${unit}</h1></section>`)
+    for (const stem of decks) {
+      const chId = `${book.key}-${slug(stem)}`
+      toc.push(`<li class="c"><a href="#${chId}">${await deckHeading(stem)}`
+        + `<span class="num">${num(chId)}</span></a></li>`)
+      body.push(`<section class="chapter" id="${chId}">`)
+      for (const slide of await deckSlides(stem)) {
+        const rendered = tagImages(md.render(slide))
+        body.push(`<section class="slide">\n${rendered}\n</section>`)
+      }
+      body.push('</section>')
+    }
+  }
+  toc.push('</ul></section>')
+  const cover = `<section class="cover">
+<h1>${book.coverTitle}</h1>
+<p class="sub">${book.coverSub}</p>
+<p class="sub">${book.coverGrade}</p>
+<p class="rule">${book.coverRule}</p>
+<p class="lines">Name: ____________________&nbsp;&nbsp;Class: __________&nbsp;&nbsp;Date: __________</p>
+<p class="byline">Designed by Sunquist in Park Lane Harbor</p>
+</section>`
+  const html = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Physics — ${book.coverSub} (${book.coverGrade})</title>
+<link rel="stylesheet" href="/node_modules/katex/dist/katex.min.css">
+<style>${COLS_STYLE}</style></head>
+<body>
+${cover}
+${toc.join('\n')}
+<div class="cols">
+${body.join('\n')}
+</div>
+</body></html>`
+  await mkdir(OUT, { recursive: true })
+  const htmlPath = path.join(OUT, `${book.outStem}.html`)
+  await writeFile(htmlPath, html)
+  return htmlPath
+}
+
+async function renderCols(browser, port, stem, outPath) {
+  const page = await browser.newPage()
+  try {
+    await page.goto(`http://127.0.0.1:${port}/textbook/build/${stem}.html`,
+      { waitUntil: 'networkidle' })
+    await page.evaluate(() => document.fonts.ready)
+    await page.evaluate(() => Promise.all(Array.from(document.images)
+      .map(img => img.complete ? 0 : new Promise(r => { img.onload = img.onerror = r }))))
+    await page.evaluate(() => {
+      document.querySelectorAll('img.fig-raster').forEach(img => {
+        if (img.naturalWidth) img.style.width = `${(img.naturalWidth * 96 / 300).toFixed(3)}px`
+      })
+    })
+    await page.pdf({ path: outPath, preferCSSPageSize: true, printBackground: true })
+  } finally {
+    await page.close()
+  }
+}
+
+function extractPages(pdfPath) {
+  // -raw keeps each column's text contiguous (unlike -layout, which interleaves
+  // the two columns and splits multi-line headings).
+  const out = execFileSync('pdftotext', ['-raw', pdfPath, '-'],
+    { encoding: 'utf8', maxBuffer: 128 * 1024 * 1024 })
+  return out.split('\f')
+}
+
+async function computeToc(pages, book) {
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const np = pages.map(norm)
+  const tocIdx = np.findIndex(t => t.includes('contents'))
+  const firstTitle = norm(await deckHeading(book.units[0][1][0]))
+  let bodyStart = tocIdx + 1
+  for (let i = tocIdx + 1; i < np.length; i++) {
+    if (np[i].includes(firstTitle)) { bodyStart = i; break }
+  }
+  const tocNums = {}
+  let unitNo = 0
+  for (const [unit, decks] of book.units) {
+    unitNo += 1
+    const unitId = `${book.key}-unit-${unitNo}`
+    const un = norm(unit)
+    const ui = np.findIndex((t, i) => i >= bodyStart && t.includes(un))
+    if (ui >= 0) tocNums[unitId] = ui - bodyStart + 1
+    for (const stem of decks) {
+      const chId = `${book.key}-${slug(stem)}`
+      const ti = norm(await deckHeading(stem))
+      const ci = np.findIndex((t, i) => i >= bodyStart && t.includes(ti))
+      if (ci >= 0) tocNums[chId] = ci - bodyStart + 1
+    }
+  }
+  return { tocNums, bodyStart }
+}
+
+async function stampPageNumbers(pdfPath, bodyStart) {
+  const doc = await PDFDocument.load(await readFile(pdfPath))
+  const font = await doc.embedFont(StandardFonts.Helvetica)
+  const pages = doc.getPages()
+  for (let i = bodyStart; i < pages.length; i++) {
+    const pg = pages[i]
+    const label = String(i - bodyStart + 1)
+    const size = 9
+    const w = font.widthOfTextAtSize(label, size)
+    const { width } = pg.getSize()
+    pg.drawText(label, {
+      x: (width - w) / 2, y: 16, size, font,
+      color: rgb(0.42, 0.45, 0.5),
+    })
+  }
+  await writeFile(pdfPath, await doc.save())
+}
+
+async function buildSciBook(server, book) {
+  const { port } = server.address()
+  await buildColsBook(book, {})
+  const browser = await chromium.launch()
+  try {
+    const pass1 = path.join(OUT, `${book.outStem}.pass1.pdf`)
+    await renderCols(browser, port, book.outStem, pass1)
+    const { tocNums, bodyStart } = await computeToc(extractPages(pass1), book)
+    await buildColsBook(book, tocNums)
+    const finalPdf = path.join(OUT, `${book.outStem}.pdf`)
+    await renderCols(browser, port, book.outStem, finalPdf)
+    await stampPageNumbers(finalPdf, bodyStart)
+    return finalPdf
+  } finally {
+    await browser.close()
+  }
+}
+
 async function main() {
+  if (process.argv.includes('--sci')) {
+    const srv = await startServer()
+    try {
+      const pdf = await buildSciBook(srv, SCI_BOOK)
+      console.log(`built ${path.relative(ROOT, pdf)}`)
+      await mkdir(path.join(ROOT, 'pdfs'), { recursive: true })
+      const dest = path.join(ROOT, 'pdfs', 'Textbook_SCI.pdf')
+      await writeFile(dest, await readFile(pdf))
+      console.log(`published ${path.relative(ROOT, dest)}`)
+    } finally {
+      srv.close()
+    }
+    return
+  }
   const server = WITH_PDF ? await startServer() : null
   try {
     for (const grade of Object.keys(BOOKS)) {

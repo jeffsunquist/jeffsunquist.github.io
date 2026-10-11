@@ -14,6 +14,7 @@ learning_outcomes:
   - MEAS-01
   - MEAS-02
   - MEAS-03
+  - MEAS-05
 ---
 
 # Scientific Inquiry — Base Units & Derived Units
@@ -179,6 +180,16 @@ $$F = \text{kg}\cdot\frac{\text{m}}{\text{s}^2} = \text{N}$$
 | **Power**        | $P = \frac{W}{t}$ | $\text{kg} \cdot \frac{\text{m}^2}{\text{s}^3}$ | **Watt ($\text{W}$)** |
 | **Frequency**    | $f = \frac{1}{T}$ | $\frac{1}{\text{s}}$ | **Hertz ($\text{Hz}$)** |
 | **Charge**       | $Q = I \cdot t$ | $\text{A} \cdot \text{s}$ | **Coulomb ($\text{C}$)** |
+
+---
+
+## The Ampere
+
+The **ampere** ($\text{A}$) is one of the seven SI base units, but it is also defined by the coulomb. From charge $Q = I\,t$ (with $t$ in seconds):
+
+$$1\ \text{A} = 1\ \frac{\text{C}}{\text{s}}$$
+
+One ampere is one coulomb of charge passing each second.
 
 ---
 
