@@ -115,14 +115,22 @@ json_str() {
   printf '"%s"' "$s"
 }
 
-# Extract the deck's objective sentence from its "## Objectives" slide (the
-# old "## Learning Objective" heading is tolerated). Wrapped lines are joined.
+# Extract the deck's objective sentence, which now lives on the title slide:
+# after the frontmatter, within the first slide, the paragraph following the
+# "Lesson N of M" line. Wrapped lines are joined.
 deck_objective() {
   awk '
-    /^## Objectives?[[:space:]]*$/ { inobj = 1; next }
-    /^## Learning Objective/ { inobj = 1; next }
-    inobj && (/^## / || /^---[[:space:]]*$/) { exit }
-    inobj {
+    BEGIN { dash = 0; inTitle = 0; seenLesson = 0; out = "" }
+    /^---[[:space:]]*$/ {
+      dash++
+      if (dash == 1) next                     # opening frontmatter
+      if (dash == 2) { inTitle = 1; next }    # frontmatter closed; title slide
+      exit                                    # end of the title slide
+    }
+    inTitle {
+      if ($0 ~ /^#[[:space:]]/) next                       # title heading
+      if ($0 ~ /^Lesson[[:space:]]+[0-9]/) { seenLesson = 1; next }
+      if (!seenLesson) next
       if ($0 ~ /[^[:space:]]/) {
         gsub(/^[[:space:]]+/, "")
         out = (out == "" ? $0 : out " " $0)
@@ -156,9 +164,9 @@ for f in *.md; do
   lesson_total="${lesson_total:-0}"
 
   case "$slug" in
-    *_G6) g6=true; g7=false ;;
-    *_G7) g6=false; g7=true ;;
-    *)    g6=true; g7=true ;;
+    *_G6) g6=true; g7=false; gsuffix="_G6" ;;
+    *_G7) g6=false; g7=true; gsuffix="_G7" ;;
+    *)    g6=true; g7=true; gsuffix="" ;;
   esac
 
   objective="$(deck_objective "$f")"
@@ -166,7 +174,11 @@ for f in *.md; do
   objective="$(printf '%s' "$objective" \
     | sed -e 's/\*\*//g' -e 's/_//g' -e 's/`//g' -e 's/[[:space:]]*$//')"
 
-  if [ -f "public/icons/$code.svg" ]; then
+  # Prefer a grade-specific icon (<CODE>_G6.svg / _G7.svg), then the shared
+  # <CODE>.svg, then the default fallback.
+  if [ -n "$gsuffix" ] && [ -f "public/icons/${code}${gsuffix}.svg" ]; then
+    icon="/icons/${code}${gsuffix}.svg"
+  elif [ -f "public/icons/$code.svg" ]; then
     icon="/icons/$code.svg"
   else
     icon="/icons/default.svg"

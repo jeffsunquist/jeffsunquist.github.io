@@ -8,3 +8,6 @@ AGENTS.md
 
 # Held/merged reference deck copies (not built, not committed)
 *.hold
+
+# Generated textbook build output (source of truth = the lesson decks)
+textbook/build/

@@ -15,32 +15,28 @@ learning_outcomes:
   - SCI-07
   - SCI-03
   - SCI-08
-  - KIN-50
-  - KIN-51
 ---
 
 # Scientific Inquiry — Graphs
 
 Lesson 5 of 6
 
----
-
-## Objectives
-
 Build and read graphs with SULTAN, find the line of best fit, y-intercept, and slope, and extrapolate from a graph.
 
 ---
 
-# Review: Problem Solving
+## Review: Problem Solving
 
-- **Scalar**: magnitude only (number with units)
-- **Vector**: magnitude and direction
-- The four problem-solving steps:
-  1. What am I given? What am I finding?
-  2. What equation connects them?
-  3. Plug in and solve.
-  4. Check the units and direction (if applicable).
+**Scalar** = a number with units (e.g. speed, distance, mass).
 
+**Vector** = a number with units _and direction_ (e.g. velocity, displacement, acceleration, force).
+
+**Problem-solving steps:**
+
+1. Annotate the problem.
+2. What equation connects the quantities?
+3. Plug in and solve.
+4. Check the units and direction (if applicable).
 
 ---
 
@@ -67,7 +63,7 @@ Build and read graphs with SULTAN, find the line of best fit, y-intercept, and s
 
 ---
 
-## Bar Graph & Pie Chart
+## Bar Graph
 
 - Used for categories and comparisons.
 
@@ -83,19 +79,17 @@ Build and read graphs with SULTAN, find the line of best fit, y-intercept, and s
 
 ---
 
-
 ## SULTAN
-
-Acronym for graphing rules:
 
 <v-clicks>
 
-- **S**cale: Choose appropriate axis scales
-- **U**nits: Label both axes with units
-- **L**egend: Include if multiple data sets
-- **T**itle: Describe what the graph shows
-- **A**xes: Label independent (x) and dependent (y)
-- **N**eat: Plot points clearly
+> [!TIP] Requirements for a graph:
+> - **S**cale: Choose appropriate axis scales
+> - **U**nits: Label both axes with units
+> - **L**egend: Include if multiple data sets
+> - **T**itle: Describe what the graph shows
+> - **A**xes: Label independent (x) and dependent (y)
+> - **N**eat: Plot points clearly
 
 </v-clicks>
 
@@ -105,81 +99,33 @@ Acronym for graphing rules:
 
 <img src="/line_of_best_fit.excalidraw.svg" width="720" />
 
-<v-clicks>
-
-- Correct: a **straight** line following the data trend
-- Incorrect: a line connecting every point (this would be a _line graph_, not a _line of best fit_)
-
-</v-clicks>
+> [!WARNING]
+> Do **not** connect the points one by one — that is a _line graph_, not a **line of best fit**. Draw one straight line that follows the trend.
 
 ---
 
-## Step 1: Plot the Data
+## Review
 
-- Put the independent variable on the $x$-axis and the dependent variable on the $y$-axis.
+<v-click>
 
-<img src="/prog_1_data.png" width="460" />
+**Tables**: independent variable in the first column.
 
----
+**Line graph** — continuous data
 
-## Step 2: Line of Best Fit
+**Bar graph** — categories and comparisons
 
-- Draw one straight line that follows the trend of the points.
-- Don't just connect the points one by one.
+**Pie chart** — parts of a whole (percentages)
 
-<img src="/prog_2_line.png" width="460" />
+</v-click>
 
----
+<v-click>
 
-## Step 3: Identify the y-Intercept
+**SULTAN** — **S**cale, **U**nits, **L**egend, **T**itle, **A**xes, **N**eat.
 
-- Read where the line crosses the $y$-axis. No calculation needed.
+</v-click>
 
-<img src="/prog_3_intercept.png" width="460" />
+<v-click>
 
----
+**Line of best fit** — one straight line that follows the trend. Do not connect the points one by one.
 
-## Step 4: Calculate the Slope
-
-- Choose two points on the line that can be read from the graph.
-- slope $=\frac{\text{rise}}{\text{run}}= \frac{19\text{ m} - 3\text{ m}}{4\text{ s} - 0\text{ s}} = 4\frac{\text{m}}{\text{s}}$
-
-<img src="/prog_4_slope.png" width="460" />
-
----
-
-## Step 5: Extrapolate
-
-- Extend the line past the last point and read the value at the target time.
-- At $t = 5\ \text{s}$, the line reads $d = 23\ \text{m}$.
-
-<img src="/prog_5_extrapolate.png" width="460" />
-
----
-
-## Motion Graphs
-
-The position or velocity of an object can be graphed with respect to time.
-- position vs time
-- velocity vs time
-
----
-
-## Position vs Time
-
-<img src="/x-t_graphs.excalidraw.svg" width="720" />
-
-
-- Flat line → at rest (zero velocity).
-- Slope → velocity.
-- Changing slope → accleration.
-
----
-
-## Velocity vs Time Graphs
-
-<img src="/v-t_graphs.excalidraw.svg" width="720" />
-
-- Line at 0 → zero velocity
-- Flat line → constant velocity.
-- Slope → acceleration.
+</v-click>

@@ -21,29 +21,23 @@ learning_outcomes:
 
 Lesson 1 of 6
 
----
-
-## Objectives
-
 Distinguish qualitative from quantitative observations and objective from subjective statements, and explain what makes a statement scientific.
 
 ---
 
 ## Observations
 
-- **Observation**: the act of gathering information using senses or instruments
-- Information gathered from observations is given in a **statement**.
+> [!NOTE]
+> An **observation** is the act of gathering information using your senses or instruments. Information gathered from an observation is given as a **statement**.
 
 ---
 
 ## Qualitative and Quantitative Statements
 
-- **Qualitative**: descriptive, non-numerical data
-- **Quantitative**: numerical, measured data
+> [!NOTE]
+> **Qualitative**: descriptive, non-numerical data.
+> **Quantitative**: numerical, measured data.
 
----
-
-## Examples
 
 | Qualitative          | Quantitative                                |
 | -------------------- | ------------------------------------------- |
@@ -52,34 +46,54 @@ Distinguish qualitative from quantitative observations and objective from subjec
 | the surface is rough | the roughness average is $2.3\,\mu\text{m}$ |
 | the sound is loud    | the sound intensity is $85 \text{ dB}$      |
 
----
-
-## Qualitative vs Quantitative
-
-<img src="/qualitative-pikachu.png" width="240" />
-
-<div v-click.hide="1">Make a qualitative statement about Pikachu.</div>
-
-<div v-click="1">Make a quantitative statement about Pikachu.</div>
 
 ---
 
-## Pencil Example
+## Practice — Qualitative or Quantitative?
 
-<img src="/quantitative_observation_pencil_measured_by_ruler.excalidraw.svg" width="720" />
+<v-click>
 
-Qualitatively, this pencil is small. Quantitatively, this pencil measures $2 \text{ in}$.
+1. The liquid is clear.
+
+</v-click>
+
+<v-click>
+
+**Answer:** Qualitative
+
+</v-click>
+
+<v-click>
+
+2. The metal bar is $15 \text{ cm}$ long.
+
+</v-click>
+
+<v-click>
+
+**Answer:** Quantitative
+
+</v-click>
+
+<v-click>
+
+3. The balloon feels cold.
+
+</v-click>
+
+<v-click>
+
+**Answer:** Qualitative
+
+</v-click>
 
 ---
 
 ## Subjective and Objective Statements
 
-- **Subjective**: opinion-based statements that vary by person
-- **Objective**: fact-based, verifiable statements
-
----
-
-## Examples
+> [!NOTE]
+> **Subjective**: opinion-based statements that vary by person.
+> **Objective**: fact-based, verifiable statements.
 
 | Subjective                   | Objective                                    |
 | ---------------------------- | -------------------------------------------- |
@@ -88,21 +102,78 @@ Qualitatively, this pencil is small. Quantitatively, this pencil measures $2 \te
 | chocolate is the best flavor | chocolate is the most-sold flavor            |
 | Pikachu is cute              | Pikachu is yellow                            |
 
+
 ---
 
-## Combined Statements
+## Practice — Subjective or Objective?
 
-Statements can be qualitative **and** objective. Pikachu **is yellow**.
+<v-click>
 
-<img src="/pikachu_collage.jpg" width="640" />
+1. Vanilla is the best ice cream flavor.
+
+</v-click>
+
+<v-click>
+
+**Answer:** Subjective
+
+</v-click>
+
+<v-click>
+
+2. Vanilla ice cream contains $14 \text{ g}$ of sugar per serving.
+
+</v-click>
+
+<v-click>
+
+**Answer:** Objective
+
+</v-click>
+
+<v-click>
+
+3. The movie was boring.
+
+</v-click>
+
+<v-click>
+
+**Answer:** Subjective
+
+</v-click>
+
+---
+
+> [!WARNING]
+> Objective statements can be qualitaitve.
+
+| Statement | Qualitative (observable quality) | Objective (verifiable fact) |
+|---|---|---|
+| Pikachu is yellow | describes color | color is measurable by wavelength |
+| Water is wet | describes a feel | wetness is a physical property |
+| Iron is magnetic | describes behavior | magnetism is testable |
+
+<v-click>
+
+Can a quantitative statement be subjective?
+
+</v-click>
+
+<v-click>
+
+**Answer:** No, but it can be uncertain.
+
+</v-click>
 
 ---
 
 ## What makes a statement _scientific_?
 
-- A **scientific statement** must be objective, testable, and falsifiable.
-- Testable means data can be gathered through **observation** or **experiment**.
-- Falsifiable it is _possible_ to be proven false through **testing**.
+> [!NOTE]
+> A **scientific statement** must be **objective**, **testable**, and **falsifiable**.
+> - **Testable**: data can be gathered through observation or experiment.
+> - **Falsifiable**: it is _possible_ to be proven false through testing.
 
 ---
 
@@ -114,23 +185,65 @@ Statements can be qualitative **and** objective. Pikachu **is yellow**.
 | The water feels hot.      | The water is boiling and producing steam. (qualitative)         |
 | This is a heavy backpack. | The backpack has a mass of $12 \text{ kg}$. (quantitative)      |
 | The flower is pretty.     | The flower has pink petals. (qualitative)                       |
-| Unicorns do not exist.    | The data does not support the existence of a unicorn. (qualitative)     |
 
 ---
 
-## Exercise
+## Practice — Scientific Statements
 
-- How can we test these statements?
-  - _The red car has a top speed of $210\frac{km}{h}$_
-  - _The flower has pink petals._
-  - _The data does not support the existence of a unicorn._
+<v-click>
 
+1. How can we test: _The red car has a top speed of $210\frac{km}{h}$?_
+
+</v-click>
+
+<v-click>
+
+**Answer:** Measure the car's distance traveled and divide by the time taken.
+
+</v-click>
+
+<v-click>
+
+2. How can we test: _The flower has pink petals?_
+
+</v-click>
+
+<v-click>
+
+**Answer:** Observe the flower and compare its petal color to a standard color reference.
+
+</v-click>
 
 ---
 
-## Exercise
+## Review
 
-How can this setup be used to measure the speed of the train?
+<v-click>
 
-<img src="/train_calculate_speed.excalidraw.svg" width="640" />
+**Qualitative** = descriptive, non-numerical.
 
+</v-click>
+
+<v-click>
+
+**Quantitative** = numerical, measured.
+
+</v-click>
+
+<v-click>
+
+**Subjective** = opinion-based, varies by person.
+
+</v-click>
+
+<v-click>
+
+**Objective** = fact-based, observed repeatedly.
+
+</v-click>
+
+<v-click>
+
+A **scientific statement** must be **objective**, **testable**, and **falsifiable**.
+
+</v-click>

@@ -20,27 +20,28 @@ learning_outcomes:
 
 Lesson 2 of 6
 
----
-
-## Objectives
-
 Measure with the correct tools, distinguish accuracy from precision, and convert between metric prefixes and scientific notation.
 
 ---
 
 ## Review: Observations
 
-- **Qualitative**: descriptive, non-numerical data
-- **Quantitative**: numerical, measured data
-- **Objective**: fact-based, verifiable statements
-- **Subjective**: opinion-based, varies by person
-- A **scientific statement** is objective, testable, and falsifiable.
+**Qualitative** = descriptive, non-numerical.
+
+**Quantitative** = numerical, measured.
+
+**Subjective** = opinion-based, varies by person.
+
+**Objective** = fact-based, observed repeatedly.
+
+A **scientific statement** must be **objective**, **testable**, and **falsifiable**.
 
 ---
 
 ## What Is a Measurement?
 
-- **Measurement**: An observation that compares an unknown quantity to a known quantity.
+>[!NOTE] Measurement
+> An observation that compares an unknown quantity to a known quantity.
 
 | Tool        | Quantity Measured      | SI Units                |
 | :---------- | :--------------------- | :---------------------- |
@@ -59,7 +60,8 @@ Measure with the correct tools, distinguish accuracy from precision, and convert
 
 ## Accuracy
 
-- How close the average of the measurements is to the actual value.
+>[!NOTE] Accuracy
+> How close the measurements are to the actual value.
 
 | Lower Accuracy  <br>(Actual: $30 \text{ kg}$) | Higher Accuracy  <br>(Actual: $30 \text{ kg}$) |
 | --------------------------------------------- | ---------------------------------------------- |
@@ -73,7 +75,8 @@ Measure with the correct tools, distinguish accuracy from precision, and convert
 
 ## Precision
 
-- How close together the measurements are to each other.
+>[!NOTE] Precision
+> How close together the measurements are to each other.
 
 | Lower Precision           | Higher Precision          |
 | ------------------------- | ------------------------- |
@@ -87,38 +90,27 @@ Measure with the correct tools, distinguish accuracy from precision, and convert
 
 ## Accuracy vs Precision
 
+<center>
+
 <img src="/dart_board_accuracy_precision.excalidraw.svg" width="400" />
+
+</center>
 
 ---
 
 ## Metric System
 
-- **Metric System**: Decimal-based system of measurement used in science.
+> [!NOTE] Metric System
+> A decimal-based system of measurement used in science — built on powers of 10 and used by scientists worldwide.
 
-- Based on powers of 10
-- Used by scientists worldwide
+- The wavelength is $0.000000673 \text{ m} \rightarrow 673\ \text{nm}$
 
----
-
-## Why Prefixes?
-
-- We use prefixes to make reporting numbers easier.
-
-<v-click>
-
-> The wavelength is $0.000000673 \text{ m}$
-
-</v-click>
-
-<v-click>
-
-> The wavelength is $673 \text{ nm}$
-
-</v-click>
-
-- Prefixes express very big or very small numbers.
 - My phone's storage is $512 \text{ GB}$: $1 \text{ GB} = 10^9 \text{ bytes}$.
 
+> [!TIP] Prefixes make very large or very small numbers easier to report.
+
+---
+zoom: 0.72
 ---
 
 ## Metric Prefixes
@@ -143,22 +135,25 @@ Measure with the correct tools, distinguish accuracy from precision, and convert
 
 ## Scientific Notation
 
-Scientific notation writes a number as $a \times 10^{n}$
+>[!NOTE] Scientific Notation
+> Writing numbers in the form of $a \times 10^{n}$ <br>
+> The exponent $n$ moves the decimal point.
 
 | Number                | Scientific Notation |
 | :-------------------- | :------------------ |
 | $602{,}000{,}000{,}000{,}000{,}000{,}000$ | $6.02 \times 10^{23}$ |
 | $0.000000000001$      | $1.0 \times 10^{-12}$ |
 
-- The exponent `n` moves the decimal point.
-- A metric prefix is just a scientific-notation scale.
-  - (e.g. kilo $= 10^{3}$, nano $= 10^{-9}$)
+
+>[!TIP] A metric prefix is just a scientific-notation scale. 
+> Kilo $= 10^{3}$, nano $= 10^{-9}$
 
 ---
 
-## Very Big Numbers → Scientific Notation
+## Big Numbers → Scientific Notation
 
-Move the decimal point left; the number of places moved is the positive exponent.
+>[!TIP] Move the decimal point left
+> The number of places moved equals a positive exponent.
 
 $$
 9{,}300{,}000 = 9.3 \times 10^{6}
@@ -170,9 +165,10 @@ $$
 
 ---
 
-## Very Small Numbers → Scientific Notation
+## Small Numbers → Scientific Notation
 
-Move the decimal point right; the number of places moved is the negative exponent.
+>[!TIP] Move the decimal point right.
+> The number of places moved equals a negative exponent.
 
 $$
 0.0000045 = 4.5 \times 10^{-6}
@@ -186,7 +182,8 @@ $$
 
 ## Big Prefixes → Scientific Notation
 
-The prefix gives the power of ten, so a measurement becomes $a \times 10^{n}$.
+>[!TIP] Big prefixes give a positive power of ten.
+> The measurement becomes $a \times 10^{n}$ where $n>0$.
 
 $$
 3.0\ \mathrm{Gm} = 3.0 \times 10^{9}\ \mathrm{m}
@@ -200,7 +197,8 @@ $$
 
 ## Small Prefixes → Scientific Notation
 
-Small prefixes give negative powers of ten.
+>[!TIP] Small prefixes give negative powers of ten.
+> The measurement becomes $a \times 10^{n}$ where $n<0$.
 
 $$
 4.2\ \mu\mathrm{s} = 4.2 \times 10^{-6}\ \mathrm{s}
@@ -212,9 +210,9 @@ $$
 
 ---
 
-## Converting Prefixes Examples
+## Example: Converting Metric Prefixes
 
-### 5 kilometers to meters
+5 kilometers to meters.
 
 $$
 5\ \cancel{\mathrm{km}}\left(\frac{1000\ \mathrm{m}}{1\ \cancel{\mathrm{km}}}\right)=5000\ \mathrm{m}
@@ -222,7 +220,9 @@ $$
 
 ---
 
-## 15 kilograms to milligrams
+## Example: Converting Metric Prefixes
+
+15 kilograms to milligrams.
 
 $$
 15\ \cancel{\mathrm{kg}}\left(\frac{1000\ \cancel{\mathrm{g}}}{1\ \cancel{\mathrm{kg}}}\right)\left(\frac{1000\ \mathrm{mg}}{1\ \cancel{\mathrm{g}}}\right)=15{,}000{,}000\ \mathrm{mg}
@@ -230,7 +230,9 @@ $$
 
 ---
 
-## 2.5 hours to seconds
+## Example: Converting Time Units
+
+2.5 hours to seconds.
 
 $$
 2.5\ \cancel{\mathrm{hr}}\left(\frac{60\ \cancel{\mathrm{min}}}{1\ \cancel{\mathrm{hr}}}\right)\left(\frac{60\ \mathrm{s}}{1\ \cancel{\mathrm{min}}}\right)=9000\ \mathrm{s}
@@ -238,6 +240,49 @@ $$
 
 ---
 
-## 40 km/h to m/s
+## Example: Converting Speed Units
 
-$40\ \frac{\cancel{\mathrm{km}}}{\cancel{\mathrm{h}}} \left(\frac{1000\ \mathrm{m}}{1\ \cancel{\mathrm{km}}}\right) \left(\frac{1\ \cancel{\mathrm{h}}}{3600\ \mathrm{s}}\right) = \frac{40 \times 1000}{3600}\ \frac{\mathrm{m}}{\mathrm{s}} = 11.11\ \frac{\mathrm{m}}{\mathrm{s}}$
+40 km/h to m/s.
+
+$40\ \frac{\cancel{\mathrm{km}}}{\cancel{\mathrm{h}}} \left(\frac{1000\ \mathrm{m}}{1\ \cancel{\mathrm{km}}}\right)\left(\frac{1\ \cancel{\mathrm{h}}}{3600\ \mathrm{s}}\right) = \frac{40 \times 1000\ \mathrm{m}}{3600\ \mathrm{s}}=11.1\ \frac{\mathrm{m}}{\mathrm{s}}$
+
+
+---
+
+## Review
+
+<v-click>
+
+**Measurement** = comparing an unknown quantity to a known quantity.
+
+</v-click>
+
+<v-click>
+
+**Accuracy** = how close the measurements are to the actual value.
+
+</v-click>
+
+<v-click>
+
+**Precision** = how close the measurements are to each other.
+
+</v-click>
+
+<v-click>
+
+**Metric prefixes** are powers of 10 — each prefix is a shortcut for scientific notation.
+
+</v-click>
+
+<v-click>
+
+**Scientific notation**: $a \times 10^{n}$, where $n$ moves the decimal point.
+
+</v-click>
+
+<v-click>
+
+**Unit conversion**: multiply by fractions equal to 1 so unwanted units cancel.
+
+</v-click>

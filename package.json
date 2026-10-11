@@ -13,6 +13,8 @@
   },
   "devDependencies": {
     "@slidev/cli": "52.19.1",
-    "patch-package": "^8.0.1"
+    "pagedjs": "^0.4.3",
+    "patch-package": "^8.0.1",
+    "playwright-chromium": "^1.63.0"
   }
 }

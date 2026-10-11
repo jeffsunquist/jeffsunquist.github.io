@@ -19,37 +19,38 @@ learning_outcomes:
 
 Lesson 4 of 6
 
----
-
-## Objectives
-
 Classify quantities as scalars or vectors and explain the steps used to solve a physics problem.
 
 ---
 
 ## Review: Base & Derived Units
 
-- Seven **SI base units**: meter, kilogram, second, ampere, kelvin, mole, candela
-- A **derived unit** comes from the **formula** that defines the quantity
-  - velocity → $\frac{\text{m}}{\text{s}}$
-  - acceleration → $\frac{\text{m}}{\text{s}^2}$
-  - force → $\frac{\text{kg}\cdot\text{m}}{\text{s}^2}$ = **Newton (N)**
+
+
+**Base units** are the seven fundamental SI units: meter, kilogram, second, ampere, kelvin, mole, candela.
+
+**Derived units** are combinations of base units, built from the formula that defines the quantity.
+
+**To find a derived unit:** find the formula → replace each quantity with its base unit → simplify.
+
+Some derived units get **special names** — like the Newton ($\text{N}$), Joule ($\text{J}$), and Watt ($\text{W}$).
 
 ---
 
 ## Scalars and Vectors
 
-**Scalar** - a number with units.
-- A train traveling with a **speed** of $90 \frac{\text{km}}{\text{h}}$.
+> [!NOTE] Scalar
+> A quantity with a magnitude only (e.g. **speed** of $90 \frac{\text{km}}{\text{h}}$).
 
-**Vector** - a number with units *and direction*.
-- A train traveling with a **velocity** of $90 \frac{\text{km}}{\text{h}}$ *east*.
+> [!NOTE] Vector
+> A quantity magnitude _and direction_ (e.g. **velocity** of $90 \frac{\text{km}}{\text{h}}$ _east_).
 
----
+<center>
 
-## Vector Directions
+<img src="/basic_directions.excalidraw.svg" width="600" />
 
-A vector can be in any direction, but we will use vectors aligned with the $\text{x}$ and $\text{y}$ axes.
+
+</center>
 
 ---
 
@@ -67,111 +68,94 @@ A vector can be in any direction, but we will use vectors aligned with the $\tex
 
 ## Problem Solving Steps
 
-I am given some quantities and I need to find others.
-
-1. **What am I given? What am I finding?**
-2. **What equation connects them?**
-3. **Plug in and solve.**
-4. **Check the units and direction (if applicable).**
+> [!IMPORTANT]
+> 1. **Annotate the problem.**
+> 2. **What equation connects the quantities?**
+> 3. **Plug in and solve.**
+> 4. **Check the units and direction (if applicable).**
 
 ---
 
 ## Example 1
 
-A train travels $180 \text{ km}$ in $2 \text{ h}$. What is its speed?
 
----
+A train travels <mark>$180 \text{ km}$</mark> in <mark>$2 \text{ h}$</mark>. What is its <mark>$\text{speed}$</mark>?
 
-**1. List the quantities.**
 
-$d = 180 \text{ km}$, $t = 2 \text{ h}$, $s = ?$
+<v-click>
 
----
+$s = \frac{d}{t} = \frac{180 \text{ km}}{2 \text{ h}} = 90 \frac{\text{km}}{\text{h}}$
 
-**2. Use an equation that connect the quantities.**
+</v-click>
 
-$$s = \frac{d}{t}$$
+<v-click>
 
----
+$s$: $\frac{\text{km}}{\text{h}}$, scalar
 
-**3. Plug in and solve.**
-
-$$s = \frac{180 \text{ km}}{2 \text{ h}} = 90 \frac{\text{km}}{\text{h}}$$
-
----
-
-**4. Check the units and direction.**
-
-- The unit $\frac{\text{km}}{\text{h}}$ is valid for speed.
-- Speed is a scalar so direction is not required.
+</v-click>
 
 ---
 
 ## Example 2
 
-A bird flies $500 \text{ m}$ east in $25 \text{ s}$. What is its velocity?
+A bird flies <mark>$500 \text{ m}\ \text{east}$</mark> in <mark>$25 \text{ s}$</mark>. What is its <mark>$\text{velocity}$</mark>?
 
----
+<v-click>
 
-**1. List the quantities.**
+$v = \frac{\Delta x}{t} = \frac{500 \text{ m}}{25 \text{ s}} = 20 \frac{\text{m}}{\text{s}} \text{ east}$
 
-$\Delta x = 500 \text{ m}$ (east), $t = 25 \text{ s}$, $v = ?$
+</v-click>
 
----
+<v-click>
 
-**2. Use an equation that connect the quantities.**
+$v$: $\frac{\text{m}}{\text{s}}$, east
 
-$$v = \frac{\Delta x}{t}$$
-
----
-
-**3. Plug in and solve.**
-
-$$v = \frac{500 \text{ m}}{25 \text{ s}} = 20 \frac{\text{m}}{\text{s}}\text{ east}$$
-
----
-
-**4. Check the units and direction.**
-
-- The unit $\frac{\text{m}}{\text{s}}$ is valid for velocity. 
-- Velocity is a vector and its direction is *east*.
+</v-click>
 
 ---
 
 ## Example 3
 
-A car goes from $10 \frac{\text{m}}{\text{s}}$ to $30 \frac{\text{m}}{\text{s}}$ in $5 \text{ s}$. What is its acceleration?
+
+
+A car goes from <mark>$10 \frac{\text{m}}{\text{s}}$</mark> to <mark>$30 \frac{\text{m}}{\text{s}}$</mark> in <mark>$5 \text{ s}$</mark>. What is its <mark>$\text{acceleration}$</mark>?
+
+
+<v-click>
+
+$a = \frac{v - v_0}{t} = \frac{30 \frac{\text{m}}{\text{s}} - 10 \frac{\text{m}}{\text{s}}}{5 \text{ s}} = \frac{20 \frac{\text{m}}{\text{s}}}{5 \text{ s}} = +4 \frac{\text{m}}{\text{s}^2}$
+
+</v-click>
+
+<v-click>
+
+$a$: $\frac{\text{m}}{\text{s}^2}$, positive
+
+</v-click>
 
 ---
 
-**1. List the quantities.**
+## Review
 
-$v_0 = 10 \frac{\text{m}}{\text{s}}$, $v = 30 \frac{\text{m}}{\text{s}}$, $t = 5 \text{ s}$, $a = ?$
+<v-click>
 
----
+**Scalar** = a number with units (e.g. speed, distance, mass).
 
-**2. Use an equation that connect the quantities.**
+</v-click>
 
-$$a = \frac{v - v_0}{t}$$
+<v-click>
 
----
+**Vector** = a number with units _and direction_ (e.g. velocity, displacement, acceleration, force).
 
-**3. Plug in and solve.**
+</v-click>
 
-$$a = \frac{30 \frac{\text{m}}{\text{s}} - 10 \frac{\text{m}}{\text{s}}}{5 \text{ s}} = \frac{20 \frac{\text{m}}{\text{s}}}{5 \text{ s}} = +4 \frac{\text{m}}{\text{s}^2}$$
+<v-click>
 
----
+**Problem-solving steps:**
 
-**4. Check the units and direction.**
+1. Annotate the problem.
+2. What equation connects the quantities?
+3. Plug in and solve.
+4. Check the units and direction (if applicable).
 
-The unit $\frac{\text{m}}{\text{s}^2}$ is valid for acceleration. Acceleration is a vector, but the problem did not give a direction, so we fallback to positive/negative.
-
----
-
-## Review the Structure
-
-1. **What am I given? What am I finding?**
-2. **What equation connects them?**
-3. **Plug in and solve.**
-4. **Check the units and direction (if applicable).**
-
+</v-click>

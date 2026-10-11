@@ -81,6 +81,12 @@
   margin-block: 0.15em;
 }
 
+/* --- Math size: KaTeX defaults to 1.21em; trim to match the body text --- */
+
+.slidev-layout .katex {
+  font-size: 1.05em;
+}
+
 /* --- Tables --- */
 
 .slidev-layout table {
@@ -273,3 +279,64 @@
   pointer-events: none;
   user-select: none;
 }
+
+/* --- Callout boxes (GitHub-alert blockquotes) -----------------------------
+   Authored as `> [!NOTE]` / `[!TIP]` / `[!IMPORTANT]` / `[!WARNING]` /
+   `[!CAUTION]`. Slidev already runs markdown-it-github-alerts, so this only
+   supplies the styling (and recolors the per-type Octicon, which the plugin
+   emits inline). Matching rules are embedded in the textbook build
+   (textbook/build_textbook.mjs); the textbook uses print-scaled values (its
+   base font is 10pt vs the slides' large `rem` sizes) so the two look the same
+   proportionally rather than in absolute units. */
+
+.markdown-alert {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.5em 0.85em;
+  margin: 0.5em 0;
+}
+
+.markdown-alert > :first-child { margin-top: 0; }
+.markdown-alert > :last-child { margin-bottom: 0; }
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 0.05em;
+}
+
+/* First body line hugs the title (moderate tightening, not crowded). */
+.markdown-alert .markdown-alert-title + p,
+.markdown-alert .markdown-alert-title + ul,
+.markdown-alert .markdown-alert-title + ol { margin-top: 0.05em; }
+
+.markdown-alert .markdown-alert-title .octicon {
+  fill: currentColor;
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+}
+
+/* Scoped under .slidev-layout so they outrank the plugin's github-*.css. */
+.slidev-layout .markdown-alert.markdown-alert-note { background: #f8fafc; border-left: 5px solid #64748b; }
+.slidev-layout .markdown-alert.markdown-alert-note .markdown-alert-title { color: #64748b; }
+
+.slidev-layout .markdown-alert.markdown-alert-tip { background: #f0fdfa; border-left: 5px solid #0d9488; }
+.slidev-layout .markdown-alert.markdown-alert-tip .markdown-alert-title { color: #0d9488; }
+
+.slidev-layout .markdown-alert.markdown-alert-important { background: #fffbeb; border-left: 5px solid #d97706; }
+.slidev-layout .markdown-alert.markdown-alert-important .markdown-alert-title { color: #d97706; }
+
+.slidev-layout .markdown-alert.markdown-alert-warning { background: #fff7ed; border-left: 5px solid #ea580c; }
+.slidev-layout .markdown-alert.markdown-alert-warning .markdown-alert-title { color: #ea580c; }
+
+.slidev-layout .markdown-alert.markdown-alert-caution { background: #fef2f2; border-left: 5px solid #dc2626; }
+.slidev-layout .markdown-alert.markdown-alert-caution .markdown-alert-title { color: #dc2626; }
+
+/* Callout box text: one step smaller than the surrounding slide text. */
+.slidev-layout .markdown-alert p,
+.slidev-layout .markdown-alert li { font-size: 2rem; line-height: 1.25; }
+.slidev-layout .markdown-alert .markdown-alert-title { font-size: 1.7rem; }

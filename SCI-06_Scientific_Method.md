@@ -19,6 +19,8 @@ learning_outcomes:
 
 Lesson 6 of 6
 
+Write a hypothesis, identify variables and control and experimental groups, and evaluate the hypothesis after the experiment.
+
 ---
 
 ## Review: Graphing
@@ -30,13 +32,10 @@ Lesson 6 of 6
 
 ---
 
-## Objectives
-
-Write a hypothesis, identify variables and control and experimental groups, and evaluate the hypothesis after the experiment.
-
----
-
 ## The Scientific Method
+
+> [!NOTE] Scientific Method
+> **Observation → Question → Hypothesis → Experiment → Conclusion.**
 
 | Step        | What happens                                                       |
 | ----------- | ------------------------------------------------------------------ |
@@ -50,14 +49,12 @@ Write a hypothesis, identify variables and control and experimental groups, and 
 
 ## Hypothesis
 
-- A **hypothesis** is a **testable** and **falsifiable** prediction based on observations.
-- It is **not** a random guess: it is something you can test with an experiment, and the data will either support it or not.
-- Written as an "**if... then...**" statement:
-  - *If* the ramp is longer, *then* the ball will roll farther.
+> [!NOTE]
+> A **hypothesis** is a **testable** and **falsifiable** prediction based on observations — **not** a random guess. Write it as an "**if… then…**" statement (e.g. _If_ the ramp is longer, _then_ the ball will roll farther).
 
 ---
 
-## Hypothesis or Not?
+## Practice: Hypothesis or Not?
 
 Which of these is a **hypothesis**?
 
@@ -98,22 +95,22 @@ To run a **fair** and **repeatable** test, keep every other variable the same:
 </v-clicks>
 
 ---
+zoom: 0.9
+---
 
-#### Example: A student drops a ball from different heights and measures how high it bounces.
+## Example: A student drops a ball from different heights and measures how high it bounces.
 
-| Step | In this case                                               |
-| ---------------------- | ---------------------------------------------------------- |
-| Question               | Does the drop height affect how high the ball bounces?     |
-| Hypothesis             | If the ball is dropped from a greater height, then it will bounce higher. |
-| Independent variable   | drop height (what we change)                               |
-| Dependent variable     | bounce height (what we measure)                            |
-| Control variable       | the **same ball** (kept the same)                          |
-| Experimental group     | the drop from a **higher** height (gets the change)        |
-| Control group          | the drop from the **original** height (baseline)           |
+- **Question:** Does the drop height affect how high the ball bounces?
+- **Hypothesis:** If the ball is dropped from a greater height, then it will bounce higher.
+- **Independent variable:** drop height (what we change)
+- **Dependent variable:** bounce height (what we measure)
+- **Control variable:** the **same ball** (kept the same)
+- **Experimental group:** the drop from a **higher** height (gets the change)
+- **Control group:** the drop from the **original** height (baseline)
 
 ---
 
-## Check: Experimental or Control?
+## Practice: Experimental or Control?
 
 A student tests how the battery voltage affects the brightness of a lamp. Some lamps run at the original voltage; the same kind run at a higher voltage.
 

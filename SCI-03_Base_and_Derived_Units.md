@@ -20,40 +20,33 @@ learning_outcomes:
 
 Lesson 3 of 6
 
----
-
-## Objectives
-
 Distinguish base units from derived units and derive the unit of a quantity from its formula.
 
 ---
+zoom: 0.9
+---
 
-## Review: The Metric System
+## Review: Measurements and the Metric System
 
-Last lesson, we covered the **metric system** and **prefixes**.
 
-<v-click>
+**Measurement** = comparing an unknown quantity to a known quantity.
 
-- The metric system runs on **powers of 10**.
+**Accuracy** = how close the average is to the actual value.
 
-</v-click>
+**Precision** = how close the measurements are to each other.
 
-<v-click>
+**Metric prefixes** are powers of 10 — each prefix is a shortcut for scientific notation.
 
-- We use **base units** to measure quantities like length, mass, and time.
+**Scientific notation**: $a \times 10^{n}$, where $n$ moves the decimal point.
 
-</v-click>
+**Unit conversion**: multiply by fractions equal to 1 so unwanted units cancel.
 
-<v-click>
-
-But what are all the base units?
-
-</v-click>
 
 ---
 
 ## International System of Units (SI)
-There are seven SI base units.
+
+> [!TIP] There are seven SI base units.
 
 | Quantity            | Unit     | Symbol |
 | ------------------- | -------- | ------ |
@@ -61,7 +54,7 @@ There are seven SI base units.
 | mass                | kilogram | $\text{kg}$   |
 | time                | second   | $\text{s}$    |
 | electric current    | ampere   | $\text{A}$    |
-| temperature         | Kelvin   | $\text{K}$    |
+| temperature         | kelvin   | $\text{K}$    |
 | amount of substance | mole     | $\text{mol}$  |
 | luminous intensity  | candela  | $\text{cd}$   |
 
@@ -80,7 +73,8 @@ Instead, we can express this with a **derived unit**: **meters per second** $\le
 </v-click>
 <v-click>
 
-A **derived unit** is a combination of base units.
+> [!NOTE] Derived Unit
+> A combination of base units.
 
 </v-click>
 
@@ -95,8 +89,8 @@ A **derived unit** is a combination of base units.
 ### Example: Area
 
 1. **Formula:** $\text{Area} = \text{length} \times \text{width}$
-2. **Base Units:** Both length and width are measured in **meters ($\text{m}$)** .
-3. **Derived Unit:** $\text{m} \times \text{m} = \text{m}^2$ (meters squared).
+2. **Base Units:** Both length and width are measured in $\text{m}$ (meters).
+3. Area is measured with a **derived unit:** $\text{m} \times \text{m} = \text{m}^2$ (meters squared).
 
 </v-click>
 
@@ -104,9 +98,10 @@ A **derived unit** is a combination of base units.
 
 ## To find a derived unit:
 
-1. **Find the formula** for the quantity.
-2. **Replace** each quantity in the formula with its **SI base unit**.
-3. **Simplify** the expression.
+> [!TIP]
+> 1. **Find the formula** for the quantity.
+> 2. **Replace** each quantity with its **SI base unit**.
+> 3. **Simplify** the expression.
 
 ---
 
@@ -166,7 +161,7 @@ $$F = m \times a$$
 </v-click>
 <v-click>
 
-$$F = \text{kg} \frac{\text{m}}{\text{s}^2} = \text{N}$$
+$$F = \text{kg}\cdot\frac{\text{m}}{\text{s}^2} = \text{N}$$
 - *kilograms meters per second squared*, *Newton*
 
 </v-click>
@@ -175,46 +170,106 @@ $$F = \text{kg} \frac{\text{m}}{\text{s}^2} = \text{N}$$
 
 ## Special Derived Units
 
-Some derived units appear so often that they get their own names.
+>[!TIP] Some derived units appear so often that they get their own names.
 
 | Derived Quantity | Formula | Base Units | Special Name & Symbol |
 | :--------------- | :------ | :--------- | :-------------------- |
-| **Force**        | $F = ma$ | $\frac{\text{kg} \cdot \text{m}}{\text{s}^2}$ | **Newton ($\text{N}$)** |
-| **Energy/Work**  | $W = Fd$ | $\frac{\text{kg} \cdot \text{m}^2}{\text{s}^2}$ | **Joule ($\text{J}$)** |
-| **Power**        | $P = \frac{W}{t}$ | $\frac{\text{kg} \cdot \text{m}^2}{\text{s}^3}$ | **Watt ($\text{W}$)** |
+| **Force**        | $F = ma$ | $\text{kg} \cdot \frac{\text{m}}{\text{s}^2}$ | **Newton ($\text{N}$)** |
+| **Energy/Work**  | $W = Fd$ | $\text{kg} \cdot \frac{\text{m}^2}{\text{s}^2}$ | **Joule ($\text{J}$)** |
+| **Power**        | $P = \frac{W}{t}$ | $\text{kg} \cdot \frac{\text{m}^2}{\text{s}^3}$ | **Watt ($\text{W}$)** |
 | **Frequency**    | $f = \frac{1}{T}$ | $\frac{1}{\text{s}}$ | **Hertz ($\text{Hz}$)** |
 | **Charge**       | $Q = I \cdot t$ | $\text{A} \cdot \text{s}$ | **Coulomb ($\text{C}$)** |
 
-
 ---
 
-## Exercise 1: Unit Conversion
+## Practice: Calculating Velocity
 
-**Convert 30 km/h to m/s**
+Velocity is displacement over time: $v = \dfrac{\Delta x}{t}$
+
+A jogger runs $120 \text{ m}$ east in $30 \text{ s}$. Calculate the jogger's velocity.
 
 <v-click>
 
-$30 \frac{\text{km}}{\text{h}} \times \frac{1000 \text{ m}}{1 \text{ km}} \times \frac{1 \text{ h}}{3600 \text{ s}}  = 8.33 \frac{\text{m}}{\text{s}}$
+$v = \dfrac{120 \text{ m}}{30 \text{ s}}$
+
+</v-click>
+
+<v-click>
+
+$v = 4 \frac{\text{m}}{\text{s}} \text{ east}$
 
 </v-click>
 
 ---
 
-## Exercise 2: Unit Conversion
+## Practice: Calculating Acceleration
+
+Acceleration is the change in velocity over time: $a = \dfrac{\Delta v}{t}$
+
+The magnitude of a bicycle's velocity increases by $8 \frac{\text{m}}{\text{s}}$ over a time of $4 \text{ s}$. Calculate the magnitude of its acceleration.
+
+<v-click>
+
+$a = \dfrac{8 \frac{\text{m}}{\text{s}}}{4 \text{ s}}$
+
+</v-click>
+
+<v-click>
+
+$a = 2 \frac{\text{m}}{\text{s}^2}$
+
+</v-click>
+
+---
+
+## Practice: Calculating Force
 
 Weight is the force of gravity: $F_g = mg$
 
-Calculate the weight of a $600 \text{ kg}$ space module on the surface of the Sun, where $g = 274 \frac{\text{m}}{\text{s}^2}$.
+Calculate the weight of a $50 \text{ kg}$ student standing on Earth, where $g = 9.8 \frac{\text{m}}{\text{s}^2}$.
 
 <v-click>
 
-$F_g = (600 \text{ kg}) \times \left(274 \frac{\text{m}}{\text{s}^2}\right)$
+$F_g = (50 \text{ kg})\left(9.8 \frac{\text{m}}{\text{s}^2}\right)$
 
 </v-click>
 
 <v-click>
 
-$F_g = 164{,}400 \ \text{N} = 164.4 \text{ kN}$
+$F_g = 490 \ \text{kg}\cdot\frac{\text{m}}{\text{s}^2}$
 
 </v-click>
 
+<v-click>
+
+$F_g = 490 \ \text{N}$
+
+</v-click>
+
+---
+
+## Review
+
+<v-click>
+
+**Base units** are the seven fundamental SI units: meter, kilogram, second, ampere, kelvin, mole, candela.
+
+</v-click>
+
+<v-click>
+
+**Derived units** are combinations of base units, built from the formula that defines the quantity.
+
+</v-click>
+
+<v-click>
+
+**To find a derived unit:** find the formula → replace each quantity with its base unit → simplify.
+
+</v-click>
+
+<v-click>
+
+Some derived units get **special names** — like the Newton ($\text{N}$), Joule ($\text{J}$), and Watt ($\text{W}$).
+
+</v-click>
