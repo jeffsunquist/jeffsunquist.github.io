@@ -11,3 +11,6 @@ AGENTS.md
 
 # Generated textbook build output (source of truth = the lesson decks)
 textbook/build/
+
+# Root-level backup archives (e.g. SCI-Slides.zip)
+/*.zip

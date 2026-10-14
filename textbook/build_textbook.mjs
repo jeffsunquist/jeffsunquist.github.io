@@ -1,17 +1,19 @@
 // =============================================================================
-// build_textbook.mjs — build the Quarter-1 textbook (flowing document).
+// build_textbook.mjs — build the Quarter-1 textbook PDFs (2-column).
 //
 // The lesson decks are the single source of truth. This script:
 //   1. reads each deck, strips frontmatter, splits slides, drops video slides,
 //   2. strips Slidev-only syntax (<v-click>, <Transform>, ...),
 //   3. renders each slide to HTML with markdown-it (+ KaTeX),
-//   4. wraps each slide in <section class="slide"> (break-inside: avoid),
-//   5. writes one HTML document per grade and prints it to A4 PDF with
-//      Playwright Chromium (served over a small local HTTP server so /public
-//      assets and fonts resolve).
+//   4. wraps each slide in <section class="slide"> and lays the book out in
+//      2 columns (.cols), title page + TOC single-column,
+//   5. prints each book to A4 PDF with Playwright Chromium (native pagination,
+//      served over a small local HTTP server so /public assets and fonts load),
+//      then fills the TOC and stamps page numbers from the produced PDF.
 //
-// Nothing in the lesson decks or public/ is modified. Run:
-//     node textbook/build_textbook.mjs [--no-pdf]
+// Books: one shared SCI book and a Kinematics book per grade. Each is copied to
+// pdfs/<publishName>. Nothing in the lesson decks or public/ is modified. Run:
+//     node textbook/build_textbook.mjs [--sci | --kin] [--no-pdf]
 // =============================================================================
 
 import MarkdownIt from 'markdown-it'
@@ -20,7 +22,7 @@ import katex from 'katex'
 import { chromium } from 'playwright-chromium'
 import { createServer } from 'node:http'
 import { readFile, writeFile, mkdir, stat } from 'node:fs/promises'
-import { createReadStream, readFileSync } from 'node:fs'
+import { createReadStream } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import { fileURLToPath } from 'node:url'
@@ -29,14 +31,6 @@ import path from 'node:path'
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = path.join(ROOT, 'textbook', 'build')
 const WITH_PDF = !process.argv.includes('--no-pdf')
-// Spike: render a 2-column, atomic-slide book and print natively (no Paged.js)
-// so we can measure page counts. Orientation via SPIKE_ORIENT=landscape.
-const SPIKE = process.argv.includes('--spike')
-const ORIENT = process.env.SPIKE_ORIENT === 'landscape' ? 'landscape' : 'portrait'
-// SPIKE_FIGSPAN: 0 = keep figures in-column; N = span a figure's slide when
-// the image aspect ratio is >= N (a value like 3 keeps only the widest graphs).
-const SPIKE_FIGSPAN = parseFloat(process.env.SPIKE_FIGSPAN || '0') || 0
-const SPIKE_TAG = SPIKE_FIGSPAN > 0 ? `_figspan${SPIKE_FIGSPAN}` : ''
 
 // --------------------------------------------------------------------------
 // SCI-only textbook: portrait, 2-column content, own title + TOC pages,
@@ -57,45 +51,46 @@ const SCI_BOOK = {
   coverGrade: 'Grade 6–7',
   coverRule: 'Quarter 1',
   units: [['Unit 1 — Scientific Inquiry', SCI_DECKS]],
+  publishName: 'Textbook_SCI.pdf',
 }
 
 // --------------------------------------------------------------------------
-// Which decks make up each grade's textbook, grouped by unit.
-const BOOKS = {
-  g6: [
-    ['Unit 1 — Scientific Inquiry', [
-      'SCI-01_Observations',
-      'SCI-02_Measurements_and_Metric_Prefixes',
-      'SCI-03_Base_and_Derived_Units',
-      'SCI-04_Problem_Solving',
-      'SCI-05_Graphs',
-      'SCI-06_Scientific_Method',
-    ]],
-    ['Unit 2 — Kinematics', [
-      'KIN-01_Position_and_Reference_Frames',
-      'KIN-02_Speed_and_Velocity_G6',
-      'KIN-03_Acceleration_G6',
-      'KIN-04_Motion_Graphs_G6',
-    ]],
-  ],
-  g7: [
-    ['Unit 1 — Scientific Inquiry', [
-      'SCI-01_Observations',
-      'SCI-02_Measurements_and_Metric_Prefixes',
-      'SCI-03_Base_and_Derived_Units',
-      'SCI-04_Problem_Solving',
-      'SCI-05_Graphs',
-      'SCI-06_Scientific_Method',
-    ]],
-    ['Unit 2 — Kinematics', [
-      'KIN-01_Position_and_Reference_Frames',
-      'KIN-02_Speed_and_Velocity_G7',
-      'KIN-03_Acceleration_G7',
-      'KIN-04_Motion_Graphs_G7',
-      'KIN-05_Area_Under_Velocity_Time_G7',
-    ]],
-  ],
+// The textbooks: one SCI book (shared across grades) and a Kinematics book per
+// grade. All are 2-column. `publishName` is the PDF filename copied into pdfs/.
+const KIN_DECKS_G6 = [
+  'KIN-01_Position_and_Reference_Frames_G6',
+  'KIN-02_Speed_and_Velocity_G6',
+  'KIN-03_Acceleration_G6',
+  'KIN-04_Position_Time_Graphs_G6',
+]
+const KIN_DECKS_G7 = [
+  'KIN-01_Position_and_Reference_Frames_G7',
+  'KIN-02_Speed_and_Velocity_G7',
+  'KIN-03_Acceleration_G7',
+  'KIN-04_Position_Time_Graphs_G7',
+  'KIN-05_Velocity_Time_Graphs_G7',
+]
+const KIN_BOOK_G6 = {
+  key: 'kin-g6',
+  outStem: 'textbook_kin_g6',
+  coverTitle: 'Physics',
+  coverSub: 'Kinematics',
+  coverGrade: 'Grade 6',
+  coverRule: 'Quarter 1',
+  units: [['Unit 2 — Kinematics', KIN_DECKS_G6]],
+  publishName: 'Textbook_KIN_G6.pdf',
 }
+const KIN_BOOK_G7 = {
+  key: 'kin-g7',
+  outStem: 'textbook_kin_g7',
+  coverTitle: 'Physics',
+  coverSub: 'Kinematics',
+  coverGrade: 'Grade 7',
+  coverRule: 'Quarter 1',
+  units: [['Unit 2 — Kinematics', KIN_DECKS_G7]],
+  publishName: 'Textbook_KIN_G7.pdf',
+}
+const TEXTBOOKS = [SCI_BOOK, KIN_BOOK_G6, KIN_BOOK_G7]
 
 // --------------------------------------------------------------------------
 // Markdown-it + KaTeX (markdown-it-katex style rules).
@@ -253,13 +248,30 @@ function tagImages(html) {
   })
 }
 
-async function deckSlides(stem) {
-  const source = await readFile(path.join(ROOT, `${stem}.md`), 'utf8')
+// Resolve a deck/fragment file into printed slide chunks. Slides imported via
+// Slidev `src:` frontmatter (a frontmatter-only chunk) are inlined in place,
+// recursively; the path is resolved relative to the importing file, and
+// `importChain` guards against cycles. The same filters apply to imported
+// slides (drop empty, drop video, drop presentation practice/review slides).
+async function slidesFromFile(absPath, importChain) {
+  const source = await readFile(absPath, 'utf8')
   const body = splitHeadmatter(source).replace(/^\n+/, '')
   const slides = []
   for (const raw of body.split(SEP_RE)) {
     const chunk = raw.trim()
-    if (!chunk || isFrontmatterOnly(chunk)) continue
+    if (!chunk) continue
+    if (isFrontmatterOnly(chunk)) {
+      const src = (chunk.match(/^src:\s*(.+)$/m) || [])[1]
+      if (src) {
+        const target = path.resolve(path.dirname(absPath), src.trim())
+        if (!importChain.has(target)) {
+          const nextChain = new Set(importChain)
+          nextChain.add(target)
+          slides.push(...await slidesFromFile(target, nextChain))
+        }
+      }
+      continue
+    }
     if (/<iframe/i.test(chunk)) continue
     // Print-only: drop presentation practice/review slides.
     const h = chunk.match(/^#{1,4}[ \t]+(.+)$/m)
@@ -267,6 +279,11 @@ async function deckSlides(stem) {
     slides.push(stripSlidev(chunk))
   }
   return slides
+}
+
+async function deckSlides(stem) {
+  const abs = path.join(ROOT, `${stem}.md`)
+  return slidesFromFile(abs, new Set([abs]))
 }
 
 async function deckTitle(stem) {
@@ -290,15 +307,6 @@ async function deckHeading(stem) {
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
 // --------------------------------------------------------------------------
-const COVER = grade => `
-<section class="cover">
-  <h1>Physics</h1>
-  <p class="sub">Quarter 1 Textbook</p>
-  <p class="sub">Grade ${grade}</p>
-  <p class="rule">Scientific Inquiry &amp; Kinematics</p>
-  <p class="lines">Name: ____________________&nbsp;&nbsp;Class: __________&nbsp;&nbsp;Date: __________</p>
-</section>`
-
 const STYLE = `
 @font-face { font-family:'Patrick Hand'; font-weight:400; font-display:block;
   src:url('/public/fonts/PatrickHand-Regular.ttf') format('truetype'); }
@@ -360,7 +368,7 @@ blockquote { background:#f9fafb; border-left:3px solid #d1d5db; margin:.5em 0; p
 .toc a .num { margin-left:auto; color:#6b7280; font-variant-numeric:tabular-nums; }
 .toc .u > a { font-family:'Patrick Hand', sans-serif; font-weight:700; font-size:1.15rem; }
 
-/* Page numbers are injected per Paged.js page box (see printPdf). */
+/* Page numbers are stamped in the PDF post-step (see stampPageNumbers). */
 .pagedjs_page { position: relative; }
 .pagedjs-page-number { position:absolute; left:0; right:0; bottom:6mm; text-align:center;
   color:#6b7280; font-size:.85rem; }
@@ -375,110 +383,6 @@ const COLS_STYLE = STYLE + `
 .cover .byline { margin-top:2.5em; color:#6b7280; font-size:.9rem;
   font-family:'Patrick Hand', sans-serif; }
 `
-
-const SPIKE_STYLE = `
-@font-face { font-family:'Patrick Hand'; font-weight:400; font-display:block;
-  src:url('/public/fonts/PatrickHand-Regular.ttf') format('truetype'); }
-@page { size: A4 ${ORIENT}; margin: 12mm; }
-html { font-size: 10pt; }
-body { margin:0; color:#1f2937; line-height:1.35;
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-h1,h2,h3,h4 { font-family:'Patrick Hand', sans-serif; line-height:1.15; color:#111827; margin:.5em 0 .2em; }
-h1 { font-size:1.55rem; } h2 { font-size:1.3rem; } h3 { font-size:1.15rem; } h4 { font-size:1.0rem; }
-h2,h3 { break-after:avoid; }
-p { margin:.3em 0; } ul,ol { margin:.3em 0 .3em 1.2em; padding:0; } li { margin:.08em 0; }
-img { display:block; margin:.4em auto; height:auto; max-width:100%; max-height:80mm; break-inside:avoid; }
-img.fig-svg { width:auto; }
-.center { text-align:center; }
-table { border-collapse:collapse; margin:.4em auto; font-size:.9rem; break-inside:avoid; }
-th,td { border:1px solid #e5e7eb; padding:.15em .55em; text-align:left; }
-.cals { }
-.markdown-alert { border:1px solid #e5e7eb; border-left:5px solid #64748b; background:#f8fafc;
-  border-radius:6px; padding:.5em .85em; margin:.5em 0; break-inside:avoid; }
-.markdown-alert > :first-child { margin-top:0; } .markdown-alert > :last-child { margin-bottom:0; }
-.markdown-alert-title { display:flex; align-items:center; gap:.4em; font-weight:700;
-  color:#64748b; margin:0 0 .1em; line-height:1.2;
-  font-family:'Patrick Hand', sans-serif; font-size:.85rem; }
-.markdown-alert-title .octicon { fill:currentColor; width:1em; height:1em; flex:0 0 auto; }
-.markdown-alert-title + p,
-.markdown-alert-title + ul,
-.markdown-alert-title + ol { margin-top:.15em; }
-.markdown-alert p, .markdown-alert li { font-size:.85rem; line-height:1.3; }
-.katex-block { text-align:center; margin:.45em 0; }
-.cover { break-after:page; text-align:center; }
-.cover h1 { font-size:2.6rem; }
-.toc { break-after:page; }
-.cols { column-count:2; column-gap:8mm; }
-.slide { break-inside:avoid; margin:0 0 3mm; }
-.slide.span { column-span:all; }
-.unit { column-span:all; margin:.2em 0 3mm; }
-.unit h1 { font-size:1.8rem; border-bottom:2px solid #d1d5db; padding-bottom:.1em; }
-`
-
-function imgAspect(src) {
-  try {
-    const f = path.join(ROOT, src)          // src is '/public/...'
-    const s = readFileSync(f, 'utf8').slice(0, 3000)
-    let m = s.match(/viewBox="([-\d. ]+)"/)
-    if (m) { const v = m[1].split(/\s+/).map(Number); return v[3] ? v[2] / v[3] : 0 }
-    m = s.match(/width="([\d.]+)[a-z]*"\s+height="([\d.]+)/)
-    return m && parseFloat(m[2]) ? parseFloat(m[1]) / parseFloat(m[2]) : 99
-  } catch { return 99 }
-}
-
-function firstImgSpan(rendered) {
-  const m = rendered.match(/<img[^>]*src="([^"]+)"/)
-  return m ? imgAspect(m[1]) >= SPIKE_FIGSPAN : false
-}
-
-async function build(grade) {
-  const toc = ['<section class="toc"><h1>Contents</h1><ul>']
-  const body = []
-  let unitNo = 0
-  for (const [unit, decks] of BOOKS[grade]) {
-    unitNo += 1
-    const unitId = `unit-${unitNo}`
-    toc.push(`<li class="u"><a href="#${unitId}">${unit}<span class="num"></span></a></li>`)
-    body.push(`<section class="unit" id="${unitId}"><h1>${unit}</h1></section>`)
-    for (const deck of decks) {
-      const chId = slug(deck)
-      toc.push(`<li class="c"><a href="#${chId}">${await deckTitle(deck)}<span class="num"></span></a></li>`)
-      body.push(`<section class="chapter" id="${chId}">`)
-      let firstSlide = true
-      for (const slide of await deckSlides(deck)) {
-        const rendered = tagImages(md.render(slide))
-        const isFig = SPIKE_FIGSPAN > 0 && firstImgSpan(rendered)
-        const cls = SPIKE && (firstSlide || isFig) ? 'slide span' : 'slide'
-        body.push(`<section class="${cls}">\n${rendered}\n</section>`)
-        firstSlide = false
-      }
-      body.push('</section>')
-    }
-  }
-  toc.push('</ul></section>')
-  const styleSheet = SPIKE ? SPIKE_STYLE : STYLE
-  const content = SPIKE
-    ? `<div class="cols">\n${body.join('\n')}\n</div>`
-    : body.join('\n')
-  const paged = SPIKE ? '' : `<script>window.PagedConfig = { auto: false };</script>
-<script src="/node_modules/pagedjs/dist/paged.polyfill.js"></script>`
-  const html = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<title>Physics Quarter 1 Textbook — Grade ${grade}</title>
-<link rel="stylesheet" href="/node_modules/katex/dist/katex.min.css">
-<style>${styleSheet}</style></head>
-<body>
-${COVER(grade)}
-${toc.join('\n')}
-${content}
-${paged}
-</body></html>`
-  await mkdir(OUT, { recursive: true })
-  const htmlPath = path.join(
-    OUT, SPIKE ? `spike_${ORIENT}${SPIKE_TAG}_${grade}.html` : `textbook_q1_${grade}.html`)
-  await writeFile(htmlPath, html)
-  return htmlPath
-}
 
 // --------------------------------------------------------------------------
 // Minimal static server rooted at the repo so /public and /node_modules load.
@@ -503,71 +407,6 @@ function startServer() {
     }
   })
   return new Promise(resolve => server.listen(0, '127.0.0.1', () => resolve(server)))
-}
-
-async function printPdf(server, grade) {
-  const { port } = server.address()
-  const htmlName = SPIKE ? `spike_${ORIENT}${SPIKE_TAG}_${grade}.html`
-                         : `textbook_q1_${grade}.html`
-  const browser = await chromium.launch()
-  try {
-    const page = await browser.newPage()
-    await page.goto(`http://127.0.0.1:${port}/textbook/build/${htmlName}`,
-      { waitUntil: 'networkidle' })
-    await page.evaluate(() => document.fonts.ready)
-    await page.evaluate(() => Promise.all(Array.from(document.images)
-      .map(img => img.complete ? 0 : new Promise(r => { img.onload = img.onerror = r }))))
-
-    // Raster images print at 300 dpi: physical width = pixels / 300 in
-    // (96 CSS px per inch). max-width:100% still caps them to the column.
-    await page.evaluate(() => {
-      document.querySelectorAll('img.fig-raster').forEach(img => {
-        if (img.naturalWidth) img.style.width = `${(img.naturalWidth * 96 / 300).toFixed(3)}px`
-      })
-    })
-
-    if (SPIKE) {
-      // Native Chromium pagination (no Paged.js), so CSS columns work.
-      const pdfPath = path.join(OUT, `spike_${ORIENT}${SPIKE_TAG}_${grade}.pdf`)
-      await page.pdf({ path: pdfPath, preferCSSPageSize: true, printBackground: true })
-      return pdfPath
-    }
-
-    // Paginate with Paged.js, then number pages and fill the TOC ourselves
-    // (Paged.js' element-level counter-reset is unreliable). Numbering starts
-    // at 1 on the page holding the first unit; front matter stays unnumbered.
-    const info = await page.evaluate(async () => {
-      const previewer = new window.Paged.Previewer()
-      await previewer.preview()
-      const pages = [...document.querySelectorAll('.pagedjs_page')]
-      const firstUnit = document.querySelector('.unit')
-      let bodyStart = pages.findIndex(pg => firstUnit && pg.contains(firstUnit))
-      if (bodyStart < 0) bodyStart = pages.length
-      const numOf = pg => { const i = pages.indexOf(pg); return i >= bodyStart ? i - bodyStart + 1 : 0 }
-      pages.forEach((pg, i) => {
-        if (i < bodyStart) return
-        const d = document.createElement('div')
-        d.className = 'pagedjs-page-number'
-        d.textContent = String(i - bodyStart + 1)
-        pg.appendChild(d)
-      })
-      document.querySelectorAll('.toc a[href^="#"]').forEach(a => {
-        const el = document.getElementById(a.getAttribute('href').slice(1))
-        const pg = el && el.closest('.pagedjs_page')
-        const n = pg ? numOf(pg) : 0
-        a.querySelector('.num').textContent = n ? String(n) : ''
-      })
-      return { pages: pages.length, bodyStart }
-    })
-    console.log(`  ${grade}: ${info.pages} pages (front matter ${info.bodyStart})`)
-
-    const pdfPath = path.join(OUT, `textbook_q1_${grade}.pdf`)
-    await page.pdf({ path: pdfPath, preferCSSPageSize: true, printBackground: true,
-      margin: { top: 0, right: 0, bottom: 0, left: 0 } })
-    return pdfPath
-  } finally {
-    await browser.close()
-  }
 }
 
 // --------------------------------------------------------------------------
@@ -714,31 +553,22 @@ async function buildSciBook(server, book) {
 }
 
 async function main() {
-  if (process.argv.includes('--sci')) {
-    const srv = await startServer()
-    try {
-      const pdf = await buildSciBook(srv, SCI_BOOK)
-      console.log(`built ${path.relative(ROOT, pdf)}`)
-      await mkdir(path.join(ROOT, 'pdfs'), { recursive: true })
-      const dest = path.join(ROOT, 'pdfs', 'Textbook_SCI.pdf')
-      await writeFile(dest, await readFile(pdf))
-      console.log(`published ${path.relative(ROOT, dest)}`)
-    } finally {
-      srv.close()
-    }
-    return
-  }
+  const books = process.argv.includes('--sci') ? [SCI_BOOK]
+    : process.argv.includes('--kin') ? [KIN_BOOK_G6, KIN_BOOK_G7]
+    : TEXTBOOKS
   const server = WITH_PDF ? await startServer() : null
   try {
-    for (const grade of Object.keys(BOOKS)) {
-      const htmlPath = await build(grade)
-      const rel = path.relative(ROOT, htmlPath)
-      if (server) {
-        const pdf = await printPdf(server, grade)
-        console.log(`built ${rel} -> ${path.relative(ROOT, pdf)}`)
-      } else {
-        console.log(`built ${rel}`)
+    await mkdir(path.join(ROOT, 'pdfs'), { recursive: true })
+    for (const book of books) {
+      if (!server) {
+        await buildColsBook(book, {})
+        console.log(`built textbook/build/${book.outStem}.html`)
+        continue
       }
+      const pdf = await buildSciBook(server, book)
+      const dest = path.join(ROOT, 'pdfs', book.publishName)
+      await writeFile(dest, await readFile(pdf))
+      console.log(`built ${path.relative(ROOT, pdf)} -> ${path.relative(ROOT, dest)}`)
     }
   } finally {
     if (server) server.close()

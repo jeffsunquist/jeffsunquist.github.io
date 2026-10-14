@@ -4,7 +4,7 @@ G6–G7 Physics lesson decks built with [Slidev](https://sli.dev).
 
 Visit the site at **https://www.basado.org/**
 
-Each deck is served at `/<deck>/` (e.g. `/KIN-01_Position_and_Reference_Frames/`).
+Each deck is served at `/<deck>/` (e.g. `/KIN-01_Position_and_Reference_Frames_G6/`).
 Grade-specific decks carry a `_G6` / `_G7` filename suffix:
 
 - `KIN-02_Speed_and_Velocity_G6.md` → `/KIN-02_Speed_and_Velocity_G6/`
@@ -12,6 +12,18 @@ Grade-specific decks carry a `_G6` / `_G7` filename suffix:
 
 Decks **without** a suffix are shared and appear in both grade columns. Merged
 source decks are kept as `.md.hold` reference copies and are not built.
+
+The **KIN**, **FOR**, and **SCI** decks are composed from standalone slide files:
+each content slide lives one-file-per-slide under `slides/kin/`, `slides/for/`,
+`slides/ene/`, and `slides/sci/`, and a deck lists the slides it uses as `src:`
+imports (Slidev's built-in slide-import feature). A slide shared by Grade 6 and
+Grade 7 — or across decks — is a single file referenced by each deck, so editing
+it updates them all — no duplication. Recap slides are fragments too: a lesson's
+closing recap and the *same* recap opening the next lesson are one shared file
+(`slides/<topic>/recap-<topic>.md`, heading `## Review: <Topic>`). Only the title
+slide and its objective stay inline in the deck. Add, remove, or reorder a
+content slide by editing the `src:` list in the relevant deck file. The textbook
+builder resolves these imports when it compiles the PDFs.
 
 The landing `index.html` is rendered from `scripts/index.template.html` and has a
 **Lessons** section and a **Handouts** section, each split into a Grade 6 and a

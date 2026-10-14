@@ -1,0 +1,5 @@
+{
+  "slidev.include": ["**/KIN-*.md", "**/FOR-*.md", "**/SCI-*.md"],
+  "slidev.force-enabled": true,
+  "slidev.port": 3030
+}
