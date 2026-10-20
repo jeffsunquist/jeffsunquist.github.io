@@ -2,6 +2,7 @@
 LO:
   - KIN-25
   - KIN-26
+  - KIN-34
 ---
 
 ## Example: Speed

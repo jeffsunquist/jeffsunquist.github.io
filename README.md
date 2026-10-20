@@ -32,7 +32,8 @@ element tier list (from `data/element_tier.csv`). Lesson cards show an
 icon, the lesson code, "Lesson N of M", the topic, and the deck's objective,
 with an All / Grade 6 / Grade 7 filter. Handouts are
 classified by their `_G6` / `_G7` filename token (a file with neither token
-appears in both columns).
+appears in both columns), and include the A4 double-sided **formula sheets**
+(`pdfs/Formula_Sheet_G6.pdf` / `_G7.pdf`, built from `reference/formula-sheet-*.md`).
 
 There is also a **Sims (WIP)** section listing standalone p5.js physics
 simulations. Each sim lives in `sims/<slug>/` (a self-contained page plus a

@@ -66,6 +66,7 @@
     margin: 0;
   }
   .section-head .rule { flex: 1; height: 1px; background: var(--line); }
+  .section-head .count { color: var(--faint); font-size: 0.8rem; }
 
   .files {
     list-style: none;
@@ -111,17 +112,13 @@
   <main>
     <a class="back" href="/">&larr; Back</a>
 
-    <div class="section-head"><h2>Models</h2><span class="rule"></span></div>
-    <ul class="files" id="models"></ul>
-
-    <div class="section-head"><h2>Textures</h2><span class="rule"></span></div>
-    <ul class="files" id="textures"></ul>
+    <div id="folders"></div>
   </main>
 
   <footer>Designed by Sunquist in Park Lane Harbor</footer>
 
   <script>
-    const FILES = __BLENDER_FILES_JSON__;
+    const FOLDERS = __BLENDER_FILES_JSON__;
 
     function fmtSize(bytes) {
       const b = Number(bytes) || 0;
@@ -132,6 +129,16 @@
       return (n >= 10 ? n.toFixed(0) : n.toFixed(1)) + ' ' + units[i];
     }
 
+    // Folder names are meeting dates (YYYY-MM-DD); render them in long form.
+    function folderHeading(name) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(name)) return name;
+      const parts = name.split('-').map(Number);
+      const d = new Date(parts[0], parts[1] - 1, parts[2]);
+      return d.toLocaleDateString('en-US', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+    }
+
     function fileRow(f) {
       const li = document.createElement('li');
       const a = document.createElement('a');
@@ -140,27 +147,56 @@
       a.textContent = f.name;
       const meta = document.createElement('span');
       meta.className = 'meta';
-      meta.textContent = fmtSize(f.size) + ' \u00b7 ' + f.date;
+      const bits = [];
+      if (f.type) bits.push(f.type);
+      bits.push(fmtSize(f.size));
+      if (f.date) bits.push(f.date);
+      meta.textContent = bits.join(' \u00b7 ');
       li.appendChild(a);
       li.appendChild(meta);
       return li;
     }
 
-    function render(id, type) {
-      const list = document.getElementById(id);
-      const items = FILES.filter(function (f) { return f.type === type; });
-      if (!items.length) {
-        const p = document.createElement('p');
-        p.className = 'empty';
-        p.textContent = 'No files yet.';
-        list.replaceWith(p);
-        return;
-      }
-      items.forEach(function (f) { list.appendChild(fileRow(f)); });
+    function emptyNote() {
+      const p = document.createElement('p');
+      p.className = 'empty';
+      p.textContent = 'No files yet.';
+      return p;
     }
 
-    render('models', 'model');
-    render('textures', 'texture');
+    function renderFolder(group) {
+      const files = group.files || [];
+
+      const head = document.createElement('div');
+      head.className = 'section-head';
+      const h2 = document.createElement('h2');
+      h2.textContent = folderHeading(group.folder);
+      const count = document.createElement('span');
+      count.className = 'count';
+      count.textContent = files.length === 1 ? '1 file' : files.length + ' files';
+      const rule = document.createElement('span');
+      rule.className = 'rule';
+      head.appendChild(h2);
+      head.appendChild(count);
+      head.appendChild(rule);
+      document.getElementById('folders').appendChild(head);
+
+      if (!files.length) {
+        document.getElementById('folders').appendChild(emptyNote());
+        return;
+      }
+
+      const ul = document.createElement('ul');
+      ul.className = 'files';
+      files.forEach(function (f) { ul.appendChild(fileRow(f)); });
+      document.getElementById('folders').appendChild(ul);
+    }
+
+    if (FOLDERS.length) {
+      FOLDERS.forEach(renderFolder);
+    } else {
+      document.getElementById('folders').appendChild(emptyNote());
+    }
   </script>
 </body>
 </html>

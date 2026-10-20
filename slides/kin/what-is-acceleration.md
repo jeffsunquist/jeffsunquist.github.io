@@ -1,6 +1,8 @@
 ---
 LO:
   - KIN-41
+  - KIN-42
+  - KIN-43
 ---
 
 ## Acceleration

@@ -1,7 +1,9 @@
 ---
 LO:
+  - KIN-14
   - KIN-28
   - KIN-29
+  - KIN-34
 ---
 
 ## Example: Velocity

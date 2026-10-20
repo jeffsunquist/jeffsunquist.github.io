@@ -2,6 +2,7 @@
 LO:
   - SCI-12
   - SCI-13
+  - SCI-14
 ---
 
 ## What makes a statement _scientific_?

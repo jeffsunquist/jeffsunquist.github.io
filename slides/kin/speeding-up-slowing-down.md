@@ -1,6 +1,8 @@
 ---
 LO:
   - KIN-40
+  - KIN-46
+  - KIN-48
 ---
 
 ## Speeding Up vs Slowing Down

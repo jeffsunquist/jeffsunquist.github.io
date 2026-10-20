@@ -29,6 +29,13 @@ if [ -f CNAME ]; then
   cp CNAME dist/CNAME
 fi
 
+# Build the A4 formula sheets (reference/*.md -> pdfs/Formula_Sheet_*.pdf) so
+# they are freshly published alongside the other handouts.
+if [ -f scripts/build_formula_sheet.mjs ]; then
+  echo "Building formula sheets"
+  node scripts/build_formula_sheet.mjs || echo "WARN: formula sheet build skipped"
+fi
+
 # Publish the annotatable PDFs (pdfs/ -> dist/pdfs/). Empty is fine.
 if [ -d pdfs ]; then
   cp -r pdfs dist/pdfs
@@ -271,33 +278,67 @@ if [ -f data/sims.csv ]; then
 fi
 
 # 3D Club: publish 3d-club/ -> dist/3d-club/ and render a listing page.
-# Top-level files only; *.blend = model, image extensions = texture.
-club_files_json='[]'
+# Files are grouped by their top-level folder (folders are named for the
+# meeting date, e.g. 2026-09-22), newest folder first. Loose files at the
+# 3d-club/ root land in a trailing "Unsorted" group. Every file type is
+# listed: *.blend = model, image extensions = texture, anything else = its
+# extension.
+club_folders_json='[]'
 if [ -d 3d-club ]; then
   mkdir -p dist/3d-club
   cp -r 3d-club/. dist/3d-club/
-  club_items=''
-  cf=1
-  for f in 3d-club/*; do
-    [ -f "$f" ] || continue
-    base="${f##*/}"
-    [ "$base" = "index.html" ] && continue
-    ext="$(printf '%s' "${base##*.}" | tr '[:upper:]' '[:lower:]')"
-    case "$ext" in
-      blend) kind='model' ;;
-      png|jpg|jpeg|webp|gif|svg|tif|tiff|exr|hdr) kind='texture' ;;
-      *) continue ;;
-    esac
-    size="$(stat -c %s "$f" 2>/dev/null || printf '0')"
-    date="$(stat -c %y "$f" 2>/dev/null | cut -d' ' -f1)"
-    [ "$cf" -eq 1 ] || club_items+=','
-    cf=0
-    club_items+="{\"name\":$(json_str "$base"),\"type\":$(json_str "$kind"),\"size\":$size,\"date\":$(json_str "$date"),\"url\":$(json_str "/3d-club/$base")}"
-  done
-  club_files_json="[$club_items]"
+
+  club_groups=''
+  cg=1
+
+  # Append one folder group to club_groups: $1 = heading label, $2 = directory
+  # (with trailing slash), $3 = 1 to stay non-recursive. Empty groups are
+  # skipped.
+  club_group() {
+    local folder="$1" dir="$2" shallow="${3:-0}"
+    local files='' cf=1 f disp relpath base ext kind size date
+    local -a findargs=(-type f)
+    [ "$shallow" = "1" ] && findargs=(-maxdepth 1 -type f)
+    while IFS= read -r f; do
+      [ -n "$f" ] || continue
+      disp="${f#"$dir"}"           # path inside the folder, for display
+      case "$disp" in .*|*/.*) continue ;; esac
+      relpath="${f#"3d-club/"}"    # path below the published /3d-club/
+      base="${f##*/}"
+      ext="$(printf '%s' "${base##*.}" | tr '[:upper:]' '[:lower:]')"
+      case "$ext" in
+        blend) kind='Blender model' ;;
+        png|jpg|jpeg|webp|gif|svg|tif|tiff|exr|hdr) kind='texture' ;;
+        '') kind='file' ;;
+        *) kind="$ext" ;;
+      esac
+      size="$(stat -c %s "$f" 2>/dev/null || printf '0')"
+      date="$(stat -c %y "$f" 2>/dev/null | cut -d' ' -f1)"
+      [ "$cf" -eq 1 ] || files+=','
+      cf=0
+      files+="{\"name\":$(json_str "$disp"),\"type\":$(json_str "$kind"),\"size\":$size,\"date\":$(json_str "$date"),\"url\":$(json_str "/3d-club/$relpath")}"
+    done < <(find "$dir" "${findargs[@]}" | LC_ALL=C sort)
+    # Skip folders with no listable files (e.g. an empty upcoming date).
+    [ "$cf" -eq 1 ] && return 0
+    [ "$cg" -eq 1 ] || club_groups+=','
+    cg=0
+    club_groups+="{\"folder\":$(json_str "$folder"),\"files\":[$files]}"
+  }
+
+  # Date-named folders sort chronologically as plain strings; reverse for
+  # newest first.
+  while IFS= read -r d; do
+    case "${d##*/}" in .*) continue ;; esac
+    club_group "${d##*/}" "$d/"
+  done < <(find 3d-club -mindepth 1 -maxdepth 1 -type d | LC_ALL=C sort -r)
+
+  # Loose files sitting directly in 3d-club/ (no date folder).
+  club_group 'Unsorted' '3d-club/' 1
+
+  club_folders_json="[$club_groups]"
 
   club_template="$(cat scripts/3d-club.template.html)"
-  club_template="${club_template//__BLENDER_FILES_JSON__/$club_files_json}"
+  club_template="${club_template//__BLENDER_FILES_JSON__/$club_folders_json}"
   printf '%s\n' "$club_template" > dist/3d-club/index.html
 fi
 

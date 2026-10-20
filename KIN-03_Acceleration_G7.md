@@ -53,6 +53,17 @@ src: ./slides/kin/constant-average-instantaneous.md
 src: ./slides/kin/what-is-acceleration.md
 ---
 
+---
+src: ./slides/kin/constant-acceleration.md
+---
+
+---
+src: ./slides/kin/example-acceleration.md
+---
+
+---
+src: ./slides/kin/example-acceleration-from-rest.md
+---
 
 ---
 src: ./slides/kin/speeding-up-slowing-down.md

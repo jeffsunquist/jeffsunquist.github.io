@@ -1,9 +1,12 @@
 ---
 LO:
+  - KIN-14
   - KIN-21
   - KIN-24
   - KIN-27
   - KIN-30
+  - KIN-31
+  - KIN-35
 ---
 
 ## Velocity

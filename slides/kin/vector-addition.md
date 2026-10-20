@@ -1,6 +1,7 @@
 ---
 LO:
   - KIN-06
+  - KIN-07
 ---
 
 ## Vector Addition

@@ -2,6 +2,9 @@
 LO:
   - KIN-01
   - KIN-02
+  - KIN-03
+  - KIN-04
+  - KIN-05
 ---
 
 ## Scalars and Vectors

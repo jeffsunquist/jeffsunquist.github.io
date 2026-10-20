@@ -1,6 +1,7 @@
 ---
 LO:
   - SCI-12
+  - SCI-14
 ---
 
 ## Practice — Scientific Statements
