@@ -57,6 +57,10 @@ export default function sketch(p) {
   }
   const ORDER = ['pistol', 'shotgun', 'flame']
 
+  // On-canvas buttons, shared by the drawing and the hit test.
+  const PLAY_BTN = { x: W / 2, y: 268, w: 220, h: 62 }
+  const AGAIN_BTN = { x: W / 2, y: 470, w: 240, h: 58 }
+
   // A full flame tank (10 ammo) burns for FLAME_TANK / FLAME_DRAIN seconds.
   const FLAME_DRAIN = 2          // ammo per second
   const FLAME_EMIT = 0.032       // seconds between particles
@@ -98,6 +102,85 @@ export default function sketch(p) {
     const v = ammo[name]
     if (!isFinite(v)) return '∞'
     return String(Math.max(0, Math.ceil(v)))
+  }
+
+  // ------------------------------------------------------------ rough ink
+  // Hand-drawn outlines: every shape is stroked twice with a small, seeded
+  // wobble. The seeds are deterministic, so nothing shimmers at 60 fps.
+  const ROUGH = 1.1
+
+  function hash(n) {
+    const s = Math.sin(n * 127.1 + 311.7) * 43758.5453
+    return s - Math.floor(s)
+  }
+
+  const jit = (seed, amp) => (hash(seed) - 0.5) * 2 * amp
+
+  function roughLine(x1, y1, x2, y2, seed = 0, amp = ROUGH) {
+    const dx = x2 - x1
+    const dy = y2 - y1
+    const len = Math.hypot(dx, dy) || 1
+    const nx = -dy / len
+    const ny = dx / len
+    p.noFill()
+    for (let pass = 0; pass < 2; pass++) {
+      const s = seed + pass * 37.1
+      const bow = jit(s, amp * 1.7)
+      const ox = jit(s + 3.1, amp * 0.55)
+      const oy = jit(s + 7.3, amp * 0.55)
+      p.beginShape()
+      p.vertex(x1 + ox, y1 + oy)
+      p.quadraticVertex((x1 + x2) / 2 + nx * bow, (y1 + y2) / 2 + ny * bow, x2 + ox, y2 + oy)
+      p.endShape()
+    }
+  }
+
+  function roughRect(x, y, w, h, seed = 0, amp = ROUGH) {
+    roughLine(x, y, x + w, y, seed + 1, amp)
+    roughLine(x + w, y, x + w, y + h, seed + 2, amp)
+    roughLine(x + w, y + h, x, y + h, seed + 3, amp)
+    roughLine(x, y + h, x, y, seed + 4, amp)
+  }
+
+  function blobPoints(cx, cy, w, h, seed = 0, amp = ROUGH, n = 22) {
+    const pts = []
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * p.TWO_PI
+      const k = jit(seed + i * 1.7, amp)
+      pts.push({ x: cx + Math.cos(a) * (w / 2 + k), y: cy + Math.sin(a) * (h / 2 + k) })
+    }
+    return pts
+  }
+
+  function fillBlob(cx, cy, w, h, color, seed = 0, amp = ROUGH) {
+    const pts = blobPoints(cx, cy, w, h, seed, amp)
+    p.noStroke()
+    p.fill(...color)
+    p.beginShape()
+    for (const q of pts) p.vertex(q.x, q.y)
+    p.endShape(p.CLOSE)
+    return pts
+  }
+
+  function strokeBlob(pts, seed = 0, amp = ROUGH) {
+    p.noFill()
+    for (let pass = 0; pass < 2; pass++) {
+      p.beginShape()
+      for (let i = 0; i < pts.length; i++) {
+        const q = pts[i]
+        const s = seed + i * 2.3 + pass * 11.7
+        p.vertex(q.x + jit(s, amp * 0.45), q.y + jit(s + 5.1, amp * 0.45))
+      }
+      p.endShape(p.CLOSE)
+    }
+  }
+
+  function fillPoly(pts, color) {
+    p.noStroke()
+    p.fill(...color)
+    p.beginShape()
+    for (const q of pts) p.vertex(q[0], q[1])
+    p.endShape(p.CLOSE)
   }
 
   function el(tag, cls, text) {
@@ -254,11 +337,11 @@ export default function sketch(p) {
     const m = pointer
 
     if (mode === 'title') {
-      if (inRect(m.x, m.y, W / 2, 322, 220, 62)) startGame()
+      if (inRect(m.x, m.y, PLAY_BTN.x, PLAY_BTN.y, PLAY_BTN.w, PLAY_BTN.h)) startGame()
       return
     }
     if (mode === 'over') {
-      if (inRect(m.x, m.y, W / 2, 500, 240, 58)) startGame()
+      if (inRect(m.x, m.y, AGAIN_BTN.x, AGAIN_BTN.y, AGAIN_BTN.w, AGAIN_BTN.h)) startGame()
       return
     }
     if (mode === 'pause') {
@@ -632,6 +715,7 @@ export default function sketch(p) {
       anchorT: 0,
       tx: W / 2, ty: 190,
       ax: 0, ay: 0, tilt: 0,
+      seed: p.random(1000),
       hit: 0
     })
   }
@@ -754,7 +838,8 @@ export default function sketch(p) {
       vx: (fromLeft ? 1 : -1) * 190,
       dropX: p.random(210, 750),
       dropped: false,
-      prop: 0
+      prop: 0,
+      seed: p.random(1000)
     })
     planeCooldown = SUPPLY_COOLDOWN
     supplyT = SUPPLY_FALLBACK
@@ -964,7 +1049,7 @@ export default function sketch(p) {
     p.fill(...C.paper)
     p.rectMode(p.CORNER)
     p.rect(view.ox, view.oy, W * view.s, H * view.s)
-    p.textFont('sans-serif')
+    p.textFont(handReady ? 'Patrick Hand' : 'sans-serif')
     p.rectMode(p.CENTER)
     p.push()
     p.translate(view.ox, view.oy)
@@ -1000,44 +1085,64 @@ export default function sketch(p) {
     p.fill(...C.stage)
     p.rect(W / 2, GROUND_Y + (H - GROUND_Y) / 2, W, H - GROUND_Y)
 
-    p.fill(244, 246, 249)
-    p.circle(140, 128, 130)
-    p.circle(228, 108, 90)
-    p.circle(806, 168, 104)
+    // Clouds: pale sketchy blobs instead of perfect circles.
+    const cloud = [244, 246, 249]
+    p.stroke(226, 233, 242)
+    p.strokeWeight(1.3)
+    for (const [cx, cy, w, h, seed] of [
+      [140, 128, 130, 110, 11],
+      [228, 108, 90, 78, 12],
+      [806, 168, 104, 88, 13]
+    ]) {
+      strokeBlob(fillBlob(cx, cy, w, h, cloud, seed, 3.4), seed, 3.4)
+    }
 
+    // Mountain silhouette: jittered ridge, filled, then stroked by hand.
+    const ridge = [
+      [0, 470], [180, 396], [360, 486], [560, 408], [740, 492], [960, 420]
+    ]
+    p.noStroke()
     p.fill(236, 240, 245)
     p.beginShape()
     p.vertex(0, GROUND_Y)
-    p.vertex(0, 470)
-    p.vertex(180, 396)
-    p.vertex(360, 486)
-    p.vertex(560, 408)
-    p.vertex(740, 492)
-    p.vertex(960, 420)
+    for (let i = 0; i < ridge.length; i++) {
+      p.vertex(ridge[i][0] + jit(i * 3.1, 2.6), ridge[i][1] + jit(i * 3.7, 2.6))
+    }
     p.vertex(W, GROUND_Y)
     p.endShape(p.CLOSE)
 
+    p.stroke(212, 221, 232)
+    p.strokeWeight(1.6)
+    for (let i = 0; i < ridge.length - 1; i++) {
+      roughLine(ridge[i][0], ridge[i][1], ridge[i + 1][0], ridge[i + 1][1], i * 5 + 3, 2.2)
+    }
+    p.noStroke()
+
     p.stroke(...C.line)
     p.strokeWeight(2)
-    p.line(0, GROUND_Y, W, GROUND_Y)
+    roughLine(0, GROUND_Y, W, GROUND_Y, 21, 1.3)
     p.noStroke()
 
     // ground hatch
     p.stroke(226, 231, 238)
     p.strokeWeight(1)
-    for (let x = -40; x < W + 40; x += 34) p.line(x, GROUND_Y + 6, x - 26, H)
+    for (let x = -40; x < W + 40; x += 34) roughLine(x, GROUND_Y + 6, x - 26, H, x, 0.7)
     p.noStroke()
   }
 
   function drawPlatforms() {
     for (const pl of PLATFORMS) {
+      p.noStroke()
       p.fill(...C.panel)
-      p.stroke(...C.line)
-      p.strokeWeight(1.5)
       p.rect(pl.x + pl.w / 2, pl.y + pl.h / 2, pl.w, pl.h, 4)
+
+      p.stroke(160, 172, 190)
+      p.strokeWeight(1.4)
+      roughRect(pl.x, pl.y, pl.w, pl.h, pl.x * 0.13 + pl.y, 1.05)
+
       p.stroke(255)
       p.strokeWeight(2)
-      p.line(pl.x + 4, pl.y + 1, pl.x + pl.w - 4, pl.y + 1)
+      roughLine(pl.x + 6, pl.y + 2, pl.x + pl.w - 6, pl.y + 2, pl.x + 9, 0.5)
     }
     p.noStroke()
   }
@@ -1050,19 +1155,23 @@ export default function sketch(p) {
     const ay = Math.sin(player.aim)
     const cx = player.x
     const cy = player.y
+    const seed = 400
 
     // legs
     p.stroke(...C.ink)
     p.strokeWeight(3)
     const run = player.onGround && Math.abs(player.vx) > 40 ? Math.sin(p.frameCount * 0.5) * 4 : 0
-    p.line(cx - 5, cy - 8, cx - 6 + run, cy)
-    p.line(cx + 5, cy - 8, cx + 6 - run, cy)
+    roughLine(cx - 5, cy - 8, cx - 6 + run, cy, seed + 1, 0.5)
+    roughLine(cx + 5, cy - 8, cx + 6 - run, cy, seed + 2, 0.5)
 
-    // body + head
-    p.noStroke()
-    p.fill(...C.ink)
-    p.rect(cx, cy - 16, 16, 24, 5)
-    p.circle(cx, cy - 32, 14)
+    // body: a slightly irregular slab
+    const body = [
+      [cx - 8, cy - 27], [cx + 8, cy - 27], [cx + 8, cy - 5], [cx - 8, cy - 5]
+    ].map(([x, y], i) => [x + jit(seed + 10 + i, 0.7), y + jit(seed + 20 + i, 0.7)])
+    fillPoly(body, C.ink)
+
+    // head
+    fillBlob(cx, cy - 32, 14, 14, C.ink, seed + 30, 0.6)
 
     p.fill(...C.accent)
     p.circle(cx + ax * 3.5, cy - 33 + ay * 3.5, 5)
@@ -1070,10 +1179,10 @@ export default function sketch(p) {
     // gun last, so the barrel always reads against the figure
     p.stroke(255)
     p.strokeWeight(5)
-    p.line(cx + ax * 4, cy - 21 + ay * 4, cx + ax * 23, cy - 21 + ay * 23)
+    roughLine(cx + ax * 4, cy - 21 + ay * 4, cx + ax * 23, cy - 21 + ay * 23, seed + 40, 0.35)
     p.stroke(...C.ink)
     p.strokeWeight(3)
-    p.line(cx + ax * 4, cy - 21 + ay * 4, cx + ax * 23, cy - 21 + ay * 23)
+    roughLine(cx + ax * 4, cy - 21 + ay * 4, cx + ax * 23, cy - 21 + ay * 23, seed + 40, 0.35)
 
     if (player.flash > 0) {
       p.noStroke()
@@ -1122,37 +1231,37 @@ export default function sketch(p) {
   function drawHeli(h) {
     const r = h.r
     const dir = h.dir || 1
+    const seed = h.seed || 17
     p.push()
     p.translate(h.x, h.y)
     p.rotate(h.tilt)
 
     p.stroke(...C.ink)
     p.strokeWeight(3)
-    p.line(0, -r * 0.5, 0, -r * 0.85)
+    roughLine(0, -r * 0.5, 0, -r * 0.85, seed + 1, 0.5)
 
     const wob = Math.sin(h.rotor) * 3.5
     p.strokeWeight(4)
-    p.line(-r * 1.1, -r * 0.92 + wob, r * 1.1, -r * 0.92 - wob)
+    roughLine(-r * 1.1, -r * 0.92 + wob, r * 1.1, -r * 0.92 - wob, seed + 2, 0.6)
 
     p.strokeWeight(Math.max(3, r * 0.16))
-    p.line(-dir * r * 0.5, -r * 0.08, -dir * r * 1.28, -r * 0.34)
-    p.noFill()
-    p.strokeWeight(2)
-    p.circle(-dir * r * 1.34, -r * 0.34, r * 0.5)
+    roughLine(-dir * r * 0.5, -r * 0.08, -dir * r * 1.28, -r * 0.34, seed + 3, 0.5)
 
     p.stroke(...C.ink)
     p.strokeWeight(2)
-    p.fill(h.hit > 0 ? C.danger : C.panel)
-    p.ellipse(0, 0, r * 1.8, r * 1)
-    p.noStroke()
-    p.fill(...C.ink)
-    p.ellipse(dir * r * 0.46, -r * 0.04, r * 0.52, r * 0.36)
+    strokeBlob(blobPoints(-dir * r * 1.34, -r * 0.34, r * 0.5, r * 0.5, seed + 4, 0.5), seed + 4, 0.5)
+
+    const body = fillBlob(0, 0, r * 1.8, r, h.hit > 0 ? C.danger : C.panel, seed + 5, 0.7)
+    p.stroke(...C.ink)
+    p.strokeWeight(2)
+    strokeBlob(body, seed + 5, 0.7)
+    fillBlob(dir * r * 0.46, -r * 0.04, r * 0.52, r * 0.36, C.ink, seed + 6, 0.35)
 
     p.stroke(...C.ink)
     p.strokeWeight(2)
-    p.line(-r * 0.55, r * 0.5, -r * 0.55, r * 0.74)
-    p.line(r * 0.55, r * 0.5, r * 0.55, r * 0.74)
-    p.line(-r * 0.78, r * 0.74, r * 0.78, r * 0.74)
+    roughLine(-r * 0.55, r * 0.5, -r * 0.55, r * 0.74, seed + 7, 0.4)
+    roughLine(r * 0.55, r * 0.5, r * 0.55, r * 0.74, seed + 8, 0.4)
+    roughLine(-r * 0.78, r * 0.74, r * 0.78, r * 0.74, seed + 9, 0.5)
     p.pop()
 
     drawHeliForces(h)
@@ -1209,26 +1318,34 @@ export default function sketch(p) {
 
   function drawPlanes() {
     for (const pl of planes) {
+      const seed = pl.seed || 300
       p.push()
       p.translate(pl.x, pl.y)
       if (pl.vx < 0) p.scale(-1, 1)
 
       p.stroke(...C.ink)
-      p.strokeWeight(1.6)
-      p.fill(...C.panel)
-      p.ellipse(0, 0, 74, 16)
-      p.fill(226, 232, 240)
-      p.ellipse(4, 6, 32, 9)
-      p.fill(...C.panel)
-      p.triangle(-30, 0, -25, -15, -17, 0)
-      p.ellipse(-27, 1, 16, 5)
-      p.noStroke()
-      p.fill(...C.ink)
-      p.ellipse(22, -2, 10, 7)
+      p.strokeWeight(1.8)
+      const body = fillBlob(0, 0, 74, 16, C.panel, seed, 1.1)
+      strokeBlob(body, seed, 1.1)
+
+      fillBlob(4, 6, 32, 9, [226, 232, 240], seed + 10, 0.7)
+
+      const fin = [
+        [-30, 0], [-25, -15], [-17, 0]
+      ].map(([x, y], i) => [x + jit(seed + 20 + i, 0.9), y + jit(seed + 30 + i, 0.9)])
+      fillPoly(fin, C.panel)
+      p.stroke(...C.ink)
+      p.strokeWeight(1.5)
+      roughLine(fin[0][0], fin[0][1], fin[1][0], fin[1][1], seed + 40, 0.5)
+      roughLine(fin[1][0], fin[1][1], fin[2][0], fin[2][1], seed + 41, 0.5)
+      roughLine(fin[2][0], fin[2][1], fin[0][0], fin[0][1], seed + 42, 0.5)
+
+      fillBlob(-27, 1, 16, 5, C.panel, seed + 50, 0.5)
+      fillBlob(22, -2, 10, 7, C.ink, seed + 60, 0.4)
 
       p.stroke(...C.ink)
       p.strokeWeight(2)
-      p.line(37, -8 + Math.sin(pl.prop) * 2, 37, 8 - Math.sin(pl.prop) * 2)
+      roughLine(37, -8 + Math.sin(pl.prop) * 2, 37, 8 - Math.sin(pl.prop) * 2, seed + 70, 0.5)
       p.pop()
     }
   }
@@ -1276,7 +1393,7 @@ export default function sketch(p) {
       p.noStroke()
       p.fill(...C.muted)
       p.textAlign(p.CENTER, p.TOP)
-      p.textSize(10)
+      p.textSize(11)
       p.text(good ? 'HEALTH' : WEAPONS[c.weapon].short.toUpperCase(), c.x, c.y + 40)
     }
   }
@@ -1314,7 +1431,7 @@ export default function sketch(p) {
       p.noStroke()
       p.fill(...C.muted)
       p.textAlign(p.CENTER, p.TOP)
-      p.textSize(10)
+      p.textSize(11)
       const label = it.type === 'health' ? '+HEALTH' : WEAPONS[it.weapon].label.toUpperCase()
       p.text(label, it.x, it.y + 20)
     }
@@ -1334,13 +1451,13 @@ export default function sketch(p) {
   function drawHud() {
     if (mode === 'title') return
 
-    p.textFont('sans-serif')
+    p.textFont(handReady ? 'Patrick Hand' : 'sans-serif')
     p.noStroke()
 
     // score
     p.textAlign(p.LEFT, p.TOP)
     p.fill(...C.muted)
-    p.textSize(11)
+    p.textSize(12)
     p.text('SCORE', 26, 24)
     p.fill(...C.ink)
     p.textSize(34)
@@ -1349,13 +1466,13 @@ export default function sketch(p) {
     p.textStyle(p.NORMAL)
 
     p.fill(...C.muted)
-    p.textSize(11)
+    p.textSize(12)
     p.text(`CHOPPERS  ${kills}`, 26, 82)
 
     // best
     p.textAlign(p.RIGHT, p.TOP)
     p.fill(...C.muted)
-    p.textSize(11)
+    p.textSize(12)
     p.text('BEST', W - 26, 24)
     p.fill(...C.ink)
     p.textSize(20)
@@ -1366,7 +1483,7 @@ export default function sketch(p) {
     const by = H - 44
     p.textAlign(p.LEFT, p.BOTTOM)
     p.fill(...C.muted)
-    p.textSize(11)
+    p.textSize(12)
     p.text('HEALTH', 26, by - 10)
     p.fill(...C.line)
     p.rect(26 + bw / 2, by, bw, 12, 6)
@@ -1379,7 +1496,7 @@ export default function sketch(p) {
     // weapon
     p.textAlign(p.RIGHT, p.BOTTOM)
     p.fill(...C.muted)
-    p.textSize(11)
+    p.textSize(12)
     p.text('WEAPON', W - 26, by - 10)
     p.fill(...C.ink)
     p.textSize(18)
@@ -1390,7 +1507,7 @@ export default function sketch(p) {
 
     // weapon slots
     p.textAlign(p.LEFT, p.BOTTOM)
-    p.textSize(10)
+    p.textSize(11)
     for (let i = 0; i < ORDER.length; i++) {
       const name = ORDER[i]
       const x = 26 + i * 104
@@ -1443,6 +1560,7 @@ export default function sketch(p) {
         rotor: t * 26, hit: 0,
         ax: hax, ay: hay,
         tilt: clamp(hax * 0.0012, -0.35, 0.35),
+        seed: 7,
         hp: 1, maxHp: 1
       })
 
@@ -1455,11 +1573,11 @@ export default function sketch(p) {
       p.textSize(76)
       p.text('Lift Force', W / 2, 195)
 
-      button(W / 2, 268, 220, 62, 'PLAY', true)
+      button(PLAY_BTN.x, PLAY_BTN.y, PLAY_BTN.w, PLAY_BTN.h, 'PLAY', true)
 
-      p.textFont('sans-serif')
+      p.textFont(handReady ? 'Patrick Hand' : 'sans-serif')
       p.fill(...C.muted)
-      p.textSize(15)
+      p.textSize(16)
       p.text('Move: A / D', W / 2, 342)
       p.text('Jump: W', W / 2, 369)
       p.text('Aim: mouse or ←/→', W / 2, 396)
@@ -1484,7 +1602,7 @@ export default function sketch(p) {
       p.textAlign(p.CENTER, p.CENTER)
       p.textSize(52)
       p.text('Paused', W / 2, H / 2 - 26)
-      p.textFont('sans-serif')
+      p.textFont(handReady ? 'Patrick Hand' : 'sans-serif')
       p.fill(...C.muted)
       p.textSize(14)
       p.text('click or press P to resume', W / 2, H / 2 + 34)
@@ -1504,7 +1622,7 @@ export default function sketch(p) {
       p.text('Game Over', W / 2, 196)
 
       p.fill(...C.muted)
-      p.textFont('sans-serif')
+      p.textFont(handReady ? 'Patrick Hand' : 'sans-serif')
       p.textSize(12)
       p.text('SCORE', W / 2, 246)
       p.fill(...C.ink)
@@ -1519,7 +1637,7 @@ export default function sketch(p) {
         ['ACCURACY', `${acc}%`],
         ['BEST', String(best)]
       ]
-      p.textSize(15)
+      p.textSize(16)
       rows.forEach((row, i) => {
         const y = 330 + i * 26
         p.textAlign(p.LEFT, p.CENTER)
@@ -1539,7 +1657,7 @@ export default function sketch(p) {
         p.textStyle(p.NORMAL)
       }
 
-      button(W / 2, 500, 240, 58, 'PLAY AGAIN', true)
+      button(AGAIN_BTN.x, AGAIN_BTN.y, AGAIN_BTN.w, AGAIN_BTN.h, 'PLAY AGAIN', true)
       return
     }
   }
@@ -1579,7 +1697,7 @@ export default function sketch(p) {
 
     const renderer = p.createCanvas(stage.clientWidth, stage.clientHeight)
     p.frameRate(60)
-    p.textFont('sans-serif')
+    p.textFont(handReady ? 'Patrick Hand' : 'sans-serif')
     p.rectMode(p.CENTER)
 
     canvasEl = renderer.elt || renderer.canvas
@@ -1631,6 +1749,7 @@ export default function sketch(p) {
             target: b.target ? { x: b.target.x, y: b.target.y } : null
           })),
           planes: planes.length,
+          planeXs: planes.map(pl => Math.round(pl.x)),
           supplyT, planeCooldown,
           particles: particles.length,
           platformTops: PLATFORMS.map(pl => pl.y),

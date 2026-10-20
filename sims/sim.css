@@ -13,6 +13,7 @@
   --line: #e5e7eb;
   --paper: #ffffff;
   --accent: #0b57d0;
+  --hand: 'Patrick Hand', ui-sans-serif, system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -29,6 +30,9 @@ body {
   background: var(--paper);
   -webkit-font-smoothing: antialiased;
 }
+
+/* Games use the site's handwriting face for the page chrome too. */
+body.game { font-family: var(--hand); }
 
 .sim-head {
   display: flex;
