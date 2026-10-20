@@ -35,11 +35,13 @@ classified by their `_G6` / `_G7` filename token (a file with neither token
 appears in both columns), and include the A4 double-sided **formula sheets**
 (`pdfs/Formula_Sheet_G6.pdf` / `_G7.pdf`, built from `reference/formula-sheet-*.md`).
 
-There is also a **Sims (WIP)** section listing standalone p5.js physics
-simulations. Each sim lives in `sims/<slug>/` (a self-contained page plus a
-`sketch.js` ES module) and is described by `data/sims.csv`
-(`slug,title,grade,description`). The whole `sims/` tree is copied to
-`dist/sims/` at build time; p5 is vendored at `sims/vendor/p5.min.js`.
+There is also a **Sims & Games (WIP)** section listing standalone p5.js physics
+simulations and browser games. Each one lives in `sims/<slug>/` (a
+self-contained page plus a `sketch.js` ES module) and is described by
+`data/sims.csv` or `data/games.csv` (`slug,title,grade,description`). The whole
+`sims/` tree is copied to `dist/sims/` at build time; p5 is vendored at
+`sims/vendor/p5.min.js`. `sims/lift-force/` is the arena shooter: A/D move, W
+jumps (twice for a double), the mouse aims and fires, `1`–`4` swap weapons.
 
 The decks are built and published automatically by the Pages workflow in
 `.github/workflows/deploy.yml` — just commit and push to `main`.

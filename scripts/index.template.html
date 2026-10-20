@@ -345,6 +345,11 @@
     .card.sim .card-icon { background: #ede9fe; color: #6d28d9; }
     .card.sim .card-glyph { background-color: #6d28d9; }
 
+    /* Games share the Sims columns but keep the site's blue accent. */
+    .card.sim.game { border-left-color: var(--link); }
+    .card.sim.game .card-icon { background: #dbeafe; color: var(--link); }
+    .card.sim.game .card-glyph { background-color: var(--link); }
+
     .empty {
       margin: 0.5rem 0 0;
       font-size: 0.9rem;
@@ -489,7 +494,7 @@
 
     <section id="sims-section">
       <div class="section-head">
-        <h2>Sims (WIP)</h2>
+        <h2>Sims &amp; Games (WIP)</h2>
         <span class="rule"></span>
       </div>
       <div class="columns">
@@ -525,6 +530,7 @@
     const LESSONS = __LESSONS_JSON__;
     const HANDOUTS = __HANDOUTS_JSON__;
     const SIMS = __SIMS_JSON__;
+    const GAMES = __GAMES_JSON__;
     const AURA_LABELS = __AURA_LABELS__;
     const AURA_DATA = __AURA_DATA__;
     const ELEMENT_TIERS = __ELEMENT_TIERS_JSON__;
@@ -578,12 +584,12 @@
 
     function simCard(s) {
       const a = document.createElement('a');
-      a.className = 'card sim';
+      a.className = 'card sim' + (s.kind === 'Game' ? ' game' : '');
       a.href = s.url;
       a.innerHTML =
         iconGlyph(s.icon) +
         '<div class="card-body">' +
-          '<div class="card-top"><span class="code">Sim</span></div>' +
+          '<div class="card-top"><span class="code">' + esc(s.kind || 'Sim') + '</span></div>' +
           '<h4 class="card-title">' + esc(s.title) + '</h4>' +
           '<p class="card-desc">' + esc(s.description) + '</p>' +
         '</div>';
@@ -599,8 +605,8 @@
     fill('lessons-g7', LESSONS.filter(function (l) { return l.g7; }), lessonCard);
     fill('handouts-g6', HANDOUTS.filter(function (h) { return h.g6; }), handoutCard);
     fill('handouts-g7', HANDOUTS.filter(function (h) { return h.g7; }), handoutCard);
-    fill('sims-g6', SIMS.filter(function (s) { return s.g6; }), simCard);
-    fill('sims-g7', SIMS.filter(function (s) { return s.g7; }), simCard);
+    fill('sims-g6', SIMS.concat(GAMES).filter(function (s) { return s.g6; }), simCard);
+    fill('sims-g7', SIMS.concat(GAMES).filter(function (s) { return s.g7; }), simCard);
 
     /* --- Grade filter --- */
 

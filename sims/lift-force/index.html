@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lift Force — Physics Games</title>
+<link rel="stylesheet" href="../sim.css" />
+</head>
+<body class="game">
+  <header class="sim-head">
+    <h1>Lift Force</h1>
+    <span class="sub">survive the choppers</span>
+    <a href="/">← Home</a>
+  </header>
+  <div id="stage"></div>
+  <div id="controls" class="sim-controls"></div>
+  <script src="../vendor/p5.min.js"></script>
+  <script type="module">
+    import sketch from './sketch.js'
+    new p5(sketch, document.getElementById('stage'))
+  </script>
+</body>
+</html>

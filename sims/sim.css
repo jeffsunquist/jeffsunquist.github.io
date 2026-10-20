@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'Patrick Hand';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/PatrickHand-Regular.ttf') format('truetype');
+}
+
 :root {
   --ink: #1f2937;
   --muted: #6b7280;
@@ -58,6 +66,15 @@ body {
 }
 
 #stage canvas { display: block; }
+
+/* Games: aim with the pointer, and never let a drag select page text. */
+body.game #stage {
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body.game #stage canvas { touch-action: none; }
 
 .sim-controls {
   display: flex;

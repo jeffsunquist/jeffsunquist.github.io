@@ -277,6 +277,34 @@ if [ -f data/sims.csv ]; then
   sims_json="[$sim_items]"
 fi
 
+# Games from data/games.csv (`slug,title,grade,description`; same shape as
+# sims.csv, but the cards are labelled "Game"). Files live in sims/<slug>/ so
+# they share the vendored p5 build; keep descriptions comma-free.
+games_json='[]'
+if [ -f data/games.csv ]; then
+  game_items=''
+  gf=1
+  while IFS=, read -r slug title grade description; do
+    slug="$(clean "${slug:-}")"
+    title="$(clean "${title:-}")"
+    grade="$(clean "${grade:-}")"
+    description="$(clean "${description:-}")"
+    [ -z "$slug" ] && continue
+    [ "$slug" = "slug" ] && continue
+
+    case "$grade" in
+      G6|g6|6) g_g6=true; g_g7=false ;;
+      G7|g7|7) g_g6=false; g_g7=true ;;
+      *)       g_g6=true; g_g7=true ;;
+    esac
+
+    [ "$gf" -eq 1 ] || game_items+=','
+    gf=0
+    game_items+="{\"slug\":$(json_str "$slug"),\"url\":$(json_str "/sims/$slug/"),\"kind\":$(json_str "Game"),\"title\":$(json_str "$title"),\"description\":$(json_str "$description"),\"icon\":$(json_str "/icons/game.svg"),\"g6\":$g_g6,\"g7\":$g_g7}"
+  done < data/games.csv
+  games_json="[$game_items]"
+fi
+
 # 3D Club: publish 3d-club/ -> dist/3d-club/ and render a listing page.
 # Files are grouped by their top-level folder (folders are named for the
 # meeting date, e.g. 2026-09-22), newest folder first. Loose files at the
@@ -348,6 +376,7 @@ template="$(cat scripts/index.template.html)"
 template="${template//__LESSONS_JSON__/$lessons_json}"
 template="${template//__HANDOUTS_JSON__/$handouts_json}"
 template="${template//__SIMS_JSON__/$sims_json}"
+template="${template//__GAMES_JSON__/$games_json}"
 template="${template//__ELEMENT_TIERS_JSON__/$element_tiers_json}"
 template="${template//__AURA_LABELS__/$aura_labels_js}"
 template="${template//__AURA_DATA__/$aura_data_js}"
