@@ -342,8 +342,15 @@ export default function sketch(p) {
 
   function activateCheat(code) {
     player.hp = player.maxHp
-    if (code === 'monster') player.invincible = Infinity
-    else player.invincible = Math.max(player.invincible, 30)
+    if (code === 'monster') {
+      player.invincible = Infinity
+      ammo.pistol = Infinity
+      ammo.shotgun = Infinity
+      ammo.rocket = Infinity
+      ammo.flame = Infinity
+    } else {
+      player.invincible = Math.max(player.invincible, 1)
+    }
   }
 
   // Hand aim over to the keyboard, seeded from wherever the mouse was pointing.
@@ -1171,7 +1178,9 @@ export default function sketch(p) {
       return
     }
     const w = WEAPONS[it.weapon]
-    ammo[it.weapon] = Math.min(w.cap, ammo[it.weapon] + w.max)
+    if (isFinite(ammo[it.weapon])) {
+      ammo[it.weapon] = Math.min(w.cap, ammo[it.weapon] + w.max)
+    }
     spawnFlyer(it.weapon, it.x, it.y)
     burst(it.x, it.y, 8, C.accent, 120)
   }
@@ -2074,6 +2083,7 @@ export default function sketch(p) {
           aim: player.aim, aimByMouse, recoilVx: player.recoilVx,
           bullets: bullets.length,
           ammo: { shotgun: ammo.shotgun, rocket: ammo.rocket, flame: ammo.flame },
+          ammoInf: !isFinite(ammo.shotgun) && !isFinite(ammo.rocket) && !isFinite(ammo.flame),
           helis: helis.map(h => {
             const f = heliForces(h)
             return {
