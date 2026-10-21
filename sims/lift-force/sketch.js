@@ -51,7 +51,7 @@ export default function sketch(p) {
   // `cd` is seconds between trigger pulls, `counts` feeds the accuracy stat.
   const WEAPONS = {
     pistol: { label: 'Pistol', short: 'Pistol', max: Infinity, dmg: 10, cd: 0.13, spread: 0.018, speed: 950, pellets: 1, size: 3, life: 1.1, color: C.ink, counts: true },
-    shotgun: { label: 'Shotgun', short: 'Shotgun', max: 24, dmg: 9, cd: 0.52, spread: 0.17, speed: 820, pellets: 5, size: 2.6, life: 0.62, color: C.ink, counts: true, kick: 90 },
+    shotgun: { label: 'Shotgun', short: 'Shotgun', max: 24, dmg: 9, cd: 0.52, spread: 0.17, speed: 820, pellets: 8, size: 2.6, life: 0.62, color: C.ink, counts: true, recoil: 275 },
     rocket: { label: 'Rocket', short: 'Rocket', max: 1, dmg: 280, cd: 0.85, spread: 0.012, speed: 45, pellets: 1, size: 4, life: 2.6, color: C.accent, counts: true, splash: 80, splashR: 85, kick: 150, homing: true },
     flame: { label: 'Flamethrower', short: 'Flame', max: 10, dmg: 7, speed: 520, size: 6, life: 0.85, color: C.flame }
   }
@@ -231,7 +231,7 @@ export default function sketch(p) {
       x: W / 2, y: GROUND_Y, vx: 0, vy: 0,
       w: 20, h: 32, onGround: true, jumps: 1,
       coyote: 0, buffer: 0, hp: 100, maxHp: 100,
-      invuln: 0, aim: -Math.PI / 2, fireCd: 0, flash: 0
+      invuln: 0, aim: -Math.PI / 2, fireCd: 0, flash: 0, recoilVx: 0
     }
     bullets = []
     helis = []
@@ -389,6 +389,14 @@ export default function sketch(p) {
 
     const prevFeet = player.y
     player.x = clamp(player.x + player.vx * dt, 14, W - 14)
+
+    // Shotgun recoil: a short horizontal slide that fades out, independent of
+    // walking friction so it stays visible for a beat.
+    if (player.recoilVx) {
+      player.x = clamp(player.x + player.recoilVx * dt, 14, W - 14)
+      player.recoilVx *= Math.max(0, 1 - 14 * dt)
+      if (Math.abs(player.recoilVx) < 2) player.recoilVx = 0
+    }
     player.y += player.vy * dt
     player.onGround = false
 
@@ -472,6 +480,7 @@ export default function sketch(p) {
     player.flash = 0.06
     player.vx -= Math.cos(player.aim) * (w.kick || 0) * 0.06
     player.vy -= Math.sin(player.aim) * (w.kick || 0) * 0.02
+    if (w.recoil) player.recoilVx = -Math.cos(player.aim) * w.recoil
   }
 
   // A heavy, continuous jet: the tank drains while the trigger is held, so a
@@ -716,6 +725,7 @@ export default function sketch(p) {
       tx: W / 2, ty: 190,
       ax: 0, ay: 0, tilt: 0,
       seed: p.random(1000),
+      tailRotor: p.random(10),
       hit: 0
     })
   }
@@ -726,6 +736,7 @@ export default function sketch(p) {
     for (let i = helis.length - 1; i >= 0; i--) {
       const h = helis[i]
       h.rotor += dt * 26
+      h.tailRotor = (h.tailRotor || 0) + dt * 55
       h.hit = Math.max(0, h.hit - dt)
       h.phase += dt
 
@@ -1251,6 +1262,20 @@ export default function sketch(p) {
     p.strokeWeight(2)
     strokeBlob(blobPoints(-dir * r * 1.34, -r * 0.34, r * 0.5, r * 0.5, seed + 4, 0.5), seed + 4, 0.5)
 
+    // Tail rotor: four thin blades spinning fast enough to blur.
+    const trx = -dir * r * 1.34
+    const tryy = -r * 0.34
+    const trr = r * 0.25
+    p.strokeWeight(1.2)
+    for (let b = 0; b < 2; b++) {
+      const a0 = (h.tailRotor || 0) + b * Math.PI / 2
+      for (let k = 0; k < 2; k++) {
+        const a = a0 - k * 0.2
+        p.stroke(rgba(C.ink, k === 0 ? 175 : 65))
+        p.line(trx + Math.cos(a) * trr, tryy + Math.sin(a) * trr, trx - Math.cos(a) * trr, tryy - Math.sin(a) * trr)
+      }
+    }
+    p.stroke(...C.ink)
     const body = fillBlob(0, 0, r * 1.8, r, h.hit > 0 ? C.danger : C.panel, seed + 5, 0.7)
     p.stroke(...C.ink)
     p.strokeWeight(2)
@@ -1350,6 +1375,44 @@ export default function sketch(p) {
     }
   }
 
+  // One crate face for both the chute drop and the landed box, with a
+  // weapon-specific icon so you can read the contents at a glance.
+  function drawCrateFace(cx, cy, type, weapon) {
+    const good = type === 'health'
+    const col = good ? C.good : C.accent
+    p.push()
+    p.translate(cx, cy)
+
+    p.fill(255)
+    p.stroke(...col)
+    p.strokeWeight(2)
+    p.rect(0, 0, 26, 22, 3)
+
+    p.noStroke()
+    p.fill(...col)
+    if (good) {
+      p.rect(0, 0, 12, 3.5)
+      p.rect(0, 0, 3.5, 12)
+    } else if (weapon === 'shotgun') {
+      p.rect(1, -3, 15, 3.5, 1)
+      p.triangle(-6.5, -3, -6.5, 5, -0.5, -1)
+      p.rect(4, 1, 4, 3.5, 1)
+    } else if (weapon === 'rocket') {
+      p.triangle(-3.5, -8, 3.5, -8, 0, -2)
+      p.rect(0, 1, 7, 8, 1)
+      p.triangle(-3.5, 2, -3.5, 7, -0.5, 5)
+      p.triangle(3.5, 2, 3.5, 7, 0.5, 5)
+      p.fill(...C.flame)
+      p.triangle(-2, 6, 2, 6, 0, 10)
+    } else if (weapon === 'flame') {
+      p.rect(-8, -4, 7, 11, 2)
+      p.rect(-1, -1, 7, 3, 1)
+      p.fill(...C.flame)
+      p.triangle(3, -2.5, 3, 2.5, 10, 0)
+    }
+    p.pop()
+  }
+
   function drawCrates() {
     for (const c of crates) {
       p.push()
@@ -1358,43 +1421,30 @@ export default function sketch(p) {
 
       p.stroke(148, 163, 184)
       p.strokeWeight(1)
-      p.line(-10, -8, -21, -58)
-      p.line(10, -8, 21, -58)
-      p.line(-10, -8, 0, -58)
-      p.line(10, -8, 0, -58)
+      p.line(-10, -11, -21, -58)
+      p.line(10, -11, 21, -58)
+      p.line(-10, -11, 0, -58)
+      p.line(10, -11, 0, -58)
 
       p.fill(232, 238, 246)
       p.stroke(...C.ink)
       p.strokeWeight(1.5)
       p.arc(0, -58, 46, 28, Math.PI, p.TWO_PI)
 
-      const good = c.type === 'health'
-      p.fill(255)
-      p.stroke(...(good ? C.good : C.accent))
-      p.strokeWeight(2)
-      p.rect(0, 0, 24, 20, 3)
-      p.noStroke()
-      p.fill(...(good ? C.good : C.accent))
-      if (good) {
-        p.rect(0, 0, 11, 3)
-        p.rect(0, 0, 3, 11)
-      } else {
-        p.rect(0, 0, 12, 3)
-        p.circle(0, 0, 4)
-      }
+      drawCrateFace(0, 0, c.type, c.weapon)
       p.pop()
 
       // World-aligned vectors out of the top and bottom edges; they meet at
       // terminal velocity.
       const dragLen = 24 * clamp(c.dragMag / CRATE_G, 0, 1.2)
-      arrow(c.x, c.y + 10, 0, 1, 24, C.force)
-      if (dragLen > 1) arrow(c.x, c.y - 10, 0, -1, dragLen, C.force)
+      arrow(c.x, c.y + 12, 0, 1, 24, C.force)
+      if (dragLen > 1) arrow(c.x, c.y - 12, 0, -1, dragLen, C.force)
 
       p.noStroke()
       p.fill(...C.muted)
       p.textAlign(p.CENTER, p.TOP)
       p.textSize(11)
-      p.text(good ? 'HEALTH' : WEAPONS[c.weapon].short.toUpperCase(), c.x, c.y + 40)
+      p.text(c.type === 'health' ? 'HEALTH' : WEAPONS[c.weapon].short.toUpperCase(), c.x, c.y + 40)
     }
   }
 
@@ -1403,30 +1453,8 @@ export default function sketch(p) {
       const blink = it.life < 3 && Math.floor(it.life * 8) % 2 === 0
       if (blink) continue
       const bob = Math.sin(it.t * 4) * 3
-      p.push()
-      p.translate(it.x, it.y + bob)
-      p.rotate(Math.PI / 4)
-
-      if (it.type === 'health') {
-        p.fill(255)
-        p.stroke(...C.good)
-        p.strokeWeight(2)
-        p.rect(0, 0, 22, 22, 4)
-        p.noStroke()
-        p.fill(...C.good)
-        p.rect(0, 0, 11, 3)
-        p.rect(0, 0, 3, 11)
-      } else {
-        p.fill(255)
-        p.stroke(...C.accent)
-        p.strokeWeight(2)
-        p.rect(0, 0, 24, 24, 4)
-        p.noStroke()
-        p.fill(...C.accent)
-        p.rect(0, 0, 12, 3)
-        p.circle(0, 0, 4)
-      }
-      p.pop()
+      // Landed boxes stay horizontal: no rotation, just the bob.
+      drawCrateFace(it.x, it.y + bob, it.type, it.weapon)
 
       p.noStroke()
       p.fill(...C.muted)
@@ -1561,6 +1589,7 @@ export default function sketch(p) {
         ax: hax, ay: hay,
         tilt: clamp(hax * 0.0012, -0.35, 0.35),
         seed: 7,
+        tailRotor: t * 55,
         hp: 1, maxHp: 1
       })
 
@@ -1728,7 +1757,8 @@ export default function sketch(p) {
         state: () => ({
           mode, score, kills, hp: player.hp, weapon, best, shots, hits,
           px: player.x, py: player.y, onGround: player.onGround,
-          aim: player.aim, aimByMouse,
+          aim: player.aim, aimByMouse, recoilVx: player.recoilVx,
+          bullets: bullets.length,
           ammo: { shotgun: ammo.shotgun, rocket: ammo.rocket, flame: ammo.flame },
           helis: helis.map(h => {
             const f = heliForces(h)
