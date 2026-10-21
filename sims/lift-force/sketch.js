@@ -44,22 +44,45 @@ export default function sketch(p) {
     force: [220, 38, 38],
     danger: [185, 28, 28],
     flame: [234, 88, 12],
-    good: [13, 148, 136]
+    good: [13, 148, 136],
+    cyan: [6, 182, 212],
+    charcoal: [58, 66, 78]
   }
+
+  // Fixed enemy stats — difficulty comes from the roster, not from HP.
+  const ENEMIES = {
+    scout: { hp: 110, r: 26, points: 150, speed: 1.0, alt: [140, 280], hover: [140, 300], travel: 280, anchor: [1.4, 2.6] },
+    heavy: { hp: 300, r: 40, points: 400, speed: 0.85, alt: [140, 280], hover: [140, 300], travel: 280, anchor: [1.4, 2.6] },
+    bomber: { hp: 220, r: 38, points: 350, speed: 0.55, alt: [80, 140], hover: [80, 140], travel: 220, anchor: [1.8, 3.0] },
+    nighthawk: { hp: 180, r: 30, points: 500, speed: 2.0, alt: [140, 280], hover: [140, 300], travel: 560, anchor: [2.2, 3.4] }
+  }
+  const NIGHTHAWK_SCORE = 10000
 
   // -------------------------------------------------------------- weapons
   // `cd` is seconds between trigger pulls, `counts` feeds the accuracy stat.
   const WEAPONS = {
     pistol: { label: 'Pistol', short: 'Pistol', max: Infinity, dmg: 10, cd: 0.13, spread: 0.018, speed: 950, pellets: 1, size: 3, life: 1.1, color: C.ink, counts: true },
-    shotgun: { label: 'Shotgun', short: 'Shotgun', max: 24, dmg: 9, cd: 0.52, spread: 0.17, speed: 820, pellets: 8, size: 2.6, life: 0.62, color: C.ink, counts: true, recoil: 275 },
-    rocket: { label: 'Rocket', short: 'Rocket', max: 1, dmg: 280, cd: 0.85, spread: 0.012, speed: 45, pellets: 1, size: 4, life: 2.6, color: C.accent, counts: true, splash: 80, splashR: 85, kick: 150, homing: true },
-    flame: { label: 'Flamethrower', short: 'Flame', max: 10, dmg: 7, speed: 520, size: 6, life: 0.85, color: C.flame }
+    shotgun: { label: 'Shotgun', short: 'Shotgun', max: 24, cap: 999, dmg: 9, cd: 0.52, spread: 0.17, speed: 820, pellets: 8, size: 2.6, life: 0.62, color: C.ink, counts: true, recoil: 275 },
+    rocket: { label: 'Rocket', short: 'Rocket', max: 1, cap: 999, dmg: 280, cd: 0.85, spread: 0.012, speed: 45, pellets: 1, size: 4, life: 2.6, color: C.accent, counts: true, splash: 80, splashR: 85, kick: 150, homing: true },
+    flame: { label: 'Flamethrower', short: 'Flame', max: 10, cap: 999, dmg: 7, speed: 520, size: 6, life: 0.85, color: C.flame }
   }
   const ORDER = ['pistol', 'shotgun', 'flame']
 
   // On-canvas buttons, shared by the drawing and the hit test.
   const PLAY_BTN = { x: W / 2, y: 268, w: 220, h: 62 }
   const AGAIN_BTN = { x: W / 2, y: 470, w: 240, h: 58 }
+
+  // HUD weapon capsules, shared by the drawing and the pickup-flight target.
+  const CAP_ORDER = ['pistol', 'shotgun', 'flame', 'rocket']
+  const CAP_W = 118
+  const CAP_H = 28
+  const CAP_GAP = 8
+  const CAP_X = 24
+  const CAP_Y = H - 40
+
+  function capsuleRect(i) {
+    return { x: CAP_X + i * (CAP_W + CAP_GAP), y: CAP_Y, w: CAP_W, h: CAP_H }
+  }
 
   // A full flame tank (10 ammo) burns for FLAME_TANK / FLAME_DRAIN seconds.
   const FLAME_DRAIN = 2          // ammo per second
@@ -80,7 +103,10 @@ export default function sketch(p) {
   let handReady = false
   let pointer = { x: W / 2, y: 60 }
 
-  let player, bullets, helis, pickups, particles, planes, crates
+  let player, bullets, helis, pickups, particles, planes, crates, flyers, bombs
+  let hudFlash = { pistol: 0, shotgun: 0, flame: 0, rocket: 0 }
+  let nightSpawned = false
+  let cheatBuf = ''
   let ammo, weapon
   let score, best, kills, shots, hits
   let elapsed = 0, spawnT = 0, dropIndex = 0, weaponDrop = 0, shake = 0, hurtFlash = 0, titleT = 0
@@ -148,6 +174,45 @@ export default function sketch(p) {
       const a = (i / n) * p.TWO_PI
       const k = jit(seed + i * 1.7, amp)
       pts.push({ x: cx + Math.cos(a) * (w / 2 + k), y: cy + Math.sin(a) * (h / 2 + k) })
+    }
+    return pts
+  }
+
+  // A true capsule: straight top/bottom, one semicircle per end.
+  function capsulePoints(w, h, seed = 0, amp = ROUGH, per = 7) {
+    const hw = w / 2
+    const r = h / 2
+    const pts = []
+    for (let i = 0; i <= per * 2; i++) {
+      const a = -Math.PI / 2 + (i / (per * 2)) * Math.PI
+      const k = jit(seed + i * 1.7, amp)
+      pts.push({ x: hw - r + Math.cos(a) * (r + k), y: Math.sin(a) * (r + k) })
+    }
+    for (let i = 0; i <= per * 2; i++) {
+      const a = Math.PI / 2 + (i / (per * 2)) * Math.PI
+      const k = jit(seed + 50 + i * 1.7, amp)
+      pts.push({ x: -hw + r + Math.cos(a) * (r + k), y: Math.sin(a) * (r + k) })
+    }
+    return pts
+  }
+
+  // Rounded-rectangle outline, sampled from four corner arcs and jittered.
+  function roundedPoints(w, h, rad, seed = 0, amp = ROUGH, per = 4) {
+    const pts = []
+    const hw = w / 2
+    const hh = h / 2
+    const corners = [
+      [hw - rad, -hh + rad, Math.PI * 1.5, Math.PI * 2],
+      [hw - rad, hh - rad, 0, Math.PI * 0.5],
+      [-hw + rad, hh - rad, Math.PI * 0.5, Math.PI],
+      [-hw + rad, -hh + rad, Math.PI, Math.PI * 1.5]
+    ]
+    for (const [cx, cy, a0, a1] of corners) {
+      for (let i = 0; i <= per; i++) {
+        const a = a0 + (a1 - a0) * (i / per)
+        const k = jit(seed + pts.length * 1.7, amp)
+        pts.push({ x: cx + Math.cos(a) * (rad + k), y: cy + Math.sin(a) * (rad + k) })
+      }
     }
     return pts
   }
@@ -231,7 +296,8 @@ export default function sketch(p) {
       x: W / 2, y: GROUND_Y, vx: 0, vy: 0,
       w: 20, h: 32, onGround: true, jumps: 1,
       coyote: 0, buffer: 0, hp: 100, maxHp: 100,
-      invuln: 0, aim: -Math.PI / 2, fireCd: 0, flash: 0, recoilVx: 0
+      invuln: 0, aim: -Math.PI / 2, fireCd: 0, flash: 0, recoilVx: 0,
+      invincible: 0
     }
     bullets = []
     helis = []
@@ -239,6 +305,11 @@ export default function sketch(p) {
     particles = []
     planes = []
     crates = []
+    flyers = []
+    bombs = []
+    hudFlash = { pistol: 0, shotgun: 0, flame: 0, rocket: 0 }
+    nightSpawned = false
+    cheatBuf = ''
     ammo = { pistol: Infinity, shotgun: 0, rocket: 0, flame: 0 }
     weapon = 'pistol'
     score = 0
@@ -267,6 +338,12 @@ export default function sketch(p) {
   // ---------------------------------------------------------------- input
   function jumpPressed() {
     player.buffer = BUFFER
+  }
+
+  function activateCheat(code) {
+    player.hp = player.maxHp
+    if (code === 'monster') player.invincible = Infinity
+    else player.invincible = Math.max(player.invincible, 30)
   }
 
   // Hand aim over to the keyboard, seeded from wherever the mouse was pointing.
@@ -306,6 +383,18 @@ export default function sketch(p) {
     const slot = ORDER[['Digit1', 'Digit2', 'Digit3', 'Digit4'].indexOf(e.code)]
     if (slot) selectWeapon(slot)
     if (e.code === 'End') cycleWeapon()
+
+    // Hidden cheats: quietly watch the last characters typed.
+    if (e.key && e.key.length === 1) {
+      cheatBuf = (cheatBuf + e.key.toLowerCase()).slice(-8)
+      if (cheatBuf.endsWith('f=ma')) {
+        activateCheat('f=ma')
+        cheatBuf = ''
+      } else if (cheatBuf.endsWith('monster')) {
+        activateCheat('monster')
+        cheatBuf = ''
+      }
+    }
   }
 
   function onKeyUp(e) {
@@ -537,7 +626,7 @@ export default function sketch(p) {
   }
 
   function damagePlayer(dmg) {
-    if (player.invuln > 0 || mode !== 'play') return
+    if (player.invuln > 0 || player.invincible > 0 || mode !== 'play') return
     player.hp -= dmg
     player.invuln = 0.85
     shake = Math.max(shake, 7)
@@ -703,19 +792,41 @@ export default function sketch(p) {
     return Math.min(1 + elapsed / 50, 4.5)
   }
 
-  function spawnHeli() {
+  // The roster opens up with score; the weights are the only gate.
+  function pickEnemyType() {
+    const r = p.random()
+    if (score >= NIGHTHAWK_SCORE) {
+      if (r < 0.18) return 'nighthawk'
+      if (r < 0.38) return 'bomber'
+      if (r < 0.64) return 'heavy'
+      return 'scout'
+    }
+    if (score >= 5000) {
+      if (r < 0.07) return 'bomber'
+      if (r < 0.40) return 'heavy'
+      return 'scout'
+    }
+    if (score >= 1000) {
+      if (r < 0.32) return 'heavy'
+      return 'scout'
+    }
+    return 'scout'
+  }
+
+  function spawnHeli(forcedType) {
     const d = difficulty()
-    const heavy = p.random() < clamp(0.1 + d * 0.1, 0, 0.42)
+    const type = forcedType || pickEnemyType()
+    const def = ENEMIES[type]
     const fromLeft = p.random() < 0.5
-    const r = heavy ? 40 : 26
-    const hp = heavy ? 250 + d * 45 : 110 + d * 22
     helis.push({
+      type,
       x: fromLeft ? -90 : W + 90,
-      y: p.random(140, 280),
+      y: p.random(def.alt[0], def.alt[1]),
       vx: 0, vy: 0,
       dir: fromLeft ? 1 : -1,
-      r, heavy,
-      hp, maxHp: hp,
+      r: def.r,
+      heavy: type === 'heavy',
+      hp: def.hp, maxHp: def.hp,
       phase: p.random(100),
       rotor: p.random(10),
       fireT: p.random(0.9, 1.8),
@@ -726,6 +837,9 @@ export default function sketch(p) {
       ax: 0, ay: 0, tilt: 0,
       seed: p.random(1000),
       tailRotor: p.random(10),
+      armed: false,
+      seen: false,
+      armT: 0,
       hit: 0
     })
   }
@@ -740,26 +854,36 @@ export default function sketch(p) {
       h.hit = Math.max(0, h.hit - dt)
       h.phase += dt
 
+      const def = ENEMIES[h.type]
       h.anchorT -= dt
       if (h.anchorT <= 0) {
-        h.anchorT = p.random(1.4, 2.6)
-        h.tx = clamp(player.x + p.random(-280, 280), 90, W - 90)
-        h.ty = p.random(140, 300)
+        h.anchorT = p.random(def.anchor[0], def.anchor[1])
+        h.tx = clamp(player.x + p.random(-def.travel, def.travel), 90, W - 90)
+        h.ty = p.random(def.hover[0], def.hover[1])
       }
 
       const bob = Math.sin(h.phase * 1.7) * 16
       const ax = (h.tx - h.x) * 1.8
       const ay = (h.ty + bob - h.y) * 2.2
       const maxA = 260 + d * 45
+      const spd = ENEMIES[h.type].speed
+      const axMax = maxA * spd
       const pvx = h.vx
       const pvy = h.vy
-      h.vx = clamp(h.vx + clamp(ax, -maxA, maxA) * dt, -maxA * 0.6, maxA * 0.6)
+      h.vx = clamp(h.vx + clamp(ax, -axMax, axMax) * dt, -axMax * 0.6, axMax * 0.6)
       h.vy = clamp(h.vy + clamp(ay, -maxA, maxA) * dt, -220, 220)
       h.vx *= 1 - 1.8 * dt
       h.vy *= 1 - 1.8 * dt
       h.x += h.vx * dt
       h.y += h.vy * dt
       h.dir = h.vx > 8 ? 1 : h.vx < -8 ? -1 : h.dir
+
+      // Guns stay cold until the chopper has been on screen for three seconds,
+      // so it can't snipe from the edge at a shallow angle. Once armed it
+      // stays armed.
+      if (!h.seen && h.x > 0 && h.x < W) h.seen = true
+      if (h.seen) h.armT += dt
+      if (!h.armed && h.armT >= 3) h.armed = true
 
       // Measured acceleration drives both the force arrows and the bank.
       if (dt > 0) {
@@ -769,30 +893,37 @@ export default function sketch(p) {
       }
       h.tilt += (clamp(h.ax * 0.0012, -0.35, 0.35) - h.tilt) * Math.min(1, dt * 10)
 
-      if (h.burst > 0) {
-        h.burstT -= dt
-        if (h.burstT <= 0) {
-          fireHeli(h, d)
-          h.burst--
-          h.burstT = 0.13
+      if (h.armed) {
+        if (h.burst > 0) {
+          h.burstT -= dt
+          if (h.burstT <= 0) {
+            fireHeli(h, d, h.type === 'nighthawk' ? 6 : 12)
+            h.burst--
+            h.burstT = h.type === 'nighthawk' ? 0.09 : 0.13
+          }
         }
-      }
 
-      h.fireT -= dt
-      if (h.fireT <= 0 && h.x > 0 && h.x < W) {
-        if (h.heavy) {
-          h.burst = 3
-          h.burstT = 0
-        } else {
-          fireHeli(h, d)
+        h.fireT -= dt
+        if (h.fireT <= 0) {
+          if (h.type === 'heavy') {
+            h.burst = 3
+            h.burstT = 0
+          } else if (h.type === 'nighthawk') {
+            h.burst = 12
+            h.burstT = 0
+          } else if (h.type === 'bomber') {
+            dropBomb(h)
+          } else {
+            fireHeli(h, d)
+          }
+          const gap = clamp(2.5 - d * 0.25, 0.9, 2.5) + p.random(0, 0.6)
+          h.fireT = h.type === 'nighthawk' ? gap * 2 : gap
         }
-        h.fireT = clamp(2.5 - d * 0.25, 0.9, 2.5) + p.random(0, 0.6)
       }
     }
   }
 
-  function fireHeli(h, d) {
-    const err = clamp(0.19 - d * 0.032, 0.032, 0.19)
+  function fireHeli(h, d, dmg = 12) {    const err = clamp(0.19 - d * 0.032, 0.032, 0.19)
     const lead = clamp((d - 1) / 3, 0, 0.8)
     const tx = player.x + player.vx * lead * 0.22
     const ty = player.y - 18 + player.vy * lead * 0.12
@@ -804,7 +935,7 @@ export default function sketch(p) {
       vx: Math.cos(a) * sp,
       vy: Math.sin(a) * sp,
       life: 4,
-      dmg: 12,
+      dmg,
       r: 3.5,
       color: C.danger,
       splash: 0,
@@ -813,6 +944,73 @@ export default function sketch(p) {
       own: false,
       counts: false
     })
+  }
+
+  // ---------------------------------------------------------------- bombs
+  const BOMB_G = 950
+  const BOMB_FRAC = 0.34
+
+  function dropBomb(h) {
+    bombs.push({
+      x: h.x,
+      y: h.y + h.r * 0.5,
+      vx: h.vx * 0.25,
+      vy: 40,
+      r: 8,
+      life: 6
+    })
+  }
+
+  function updateBombs(dt) {
+    for (let i = bombs.length - 1; i >= 0; i--) {
+      const b = bombs[i]
+      b.life -= dt
+      b.vy += BOMB_G * dt   // free fall: gravity only, no drag
+      const prev = b.y
+      b.x += b.vx * dt
+      b.y += b.vy * dt
+
+      let hit = b.y + b.r >= GROUND_Y
+      if (!hit) {
+        for (const pl of PLATFORMS) {
+          if (b.x > pl.x && b.x < pl.x + pl.w && prev + b.r <= pl.y + 2 && b.y + b.r >= pl.y) {
+            hit = true
+            break
+          }
+        }
+      }
+
+      if (hit) {
+        bombBlast(b.x, Math.min(b.y, GROUND_Y))
+        bombs.splice(i, 1)
+      } else if (b.life <= 0 || b.x < -60 || b.x > W + 60) {
+        bombs.splice(i, 1)
+      }
+    }
+  }
+
+  function bombBlast(x, y) {
+    shake = Math.max(shake, 9)
+    flameBurst(x, y, 20)
+    burst(x, y, 8, C.ink, 220)
+    if (dist(x, y, player.x, player.y - 16) < 70) {
+      damagePlayer(Math.round(player.maxHp * BOMB_FRAC))
+    }
+  }
+
+  function drawBombs() {
+    for (const b of bombs) {
+      p.push()
+      p.translate(b.x, b.y)
+      p.noStroke()
+      p.fill(...C.ink)
+      p.circle(0, 0, b.r * 2)
+      p.triangle(-b.r + 1, -2, -b.r - 4, -7, -b.r + 1, 3)
+      p.triangle(b.r - 1, -2, b.r + 4, -7, b.r - 1, 3)
+      p.fill(...C.flame)
+      p.circle(0, -b.r - 3, 3 + Math.sin(p.frameCount * 0.9) * 1.2)
+      p.pop()
+    }
   }
 
   function damageHeli(h, dmg) {
@@ -827,9 +1025,9 @@ export default function sketch(p) {
     if (idx === -1) return
     helis.splice(idx, 1)
     kills++
-    score += h.heavy ? 400 : 150
-    shake = Math.max(shake, h.heavy ? 10 : 6)
-    burst(h.x, h.y, h.heavy ? 26 : 16, C.ink, 300)
+    score += ENEMIES[h.type].points
+    shake = Math.max(shake, h.r >= 38 ? 10 : 6)
+    burst(h.x, h.y, h.r >= 38 ? 26 : 16, C.ink, 300)
     burst(h.x, h.y, 10, C.accent, 220)
     maybeDrop(h)
   }
@@ -972,9 +1170,46 @@ export default function sketch(p) {
       burst(it.x, it.y, 8, C.good, 120)
       return
     }
-    ammo[it.weapon] = WEAPONS[it.weapon].max
-    if (it.weapon !== 'rocket') weapon = it.weapon
+    const w = WEAPONS[it.weapon]
+    ammo[it.weapon] = Math.min(w.cap, ammo[it.weapon] + w.max)
+    spawnFlyer(it.weapon, it.x, it.y)
     burst(it.x, it.y, 8, C.accent, 120)
+  }
+
+  // The pickup icon arcs into its HUD capsule; the capsule flashes on arrival.
+  function spawnFlyer(name, x, y) {
+    const r = capsuleRect(CAP_ORDER.indexOf(name))
+    flyers.push({
+      sx: x, sy: y,
+      tx: r.x + r.w / 2, ty: r.y + r.h / 2,
+      t: 0, dur: 0.45, name
+    })
+  }
+
+  function updateFlyers(dt) {
+    for (let i = flyers.length - 1; i >= 0; i--) {
+      const f = flyers[i]
+      f.t += dt
+      if (f.t >= f.dur) {
+        hudFlash[f.name] = 0.6
+        flyers.splice(i, 1)
+      }
+    }
+    for (const k in hudFlash) hudFlash[k] = Math.max(0, hudFlash[k] - dt)
+  }
+
+  function drawFlyers() {
+    for (const f of flyers) {
+      const k = clamp(f.t / f.dur, 0, 1)
+      const e = 1 - Math.pow(1 - k, 3)
+      const x = f.sx + (f.tx - f.sx) * e
+      const y = f.sy + (f.ty - f.sy) * e - Math.sin(e * Math.PI) * 50
+      p.push()
+      p.translate(x, y)
+      p.scale(0.72)
+      drawCrateFace(0, 0, 'weapon', f.name)
+      p.pop()
+    }
   }
 
   // ------------------------------------------------------------- particles
@@ -1038,14 +1273,23 @@ export default function sketch(p) {
     updatePlanes(dt)
     updateCrates(dt)
     updatePickups(dt)
+    updateFlyers(dt)
+    updateBombs(dt)
     updateParticles(dt)
     spawnTick(dt)
+
+    // First nighthawk is guaranteed the moment the score hits 10k.
+    if (!nightSpawned && score >= NIGHTHAWK_SCORE) {
+      spawnHeli('nighthawk')
+      nightSpawned = true
+    }
 
     supplyT -= dt
     planeCooldown = Math.max(0, planeCooldown - dt)
     if (supplyT <= 0) callSupply()
 
     player.invuln = Math.max(0, player.invuln - dt)
+    player.invincible = Math.max(0, player.invincible - dt)
     player.flash = Math.max(0, player.flash - dt)
     shake = Math.max(0, shake - shake * 9 * dt)
     hurtFlash = Math.max(0, hurtFlash - dt * 2.4)
@@ -1072,12 +1316,14 @@ export default function sketch(p) {
     drawPlatforms()
     drawPlanes()
     drawCrates()
+    drawBombs()
     drawPickups()
     drawHelis()
     drawBullets()
     drawPlayer()
     drawParticles()
     drawHud()
+    drawFlyers()
     drawOverlay()
 
     p.pop()
@@ -1247,40 +1493,86 @@ export default function sketch(p) {
     p.translate(h.x, h.y)
     p.rotate(h.tilt)
 
-    p.stroke(...C.ink)
-    p.strokeWeight(3)
-    roughLine(0, -r * 0.5, 0, -r * 0.85, seed + 1, 0.5)
-
     const wob = Math.sin(h.rotor) * 3.5
-    p.strokeWeight(4)
-    roughLine(-r * 1.1, -r * 0.92 + wob, r * 1.1, -r * 0.92 - wob, seed + 2, 0.6)
-
-    p.strokeWeight(Math.max(3, r * 0.16))
-    roughLine(-dir * r * 0.5, -r * 0.08, -dir * r * 1.28, -r * 0.34, seed + 3, 0.5)
-
     p.stroke(...C.ink)
-    p.strokeWeight(2)
-    strokeBlob(blobPoints(-dir * r * 1.34, -r * 0.34, r * 0.5, r * 0.5, seed + 4, 0.5), seed + 4, 0.5)
-
-    // Tail rotor: four thin blades spinning fast enough to blur.
-    const trx = -dir * r * 1.34
-    const tryy = -r * 0.34
-    const trr = r * 0.25
-    p.strokeWeight(1.2)
-    for (let b = 0; b < 2; b++) {
-      const a0 = (h.tailRotor || 0) + b * Math.PI / 2
-      for (let k = 0; k < 2; k++) {
-        const a = a0 - k * 0.2
-        p.stroke(rgba(C.ink, k === 0 ? 175 : 65))
-        p.line(trx + Math.cos(a) * trr, tryy + Math.sin(a) * trr, trx - Math.cos(a) * trr, tryy - Math.sin(a) * trr)
-      }
+    if (h.type === 'bomber') {
+      // Tandem rotors: two masts, two bars.
+      p.strokeWeight(3)
+      roughLine(-r * 0.6, -r * 0.5, -r * 0.6, -r * 0.85, seed + 1, 0.5)
+      roughLine(r * 0.55, -r * 0.5, r * 0.55, -r * 0.85, seed + 2, 0.5)
+      p.strokeWeight(4)
+      roughLine(-r * 1.2, -r * 0.92 + wob, -r * 0.04, -r * 0.92 - wob, seed + 3, 0.5)
+      roughLine(r * 0.04, -r * 0.92 + wob, r * 1.12, -r * 0.92 - wob, seed + 4, 0.5)
+    } else {
+      p.strokeWeight(3)
+      roughLine(0, -r * 0.5, 0, -r * 0.85, seed + 1, 0.5)
+      p.strokeWeight(4)
+      roughLine(-r * 1.1, -r * 0.92 + wob, r * 1.1, -r * 0.92 - wob, seed + 2, 0.6)
     }
-    p.stroke(...C.ink)
-    const body = fillBlob(0, 0, r * 1.8, r, h.hit > 0 ? C.danger : C.panel, seed + 5, 0.7)
-    p.stroke(...C.ink)
-    p.strokeWeight(2)
-    strokeBlob(body, seed + 5, 0.7)
-    fillBlob(dir * r * 0.46, -r * 0.04, r * 0.52, r * 0.36, C.ink, seed + 6, 0.35)
+
+    if (h.type !== 'bomber') {
+      p.strokeWeight(Math.max(3, r * 0.16))
+      roughLine(-dir * r * 0.5, -r * 0.08, -dir * r * 1.28, -r * 0.34, seed + 3, 0.5)
+
+      p.stroke(...C.ink)
+      p.strokeWeight(2)
+      strokeBlob(blobPoints(-dir * r * 1.34, -r * 0.34, r * 0.5, r * 0.5, seed + 4, 0.5), seed + 4, 0.5)
+
+      // Tail rotor: four thin blades spinning fast enough to blur.
+      const trx = -dir * r * 1.34
+      const tryy = -r * 0.34
+      const trr = r * 0.25
+      p.strokeWeight(1.2)
+      for (let b = 0; b < 2; b++) {
+        const a0 = (h.tailRotor || 0) + b * Math.PI / 2
+        for (let k = 0; k < 2; k++) {
+          const a = a0 - k * 0.2
+          p.stroke(rgba(C.ink, k === 0 ? 175 : 65))
+          p.line(trx + Math.cos(a) * trr, tryy + Math.sin(a) * trr, trx - Math.cos(a) * trr, tryy - Math.sin(a) * trr)
+        }
+      }
+      p.stroke(...C.ink)
+    }
+    if (h.type === 'bomber') {
+      const bw = r * 2.27
+      const bh = r * 1.05
+      const pts = capsulePoints(bw, bh, seed + 5, 0.4, 7)
+      fillPoly(pts.map(q => [q.x, q.y]), h.hit > 0 ? C.danger : C.panel)
+      p.stroke(...C.ink)
+      p.strokeWeight(2)
+      strokeBlob(pts, seed + 5, 0.45)
+      fillBlob(dir * r * 0.58, -r * 0.02, r * 0.4, r * 0.28, C.ink, seed + 6, 0.25)
+    } else if (h.type === 'nighthawk') {
+      const pts = [
+        [1.15, -0.02], [0.5, -0.34], [-0.7, -0.42], [-1.05, -0.12],
+        [-0.95, 0.3], [0.35, 0.38], [0.9, 0.18]
+      ].map(([x, y], i) => [dir * r * x + jit(seed + 50 + i, 0.5), r * y + jit(seed + 60 + i, 0.5)])
+      fillPoly(pts, h.hit > 0 ? C.danger : C.charcoal)
+      p.stroke(...C.ink)
+      p.strokeWeight(2)
+      for (let i = 0; i < pts.length; i++) {
+        const a = pts[i]
+        const b = pts[(i + 1) % pts.length]
+        roughLine(a[0], a[1], b[0], b[1], seed + 70 + i, 0.35)
+      }
+      const cp = [
+        [0.62, -0.16], [0.3, -0.26], [0.24, -0.02], [0.58, 0.06]
+      ].map(([x, y], i) => [dir * r * x + jit(seed + 80 + i, 0.25), r * y + jit(seed + 90 + i, 0.25)])
+      fillPoly(cp, [205, 212, 222])
+    } else {
+      const body = fillBlob(0, 0, h.type === 'nighthawk' ? r * 2.2 : r * 1.8, r, h.hit > 0 ? C.danger : C.panel, seed + 5, 0.7)
+      p.stroke(...C.ink)
+      p.strokeWeight(2)
+      strokeBlob(body, seed + 5, 0.7)
+      fillBlob(dir * r * 0.46, -r * 0.04, r * 0.52, r * 0.36, C.ink, seed + 6, 0.35)
+    }
+
+    if (h.type === 'nighthawk') {
+      // Chin-mounted machine gun.
+      p.stroke(...C.ink)
+      p.strokeWeight(2)
+      p.line(dir * r * 0.45, r * 0.42, dir * r * 1.0, r * 0.42)
+    }
 
     p.stroke(...C.ink)
     p.strokeWeight(2)
@@ -1508,43 +1800,62 @@ export default function sketch(p) {
 
     // health
     const bw = 190
-    const by = H - 44
+    const by = H - 66
     p.textAlign(p.LEFT, p.BOTTOM)
     p.fill(...C.muted)
     p.textSize(12)
-    p.text('HEALTH', 26, by - 10)
+    p.text('HEALTH', 26, by - 12)
     p.fill(...C.line)
     p.rect(26 + bw / 2, by, bw, 12, 6)
     const frac = clamp(player.hp / player.maxHp, 0, 1)
     if (frac > 0) {
-      p.fill(...(frac > 0.35 ? C.accent : C.danger))
+      const inv = player.invincible > 0
+      const cyanOn = Math.floor(p.frameCount / 8) % 2 === 0
+      const col = inv
+        ? (cyanOn ? C.cyan : [165, 243, 252])
+        : (frac > 0.35 ? C.accent : C.danger)
+      p.fill(...col)
       p.rect(26 + (bw * frac) / 2, by, bw * frac, 12, 6)
     }
 
-    // weapon
+    // equipped weapon readout
     p.textAlign(p.RIGHT, p.BOTTOM)
     p.fill(...C.muted)
     p.textSize(12)
-    p.text('WEAPON', W - 26, by - 10)
+    p.text('WEAPON', W - 26, by - 12)
     p.fill(...C.ink)
-    p.textSize(18)
+    p.textSize(20)
     p.textStyle(p.BOLD)
     const w = WEAPONS[weapon]
     p.text(`${w.label}  ${ammoLabel(weapon)}`, W - 24, by + 6)
     p.textStyle(p.NORMAL)
 
-    // weapon slots
-    p.textAlign(p.LEFT, p.BOTTOM)
-    p.textSize(11)
-    for (let i = 0; i < ORDER.length; i++) {
-      const name = ORDER[i]
-      const x = 26 + i * 104
-      const on = name === weapon
-      p.fill(...(on ? C.ink : C.faint))
-      p.text(`${i + 1} ${WEAPONS[name].short} ${ammoLabel(name)}`, x, H - 14)
+    // weapon capsules
+    for (let i = 0; i < CAP_ORDER.length; i++) {
+      const name = CAP_ORDER[i]
+      const r = capsuleRect(i)
+      const active = name === weapon
+      const fl = hudFlash[name] || 0
+      const hot = active || (fl > 0 && Math.floor(fl * 10) % 2 === 0)
+      if (hot) {
+        p.noStroke()
+        p.fill(...C.accent)
+        p.rect(r.x + r.w / 2, r.y + r.h / 2, r.w, r.h, 9)
+      } else {
+        p.fill(255)
+        p.stroke(...C.line)
+        p.strokeWeight(1.2)
+        p.rect(r.x + r.w / 2, r.y + r.h / 2, r.w, r.h, 9)
+        p.noStroke()
+      }
+      p.fill(...(hot ? [255, 255, 255] : C.ink))
+      p.textAlign(p.CENTER, p.CENTER)
+      p.textSize(14)
+      const label = name === 'rocket'
+        ? `R Rocket ${ammoLabel('rocket')}`
+        : `${i + 1} ${WEAPONS[name].short} ${ammoLabel(name)}`
+      p.text(label, r.x + r.w / 2, r.y + r.h / 2 + 1)
     }
-    p.fill(...(ammo.rocket > 0 ? C.ink : C.faint))
-    p.text(`R ${WEAPONS.rocket.short} ${ammoLabel('rocket')}`, 26 + ORDER.length * 104, H - 14)
   }
 
   function panel(cx, cy, w, h) {
@@ -1756,6 +2067,9 @@ export default function sketch(p) {
       window.__lift = {
         state: () => ({
           mode, score, kills, hp: player.hp, weapon, best, shots, hits,
+          invincible: player.invincible,
+          permanent: player.invincible === Infinity,
+          nightSpawned, bombs: bombs.length,
           px: player.x, py: player.y, onGround: player.onGround,
           aim: player.aim, aimByMouse, recoilVx: player.recoilVx,
           bullets: bullets.length,
@@ -1763,8 +2077,8 @@ export default function sketch(p) {
           helis: helis.map(h => {
             const f = heliForces(h)
             return {
-              x: h.x, y: h.y, hp: h.hp, heavy: h.heavy,
-              ax: h.ax, ay: h.ay, tilt: h.tilt,
+              x: h.x, y: h.y, vx: h.vx, vy: h.vy, hp: h.hp, heavy: h.heavy, type: h.type, burst: h.burst,
+              ax: h.ax, ay: h.ay, tilt: h.tilt, armed: h.armed,
               lift: f.lift, weight: f.weight, thrust: f.thrust
             }
           }),
@@ -1782,10 +2096,21 @@ export default function sketch(p) {
           planeXs: planes.map(pl => Math.round(pl.x)),
           supplyT, planeCooldown,
           particles: particles.length,
+          flyers: flyers.length,
+          flash: { ...hudFlash },
           platformTops: PLATFORMS.map(pl => pl.y),
           pickups: pickups.map(it => ({ x: it.x, y: it.y, type: it.type, weapon: it.weapon, landed: it.landed }))
         }),
         supply: () => { planeCooldown = 0; planes.length = 0; callSupply() },
+        setScore: (v) => { score = v },
+        spawn: (type) => { if (ENEMIES[type]) spawnHeli(type) },
+        clear: () => { helis.length = 0 },
+        pickup: (name) => collect({
+          type: name === 'health' ? 'health' : 'weapon',
+          weapon: name,
+          x: player.x,
+          y: player.y - 40
+        }),
         equip: (name) => {
           if (name === 'rocket') { ammo.rocket = WEAPONS.rocket.max; return }
           if (!ORDER.includes(name)) return
