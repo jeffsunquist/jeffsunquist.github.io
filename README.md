@@ -4,11 +4,16 @@ G6–G7 Physics lesson decks built with [Slidev](https://sli.dev).
 
 Visit the site at **https://www.basado.org/**
 
-Each deck is served at `/<deck>/` (e.g. `/KIN-01_Position_and_Reference_Frames_G6/`).
+Each deck is served at `/<deck>/` (e.g. `/KIN-L01_Position_and_Reference_Frames_G6/`).
+Deck names follow the handout scheme `{TOPIC}-{KIND}{NN}_{Title}[_G6|_G7]`
+(`L` = lesson; see `AGENTS.md`), so a deck never collides with a learning
+outcome ID (`FOR-02`) and pairs with its worksheet (`FOR-W02`). Old
+`{TOPIC}-{NN}_…` URLs redirect to the new path.
+
 Grade-specific decks carry a `_G6` / `_G7` filename suffix:
 
-- `KIN-02_Speed_and_Velocity_G6.md` → `/KIN-02_Speed_and_Velocity_G6/`
-- `KIN-02_Speed_and_Velocity_G7.md` → `/KIN-02_Speed_and_Velocity_G7/`
+- `KIN-L02_Speed_and_Velocity_G6.md` → `/KIN-L02_Speed_and_Velocity_G6/`
+- `KIN-L02_Speed_and_Velocity_G7.md` → `/KIN-L02_Speed_and_Velocity_G7/`
 
 Decks **without** a suffix are shared and appear in both grade columns. Merged
 source decks are kept as `.md.hold` reference copies and are not built.

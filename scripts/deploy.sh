@@ -1,9 +1,11 @@
 #!/bin/bash
 # Build all Slidev decks for deployment to GitHub Pages (user site at the root).
 #
-# Every *.md deck is built to dist/<slug>/ with base /<slug>/ and hash routing;
-# Slidev rewrites its asset paths (JS/CSS and the public/ images referenced with
-# a leading slash) against that base automatically.
+# Every lesson deck (files matching {TOPIC}-{KIND}{NN}_{Title}.md, see the
+# "Deck file naming" section of AGENTS.md) is built to dist/<slug>/ with base
+# /<slug>/ and hash routing; Slidev rewrites its asset paths (JS/CSS and the
+# public/ images referenced with a leading slash) against that base
+# automatically. Non-deck markdown (docs, notes) is skipped.
 #
 # Grade-specific decks carry a `_G6` / `_G7` filename suffix and appear only in
 # the matching column of the landing page; decks without a suffix are shared and
@@ -62,13 +64,47 @@ if [ -d sims ]; then
   cp -r sims dist/sims
 fi
 
+# Lesson decks follow the handout naming scheme {TOPIC}-{KIND}{NN}_{Title}
+# (KIND `L` = lesson; see physics/AGENTS.md), so only files matching that shape
+# are built — docs such as AGENTS.md, README.md and LO_TAGGING_REVIEW.md never
+# reach the site as stray lesson cards.
+DECK_RE='^[A-Z]{2,5}-L?[0-9]{2}_.*\.md$'
+
 for f in *.md; do
-  case "$f" in
-    AGENTS.md|README.md|slides.md) continue ;;   # docs / Slidev scaffold, not lesson decks
-  esac
+  printf '%s' "$f" | grep -Eq "$DECK_RE" || continue
   slug="${f%.md}"
   echo "Building $f -> /$slug/"
   npx slidev build "$f" --base "/$slug/" --router-mode hash --out "dist/$slug"
+done
+
+# Legacy URL compatibility: decks renamed to the {TOPIC}-L{NN} scheme answer at
+# their old {TOPIC}-{NN} path via a meta-refresh stub, so links already handed
+# out (and deep links to a slide) keep working. The hash is carried across.
+for f in *.md; do
+  printf '%s' "$f" | grep -Eq "$DECK_RE" || continue
+  slug="${f%.md}"
+  case "$slug" in
+    *-L[0-9][0-9]_*) ;;
+    *) continue ;;
+  esac
+  legacy="$(printf '%s' "$slug" | sed -E 's/-L([0-9]{2})_/-\1_/')"
+  [ -e "dist/$legacy" ] && continue
+  mkdir -p "dist/$legacy"
+  cat > "dist/$legacy/index.html" <<HTML
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Moved: /$slug/</title>
+<link rel="canonical" href="/$slug/">
+<meta http-equiv="refresh" content="1; url=/$slug/">
+<script>location.replace("/$slug/" + location.hash);</script>
+</head>
+<body>
+<p>This deck moved to <a href="/$slug/">/$slug/</a>.</p>
+</body>
+</html>
+HTML
 done
 
 # Aura tracker data is a build-time input from data/aura.csv (date,value rows).
@@ -136,7 +172,7 @@ deck_objective() {
     }
     inTitle {
       if ($0 ~ /^#[[:space:]]/) next                       # title heading
-      if ($0 ~ /^Lesson[[:space:]]+[0-9]/) { seenLesson = 1; next }
+      if ($0 ~ /Lesson[[:space:]]+[0-9]+[[:space:]]+of[[:space:]]+[0-9]+/) { seenLesson = 1; next }
       if (!seenLesson) next
       if ($0 ~ /[^[:space:]]/) {
         gsub(/^[[:space:]]+/, "")
@@ -152,9 +188,7 @@ deck_objective() {
 lessons_json='['
 first=1
 for f in *.md; do
-  case "$f" in
-    AGENTS.md|README.md|slides.md) continue ;;
-  esac
+  printf '%s' "$f" | grep -Eq "$DECK_RE" || continue
   slug="${f%.md}"
   code="$(printf '%s' "$slug" | cut -d_ -f1)"
 

@@ -1,12 +1,18 @@
 ---
 LO:
   - FOR-28
+  - FOR-30
 ---
 
 ## Free-Body Diagrams
 
-> [!NOTE]
-> A **free-body diagram** shows every force acting on **one object** as labeled arrows drawn from a dot.
+> [!NOTE] Free-Body Diagram
+> Shows each force acting on **one object** which is drawn as a box or a dot.
 
-- Include only the forces acting **on** the object, not the forces the object exerts on other things.
-- Draw each force as an arrow that shows both its **magnitude** and its **direction**.
+<center>
+
+<img src="/FBD_mass_on_table.svg" width="150">
+
+</center>
+
+- Each vector shows the force's **magnitude** and **direction**.

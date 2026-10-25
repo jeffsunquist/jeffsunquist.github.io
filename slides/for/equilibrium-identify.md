@@ -10,3 +10,5 @@ LO:
 
 > [!TIP]
 > Equilibrium means constant velocity — either at rest or moving steadily.
+
+((equilibrium_identify: three panels — a book at rest, a car cruising at constant speed, a ball speeding up as it falls))

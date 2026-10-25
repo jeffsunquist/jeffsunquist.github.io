@@ -5,9 +5,11 @@ LO:
 
 ## Net Force
 
-> [!IMPORTANT]
-> The **net force** is the single force found by combining all the forces on an object:
-> $F_{net} = \sum F$
+> [!NOTE] Net Force
+> The vector sum of all the individual forces acting on one object. > $F_{net} = F_1 + F_2 + F_3 +\dots$
 
-- Same direction: **add**. Opposite directions: **subtract**.
-- The net force determines how the object's motion changes.
+<center>
+
+<img src="/calculate_net_force.svg" width="780">
+
+</center>

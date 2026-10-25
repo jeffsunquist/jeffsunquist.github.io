@@ -9,5 +9,8 @@ LO:
 > [!IMPORTANT]
 > An object keeps its motion unless a **net force** acts on it.
 
-- An object at rest stays at rest; a moving object keeps a **constant velocity** unless a net force acts.
-- A net force is needed to start, stop, or change an object's motion.
+((first_law_puck_ice: a puck sliding across frictionless ice in a straight line at constant speed))
+
+- An object at rest stays at rest.
+- A moving object keeps a **constant velocity** — same speed, same direction — unless a net force acts.
+- A net force is needed to **start, stop, or change** an object's motion.

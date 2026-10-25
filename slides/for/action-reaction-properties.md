@@ -7,6 +7,8 @@ LO:
 
 - Equal in **magnitude**.
 - Opposite in **direction**.
-- Occur **simultaneously**.
+- Occur **simultaneously** — neither one causes the other.
 
-$$F_{AB} = -F_{BA}$$
+$$ \vec{F}_{AB} = -\vec{F}_{BA} $$
+
+((action_reaction_equal_opposite: two blocks labeled A and B with equal, opposite force arrows between them))

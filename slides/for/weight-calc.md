@@ -3,18 +3,18 @@ LO:
   - FOR-05
 ---
 
-## Calculating Weight
+## Example: Weight on Earth
 
-> [!IMPORTANT]
-> $W = mg$
-> $W$ = weight (N); $m$ = mass (kg); $g$ = gravitational acceleration (m/s²)
-
-## Example
-
-An $8\ \text{kg}$ backpack on Earth:
+An $8\ \mathrm{kg}$ backpack is held on Earth. What is its weight?
 
 <v-clicks>
 
-- $W = mg = 8\ \text{kg} \cdot 9.8\ \text{m/s}^2 = 78.4\ \text{N}$
+**Solution**
+
+An <mark>$8\ \mathrm{kg}$</mark> backpack is held <mark>on Earth</mark>. What is its <mark>weight</mark>?
+
+$W = mg = 8\ \mathrm{kg} \cdot 9.8\ \mathrm{m/s^2} = 78.4\ \mathrm{N}$
+
+$W$: $\mathrm{N}$, downward
 
 </v-clicks>

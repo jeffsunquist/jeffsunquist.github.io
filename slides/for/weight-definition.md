@@ -8,4 +8,7 @@ LO:
 > [!NOTE]
 > **Weight** is the force of gravity on an object.
 
-- Weight is a **force**, so it is measured in newtons (N) and always acts **downward** (toward the center of the planet).
+((weight_vector_earth: an object above the ground with a W arrow pointing toward the centre of the Earth))
+
+- Weight is a **force**, so it is measured in newtons (N).
+- Weight always acts **downward** — toward the centre of the planet.

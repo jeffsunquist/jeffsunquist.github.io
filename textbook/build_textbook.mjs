@@ -36,12 +36,12 @@ const WITH_PDF = !process.argv.includes('--no-pdf')
 // SCI-only textbook: portrait, 2-column content, own title + TOC pages,
 // printed natively (no Paged.js) then paginated in a post-step.
 const SCI_DECKS = [
-  'SCI-01_Observations',
-  'SCI-02_Measurements_and_Metric_Prefixes',
-  'SCI-03_Base_and_Derived_Units',
-  'SCI-04_Problem_Solving',
-  'SCI-05_Graphs',
-  'SCI-06_Scientific_Method',
+  'SCI-L01_Observations',
+  'SCI-L02_Measurements_and_Metric_Prefixes',
+  'SCI-L03_Base_and_Derived_Units',
+  'SCI-L04_Problem_Solving',
+  'SCI-L05_Graphs',
+  'SCI-L06_Scientific_Method',
 ]
 const SCI_BOOK = {
   key: 'sci',
@@ -58,17 +58,17 @@ const SCI_BOOK = {
 // The textbooks: one SCI book (shared across grades) and a Kinematics book per
 // grade. All are 2-column. `publishName` is the PDF filename copied into pdfs/.
 const KIN_DECKS_G6 = [
-  'KIN-01_Position_and_Reference_Frames_G6',
-  'KIN-02_Speed_and_Velocity_G6',
-  'KIN-03_Acceleration_G6',
-  'KIN-04_Position_Time_Graphs_G6',
+  'KIN-L01_Position_and_Reference_Frames_G6',
+  'KIN-L02_Speed_and_Velocity_G6',
+  'KIN-L03_Acceleration_G6',
+  'KIN-L04_Position_Time_Graphs_G6',
 ]
 const KIN_DECKS_G7 = [
-  'KIN-01_Position_and_Reference_Frames_G7',
-  'KIN-02_Speed_and_Velocity_G7',
-  'KIN-03_Acceleration_G7',
-  'KIN-04_Position_Time_Graphs_G7',
-  'KIN-05_Velocity_Time_Graphs_G7',
+  'KIN-L01_Position_and_Reference_Frames_G7',
+  'KIN-L02_Speed_and_Velocity_G7',
+  'KIN-L03_Acceleration_G7',
+  'KIN-L04_Position_Time_Graphs_G7',
+  'KIN-L05_Velocity_Time_Graphs_G7',
 ]
 const KIN_BOOK_G6 = {
   key: 'kin-g6',
@@ -294,8 +294,10 @@ async function deckTitle(stem) {
   return m ? m[1].trim() : stem
 }
 
-// The chapter title as it actually prints (the deck's first-slide heading),
-// which can differ from the frontmatter `title:` (e.g. "Graphs" vs "Graphing").
+// The chapter title as it actually prints (the deck's first-slide heading).
+// Since the title slide's H1 is the lesson title alone, the TOC entry matches
+// the printed chapter heading; the unit prefix comes from the unit section
+// above it.
 async function deckHeading(stem) {
   const source = await readFile(path.join(ROOT, `${stem}.md`), 'utf8')
   const body = splitHeadmatter(source).replace(/^\n+/, '')

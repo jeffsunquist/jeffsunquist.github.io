@@ -9,5 +9,7 @@ LO:
 > When a single tension or normal force balances an object's weight:
 > $T = W = mg \qquad N = W = mg$
 
+((hanging_lamp_tension: a lamp hanging from one cord, T up and W down, with T = W))
+
 - Tension pulls **along** the rope, toward whatever holds it.
 - The normal force is **perpendicular** to the surface.
