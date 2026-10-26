@@ -5,10 +5,10 @@ LO:
 
 ## Net Force and Motion
 
-| Net force | Motion |
+| Net Force | Velocity |
 | --- | --- |
 | zero (balanced) | does **not** change — at rest stays at rest, moving stays constant |
-| nonzero (unbalanced) | **changes** — speeds up, slows down, or changes direction |
+| non-zero (unbalanced) | **changes** — speeds up, slows down, or changes direction |
 
-- Balanced forces do **not** mean the object is stopped; it may be moving steadily.
+- Balanced forces do **not** mean the object is stopped; it may be moving with a **constant velocity**.
 - Unbalanced forces always produce a change in motion.
