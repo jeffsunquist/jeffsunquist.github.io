@@ -5,7 +5,7 @@ LO:
 
 ## Practice — Explaining Inertia
 
-A passenger in a braking bus lurches forward.
+A passenger in a bus loses her balance when the suddenly slows to a stop.
 
 <v-click>
 
