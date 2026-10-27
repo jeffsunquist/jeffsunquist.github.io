@@ -107,6 +107,7 @@ export default function sketch(p) {
   let hudFlash = { pistol: 0, shotgun: 0, flame: 0, rocket: 0 }
   let nightSpawned = false
   let cheatBuf = ''
+  let cheatsUsed = false
   let ammo, weapon
   let score, best, kills, shots, hits
   let elapsed = 0, spawnT = 0, dropIndex = 0, weaponDrop = 0, shake = 0, hurtFlash = 0, titleT = 0
@@ -310,6 +311,7 @@ export default function sketch(p) {
     hudFlash = { pistol: 0, shotgun: 0, flame: 0, rocket: 0 }
     nightSpawned = false
     cheatBuf = ''
+    cheatsUsed = false
     ammo = { pistol: Infinity, shotgun: 0, rocket: 0, flame: 0 }
     weapon = 'pistol'
     score = 0
@@ -341,6 +343,7 @@ export default function sketch(p) {
   }
 
   function activateCheat(code) {
+    cheatsUsed = true
     player.hp = player.maxHp
     if (code === 'monster') {
       player.invincible = Infinity
@@ -1878,6 +1881,31 @@ export default function sketch(p) {
     p.noStroke()
   }
 
+  // Faint "cheat codes used" wallpaper behind the score panel.
+  function cheatWatermark(cx, cy, w, h) {
+    p.push()
+    p.textFont(handReady ? 'Patrick Hand' : 'sans-serif')
+    p.textAlign(p.CENTER, p.CENTER)
+    p.textSize(15)
+    p.noStroke()
+    p.fill(220, 38, 38, 38)
+    p.drawingContext.save()
+    p.drawingContext.beginPath()
+    p.drawingContext.rect(cx - w / 2, cy - h / 2, w, h)
+    p.drawingContext.clip()
+    p.translate(cx, cy)
+    p.rotate(-0.35)
+    let row = 0
+    for (let y = -h / 2 - 50; y <= h / 2 + 50; y += 44, row++) {
+      const shift = row % 2 ? 65 : 0
+      for (let x = -w / 2 - 140 + shift; x <= w / 2 + 140; x += 130) {
+        p.text('cheat codes used', x, y)
+      }
+    }
+    p.drawingContext.restore()
+    p.pop()
+  }
+
   function button(cx, cy, w, h, label, hot) {
     const m = mouseWorld()
     const over = inRect(m.x, m.y, cx, cy, w, h) && (mode === 'title' || mode === 'over')
@@ -1962,6 +1990,7 @@ export default function sketch(p) {
       p.fill(251, 251, 253, 165)
       p.rect(W / 2, H / 2, W, H)
       panel(W / 2, 330, 460, 400)
+      if (cheatsUsed) cheatWatermark(W / 2, 330, 460, 400)
 
       p.textFont(handReady ? 'Patrick Hand' : 'sans-serif')
       p.noStroke()
