@@ -3,7 +3,7 @@ theme: default
 colorSchema: light
 title: Forces — Mass, Inertia, and Newton's First Law
 info: |
-  Grade 6 Physics · FOR · Lesson 2 of 10
+  Grade 6 Physics · FOR · Lesson 2 of 9
 fonts:
   sans: Patrick Hand
   local:
@@ -13,7 +13,7 @@ fonts:
 
 # Mass, Inertia, and Newton's First Law
 
-Forces — Lesson 2 of 10
+Forces — Lesson 2 of 9
 
 Define mass and inertia, explain how mass relates to inertia, and state and apply Newton's first law.
 

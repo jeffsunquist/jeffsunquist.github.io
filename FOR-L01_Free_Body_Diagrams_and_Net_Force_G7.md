@@ -3,7 +3,7 @@ theme: default
 colorSchema: light
 title: Forces — Free-Body Diagrams and Net Force
 info: |
-  Grade 7 Physics · FOR · Lesson 1 of 10
+  Grade 7 Physics · FOR · Lesson 1 of 9
 fonts:
   sans: Patrick Hand
   local:
@@ -13,7 +13,7 @@ fonts:
 
 # Free-Body Diagrams and Net Force
 
-Forces — Lesson 1 of 10
+Forces — Lesson 1 of 9
 
 Draw and label force vectors in free-body diagrams, express the newton in base units, and calculate the net force on a single object, including an unknown force.
 
