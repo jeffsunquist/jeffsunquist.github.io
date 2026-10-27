@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="dark" />
+<title>Momentum Rescue</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
+  body {
+    background: #080818;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 16px;
+    overflow-x: hidden;
+  }
+
+  /* ---------- Splash ---------- */
+  #splash {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 45%, #111a33 0%, #080818 70%);
+    opacity: 1;
+    transition: opacity 400ms ease;
+  }
+  #splash.is-hiding { opacity: 0; }
+  #splash h1 {
+    font-size: clamp(36px, 7vw, 64px);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 0 28px rgba(66, 144, 255, 0.45);
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+    animation: splashIn 400ms ease-out forwards;
+  }
+  #splash p {
+    margin-top: 12px;
+    font-size: clamp(14px, 2vw, 18px);
+    letter-spacing: 0.08em;
+    color: #8fa3c8;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: splashIn 400ms ease-out forwards;
+  }
+  @keyframes splashIn {
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #splash h1, #splash p { animation: none; opacity: 1; transform: none; }
+    #splash { transition: none; }
+  }
+
+  /* ---------- Layout ---------- */
+  #game {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #hud {
+    font-size: 18px;
+    line-height: 1.35;
+    margin-bottom: 8px;
+    text-align: center;
+    color: #dbe6ff;
+  }
+  #legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 18px;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #b9c8e6;
+  }
+  .dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: baseline;
+  }
+  .dot.thrust { background: #ffb84d; }
+  .dot.velocity { background: #4499ff; }
+
+  canvas {
+    display: block;
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    border: 2px solid #4290ff;
+    background: #050510;
+    border-radius: 6px;
+    cursor: crosshair;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #restart {
+    margin-top: 12px;
+    padding: 8px 20px;
+    font-size: 16px;
+    background: #4290ff;
+    color: #000;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  #restart:hover { background: #72b0ff; }
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <h1>Momentum Rescue</h1>
+  <p>Made by Aria</p>
+</div>
+
+<div id="game">
+  <div id="hud"></div>
+  <div id="legend">
+    <span><i class="dot thrust"></i>Engine thrust &mdash; force <b>F</b> (hold)</span>
+    <span><i class="dot velocity"></i>Momentum <b>p</b> &mdash; length = m &times; v</span>
+  </div>
+  <canvas id="canvas" width="800" height="600"></canvas>
+  <button id="restart">Restart Level</button>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const restartBtn = document.getElementById('restart');
+  const hud = document.getElementById('hud');
+  const splash = document.getElementById('splash');
+
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // ========== Vec2 ==========
+  class Vec2 {
+    constructor(x = 0, y = 0) { this.x = x; this.y = y; }
+    add(v) { return new Vec2(this.x + v.x, this.y + v.y); }
+    sub(v) { return new Vec2(this.x - v.x, this.y - v.y); }
+    mul(s) { return new Vec2(this.x * s, this.y * s); }
+    div(s) { return new Vec2(this.x / s, this.y / s); }
+    mag() { return Math.hypot(this.x, this.y); }
+    normalize() {
+      const m = this.mag();
+      return m === 0 ? new Vec2(0, 0) : this.div(m);
+    }
+    limit(max) {
+      const m = this.mag();
+      return m > max ? this.div(m).mul(max) : this;
+    }
+    dot(v) { return this.x * v.x + this.y * v.y; }
+    copy() { return new Vec2(this.x, this.y); }
+  }
+
+  // ========== Tuning ==========
+  const FIXED_DT = 1 / 240;          // physics substep
+  const MAX_SUBSTEPS = 12;           // ~50 ms of catch-up per frame
+  const THRUST_POWER = 210;          // px/s^2
+  const MAX_SPEED = 340;             // px/s
+  const VECTOR_SCALE = 0.12;         // arrow px per unit
+  const MOMENTUM_SCALE = 0.48;       // arrow px per (kg · px/s)
+  const FORCE_SCALE = 0.2;           // arrow px per unit of thrust
+
+  const DOCK_ZONE_RADIUS = 55;
+  const POD_RADIUS = 13;
+  const POD_MASS = 1.5;
+  const SHIP_RADIUS = 16;
+  const SHIP_MASS = 1.2;
+  const RESTITUTION = 0.4;           // impacts keep 40% of closing speed; sustained
+                                     // pushes are still damped to zero below
+
+  const BASE_PLANET_RADIUS = 30;
+  const PLANET_RADIUS_PER_LEVEL = 2;
+  const MAX_PLANET_RADIUS = 70;
+  const MAX_PLANET_COUNT = 6;
+
+  const EXHAUST_RATE = 35;           // particles per second while thrusting
+  const EXHAUST_MAX = 60;            // hard pool cap
+  const EXHAUST_SPREAD = Math.PI / 18;  // +/-10 degrees of random launch variation
+  const EXHAUST_MIN_LIFE = 0.28;     // seconds
+  const EXHAUST_MAX_LIFE = 0.45;
+
+  const SPLASH_HOLD_MS = 2600;
+  const SPLASH_FADE_MS = 400;
+
+  // ========== State ==========
+  let level = 1;
+  let layout = null;
+  let planets = [];
+  let gameWon = false;
+  let gameLost = false;
+  let loseReason = '';
+
+  const ship = { pos: new Vec2(80, 80), vel: new Vec2(), radius: SHIP_RADIUS, mass: SHIP_MASS };
+  const pod = { pos: new Vec2(), vel: new Vec2(), radius: POD_RADIUS, mass: POD_MASS };
+  const dockZone = { pos: new Vec2(), radius: DOCK_ZONE_RADIUS };
+
+  const pointer = { x: W / 2, y: H / 2, down: false };
+
+  let started = false;
+  let lastTime = 0;
+  let accumulator = 0;
+  const exhaust = [];
+  let exhaustAccumulator = 0;
+
+  // ========== Level generation ==========
+  function randomPosition(margin) {
+    const m = Math.max(0, margin);
+    return new Vec2(
+      m + Math.random() * Math.max(1, W - m * 2),
+      m + Math.random() * Math.max(1, H - m * 2)
+    );
+  }
+
+  function planetRadiusForLevel() {
+    return Math.min(BASE_PLANET_RADIUS + (level - 1) * PLANET_RADIUS_PER_LEVEL, MAX_PLANET_RADIUS);
+  }
+
+  function pickShipSpawn(planetList, dock, podPos) {
+    for (let tries = 0; tries < 200; tries++) {
+      const pos = randomPosition(SHIP_RADIUS + 24);
+      if (pos.sub(podPos).mag() < SHIP_RADIUS + POD_RADIUS + 50) continue;
+      if (pos.sub(dock.pos).mag() < DOCK_ZONE_RADIUS + SHIP_RADIUS + 20) continue;
+
+      let ok = true;
+      for (const p of planetList) {
+        if (pos.sub(p.pos).mag() < p.radius + SHIP_RADIUS + 30) { ok = false; break; }
+      }
+      if (ok) return pos;
+    }
+    return null;
+  }
+
+  function makeLayout() {
+    const planetCount = Math.min(1 + Math.floor((level - 1) / 3), MAX_PLANET_COUNT);
+    const planetRadius = planetRadiusForLevel();
+
+    for (let attempt = 0; attempt < 400; attempt++) {
+      const dock = { pos: randomPosition(90), radius: DOCK_ZONE_RADIUS };
+      const podPos = randomPosition(80);
+
+      if (dock.pos.sub(podPos).mag() < DOCK_ZONE_RADIUS + POD_RADIUS + 70) continue;
+
+      const newPlanets = [];
+      let valid = true;
+
+      for (let i = 0; i < planetCount && valid; i++) {
+        let placed = false;
+
+        for (let tries = 0; tries < 120 && !placed; tries++) {
+          const pos = randomPosition(planetRadius + 30);
+          if (pos.sub(dock.pos).mag() < planetRadius + DOCK_ZONE_RADIUS + 30) continue;
+          if (pos.sub(podPos).mag() < planetRadius + POD_RADIUS + 40) continue;
+
+          let ok = true;
+          for (const p of newPlanets) {
+            if (pos.sub(p.pos).mag() < planetRadius + p.radius + 40) { ok = false; break; }
+          }
+          if (ok) {
+            newPlanets.push({ pos, radius: planetRadius });
+            placed = true;
+          }
+        }
+
+        if (!placed) valid = false;
+      }
+
+      if (!valid) continue;
+
+      const shipPos = pickShipSpawn(newPlanets, dock, podPos);
+      if (!shipPos) continue;
+
+      return { dock, podPos, planets: newPlanets, shipPos };
+    }
+
+    // Deterministic fallback that is guaranteed to be clear.
+    return {
+      dock: { pos: new Vec2(660, 460), radius: DOCK_ZONE_RADIUS },
+      podPos: new Vec2(120, 140),
+      planets: [{ pos: new Vec2(400, 300), radius: planetRadiusForLevel() }],
+      shipPos: new Vec2(90, 520)
+    };
+  }
+
+  function applyLayout(l) {
+    dockZone.pos = l.dock.pos.copy();
+    dockZone.radius = l.dock.radius;
+    pod.pos = l.podPos.copy();
+    pod.vel = new Vec2();
+    ship.pos = l.shipPos.copy();
+    ship.vel = new Vec2();
+    planets = l.planets.map(p => ({ pos: p.pos.copy(), radius: p.radius }));
+    gameWon = false;
+    gameLost = false;
+    loseReason = '';
+    pointer.down = false;
+    exhaust.length = 0;
+    exhaustAccumulator = 0;
+  }
+
+  function resetCurrentLevel() {
+    applyLayout(layout);
+    updateHUD();
+  }
+
+  function nextLevel() {
+    level++;
+    layout = makeLayout();
+    resetCurrentLevel();
+  }
+
+  function updateHUD() {
+    hud.textContent =
+      `Level ${level} \u2014 Hold to fire engines. Push the pod into the green dock. Don't touch the planets.`;
+  }
+
+  // ========== Input ==========
+  function updatePointerPosition(e) {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+    pointer.x = (e.clientX - rect.left) * (W / rect.width);
+    pointer.y = (e.clientY - rect.top) * (H / rect.height);
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    if (!started) return;
+    e.preventDefault();
+
+    if (gameWon) { nextLevel(); return; }
+    if (gameLost) { resetCurrentLevel(); return; }
+
+    updatePointerPosition(e);
+    pointer.down = true;
+    try { canvas.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    updatePointerPosition(e);
+  });
+
+  window.addEventListener('pointerup', () => { pointer.down = false; });
+  window.addEventListener('pointercancel', () => { pointer.down = false; });
+  window.addEventListener('blur', () => { pointer.down = false; });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pointer.down = false;
+  });
+  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  window.addEventListener('keydown', (e) => {
+    if (!started) return;
+    if (e.key === 'r' || e.key === 'R') {
+      resetCurrentLevel();
+    } else if (e.key === 'Enter' && gameWon) {
+      nextLevel();
+    }
+  });
+
+  restartBtn.addEventListener('click', () => {
+    if (started) resetCurrentLevel();
+  });
+
+  // ========== Physics ==========
+  function thrustDirection() {
+    const d = new Vec2(pointer.x, pointer.y).sub(ship.pos);
+    return d.mag() < 0.001 ? new Vec2(0, 0) : d.normalize();
+  }
+
+  function keepShipInBounds() {
+    const r = ship.radius;
+    if (ship.pos.x < r) { ship.pos.x = r; if (ship.vel.x < 0) ship.vel.x = 0; }
+    if (ship.pos.x > W - r) { ship.pos.x = W - r; if (ship.vel.x > 0) ship.vel.x = 0; }
+    if (ship.pos.y < r) { ship.pos.y = r; if (ship.vel.y < 0) ship.vel.y = 0; }
+    if (ship.pos.y > H - r) { ship.pos.y = H - r; if (ship.vel.y > 0) ship.vel.y = 0; }
+  }
+
+  function resolveShipPodCollision() {
+    const distVec = pod.pos.sub(ship.pos);
+    let dist = distVec.mag();
+    const minDist = ship.radius + pod.radius;
+    if (dist >= minDist) return;
+
+    const n = dist > 0.0001 ? distVec.div(dist) : new Vec2(1, 0);
+    const invShip = 1 / ship.mass;
+    const invPod = 1 / pod.mass;
+    const invSum = invShip + invPod;
+
+    // Mass-normalized positional correction.
+    const overlap = minDist - dist;
+    ship.pos = ship.pos.sub(n.mul(overlap * invShip / invSum));
+    pod.pos = pod.pos.add(n.mul(overlap * invPod / invSum));
+
+    const relVel = pod.vel.sub(ship.vel);
+    const along = relVel.dot(n);
+    if (along > 0) return; // already separating
+
+    // No bounce during sustained contact; restitution only on real impacts.
+    const restitution = Math.abs(along) < 40 ? 0 : RESTITUTION;
+    const j = -(1 + restitution) * along / invSum;
+    ship.vel = ship.vel.sub(n.mul(j * invShip));
+    pod.vel = pod.vel.add(n.mul(j * invPod)).limit(MAX_SPEED);
+  }
+
+  function fail(reason) {
+    gameLost = true;
+    loseReason = reason;
+    pointer.down = false;
+  }
+
+  function checkWinLose() {
+    if (dockZone.pos.sub(pod.pos).mag() < dockZone.radius) {
+      gameWon = true;
+      pointer.down = false;
+      return;
+    }
+
+    if (
+      pod.pos.x < -pod.radius || pod.pos.x > W + pod.radius ||
+      pod.pos.y < -pod.radius || pod.pos.y > H + pod.radius
+    ) {
+      fail('The pod drifted off the map.');
+      return;
+    }
+
+    for (const p of planets) {
+      if (p.pos.sub(ship.pos).mag() < p.radius + ship.radius) {
+        fail('Your ship hit a planet.');
+        return;
+      }
+      if (p.pos.sub(pod.pos).mag() < p.radius + pod.radius) {
+        fail('The pod hit a planet.');
+        return;
+      }
+    }
+  }
+
+  function physicsStep(dt) {
+    if (gameWon || gameLost) return;
+
+    if (pointer.down) {
+      ship.vel = ship.vel.add(thrustDirection().mul(THRUST_POWER * dt));
+    }
+    ship.vel = ship.vel.limit(MAX_SPEED);
+    ship.pos = ship.pos.add(ship.vel.mul(dt));
+    keepShipInBounds();
+
+    pod.vel = pod.vel.limit(MAX_SPEED);
+    pod.pos = pod.pos.add(pod.vel.mul(dt));
+
+    resolveShipPodCollision();
+    checkWinLose();
+  }
+
+  // ========== Render ==========
+  function drawArrow(start, vec, color, scale = VECTOR_SCALE, label = '', offset = 0, side = 0) {
+    const mag = vec.mag();
+    if (mag < 0.001) return;
+
+    const dir = vec.normalize();
+    const origin = start.add(dir.mul(offset)).add(new Vec2(-dir.y, dir.x).mul(side));
+    const end = origin.add(vec.mul(scale));
+
+    ctx.beginPath();
+    ctx.moveTo(origin.x, origin.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.2;
+    ctx.stroke();
+
+    const perp = new Vec2(-dir.y, dir.x);
+    const head = 9;
+    const p1 = end.sub(dir.mul(head)).add(perp.mul(head * 0.42));
+    const p2 = end.sub(dir.mul(head)).sub(perp.mul(head * 0.42));
+
+    ctx.beginPath();
+    ctx.moveTo(end.x, end.y);
+    ctx.lineTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    if (label && mag * scale > 16) {
+      const tip = end.add(dir.mul(14));
+      ctx.font = 'italic bold 16px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(5, 5, 16, 0.85)';
+      ctx.strokeText(label, tip.x, tip.y);
+      ctx.fillStyle = color;
+      ctx.fillText(label, tip.x, tip.y);
+    }
+  }
+
+  function drawDock() {
+    ctx.beginPath();
+    ctx.arc(dockZone.pos.x, dockZone.pos.y, dockZone.radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(60, 220, 100, 0.22)';
+    ctx.fill();
+    ctx.strokeStyle = '#4cd964';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(dockZone.pos.x, dockZone.pos.y, dockZone.radius - 8, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(76, 217, 100, 0.45)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  function drawPlanets() {
+    for (const p of planets) {
+      ctx.beginPath();
+      ctx.arc(p.pos.x, p.pos.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#dd4444';
+      ctx.fill();
+      ctx.strokeStyle = '#7d1f1f';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(p.pos.x - p.radius * 0.3, p.pos.y - p.radius * 0.3, p.radius * 0.22, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+      ctx.fill();
+    }
+  }
+
+  function drawPod() {
+    ctx.beginPath();
+    ctx.arc(pod.pos.x, pod.pos.y, pod.radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffdd44';
+    ctx.fill();
+    ctx.strokeStyle = '#b39100';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Predicted travel over the next 0.7 s.
+    if (pod.vel.mag() > 25 && !gameWon && !gameLost) {
+      const lead = pod.pos.add(pod.vel.mul(0.7));
+      ctx.save();
+      ctx.setLineDash([5, 8]);
+      ctx.strokeStyle = 'rgba(68, 153, 255, 0.35)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(pod.pos.x, pod.pos.y);
+      ctx.lineTo(lead.x, lead.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    drawArrow(pod.pos, pod.vel.mul(pod.mass), '#4499ff', MOMENTUM_SCALE, 'p');
+  }
+
+  // Sparse exhaust: one speck at a time, launched opposite the engine force
+  // with a small random variation in direction.
+  function emitExhaust(dt) {
+    if (!pointer.down || gameWon || gameLost) {
+      exhaustAccumulator = 0;
+      return;
+    }
+
+    const dir = thrustDirection();
+    if (dir.mag() < 0.001) return;
+
+    exhaustAccumulator += dt;
+    const interval = 1 / EXHAUST_RATE;
+
+    while (exhaustAccumulator >= interval) {
+      exhaustAccumulator -= interval;
+
+      const back = ship.pos.sub(dir.mul(ship.radius));
+      const side = new Vec2(-dir.y, dir.x);
+
+      // Rotate the launch direction rather than adding sideways velocity, so
+      // the spray stays opposite the thrust instead of fanning out.
+      const angle = (Math.random() * 2 - 1) * EXHAUST_SPREAD;
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      const launch = new Vec2(-dir.x, -dir.y);
+      const speed = 110 + Math.random() * 80;
+
+      // Pure opposite-the-force direction: no ship velocity added, so the
+      // cone stays centred on the thrust line.
+      const vel = new Vec2(
+        launch.x * cos - launch.y * sin,
+        launch.x * sin + launch.y * cos
+      ).mul(speed);
+
+      const life = EXHAUST_MIN_LIFE + Math.random() * (EXHAUST_MAX_LIFE - EXHAUST_MIN_LIFE);
+      exhaust.push({
+        pos: back.add(side.mul((Math.random() - 0.5) * 6)),
+        vel,
+        life,
+        maxLife: life,
+        r: 1 + Math.random() * 1.4
+      });
+    }
+
+    if (exhaust.length > EXHAUST_MAX) exhaust.splice(0, exhaust.length - EXHAUST_MAX);
+  }
+
+  function updateExhaust(dt) {
+    // Frame-rate independent version of a 0.94-per-frame decay at 60 fps.
+    const drag = Math.pow(0.94, dt * 60);
+    for (let i = exhaust.length - 1; i >= 0; i--) {
+      const e = exhaust[i];
+      e.life -= dt;
+      if (e.life <= 0) { exhaust.splice(i, 1); continue; }
+      e.pos = e.pos.add(e.vel.mul(dt));
+      e.vel = e.vel.mul(drag);
+    }
+  }
+
+  function drawExhaust() {
+    for (const e of exhaust) {
+      const a = Math.max(0, e.life / e.maxLife)
+      ctx.beginPath()
+      ctx.arc(e.pos.x, e.pos.y, e.r * (0.4 + 0.6 * a), 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(255, 255, 255, ${0.85 * a})`
+      ctx.fill()
+    }
+  }
+
+  function drawShip() {
+    const thrusting = pointer.down && !gameWon && !gameLost;
+    const dir = thrusting ? thrustDirection() : new Vec2(0, 0);
+
+    ctx.beginPath();
+    ctx.arc(ship.pos.x, ship.pos.y, ship.radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#4290ff';
+    ctx.fill();
+    ctx.strokeStyle = '#9cc4ff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    if (thrusting && dir.mag() > 0) {
+      drawArrow(ship.pos, dir.mul(THRUST_POWER), '#ffb84d', FORCE_SCALE, 'F');
+    }
+    drawArrow(ship.pos, ship.vel.mul(ship.mass), '#4499ff', MOMENTUM_SCALE, 'p');
+  }
+
+  function drawOverlays() {
+    if (!gameWon && !gameLost) return;
+
+    ctx.fillStyle = 'rgba(5, 5, 16, 0.72)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = 'center';
+
+    if (gameWon) {
+      ctx.fillStyle = '#4cd964';
+      ctx.font = 'bold 44px system-ui, sans-serif';
+      ctx.fillText('LEVEL COMPLETE!', W / 2, H / 2 - 20);
+
+      ctx.fillStyle = '#dbe6ff';
+      ctx.font = '20px system-ui, sans-serif';
+      ctx.fillText('Click or press Enter for the next level', W / 2, H / 2 + 30);
+    } else {
+      ctx.fillStyle = '#ff5555';
+      ctx.font = 'bold 44px system-ui, sans-serif';
+      ctx.fillText('MISSION FAILED', W / 2, H / 2 - 40);
+
+      ctx.fillStyle = '#dbe6ff';
+      ctx.font = '20px system-ui, sans-serif';
+      ctx.fillText(loseReason, W / 2, H / 2 + 6);
+      ctx.fillText('Click or press R to retry', W / 2, H / 2 + 38);
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    drawDock();
+    drawPlanets();
+    drawExhaust();
+    drawPod();
+    drawShip();
+    drawOverlays();
+  }
+
+  // ========== Main loop ==========
+  function loop(timestamp) {
+    if (!started) return;
+
+    const delta = Math.min((timestamp - lastTime) / 1000, 0.05);
+    lastTime = timestamp;
+    accumulator += delta;
+
+    let steps = 0;
+    while (accumulator >= FIXED_DT && steps < MAX_SUBSTEPS) {
+      physicsStep(FIXED_DT);
+      accumulator -= FIXED_DT;
+      steps++;
+    }
+    if (steps === MAX_SUBSTEPS) accumulator = 0;
+
+    emitExhaust(delta);
+    updateExhaust(delta);
+
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function startGame() {
+    if (started) return;
+    started = true;
+    lastTime = performance.now();
+    accumulator = 0;
+    requestAnimationFrame(loop);
+  }
+
+  // ========== Boot ==========
+  layout = makeLayout();
+  applyLayout(layout);
+  updateHUD();
+  draw();
+
+  function dismissSplash() {
+    if (!splash) { startGame(); return; }
+    splash.classList.add('is-hiding');
+    window.setTimeout(() => {
+      splash.remove();
+      startGame();
+    }, SPLASH_FADE_MS);
+  }
+
+  window.setTimeout(dismissSplash, SPLASH_HOLD_MS);
+})();
+</script>
+</body>
+</html>
