@@ -3,7 +3,7 @@ LO:
   - FOR-11
 ---
 
-## Practice — Explaining Inertia
+## Example: Explaining Inertia
 
 A tablecloth is pulled out from under a set of dishes.
 

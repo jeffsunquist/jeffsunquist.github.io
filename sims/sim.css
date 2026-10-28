@@ -31,8 +31,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Games use the site's handwriting face for the page chrome too. */
-body.game { font-family: var(--hand); }
+/* Demos use the site's handwriting face for the page chrome too. */
+body.demo { font-family: var(--hand); }
 
 .sim-head {
   display: flex;
@@ -71,14 +71,14 @@ body.game { font-family: var(--hand); }
 
 #stage canvas { display: block; }
 
-/* Games: aim with the pointer, and never let a drag select page text. */
-body.game #stage {
+/* Demos: aim with the pointer, and never let a drag select page text. */
+body.demo #stage {
   cursor: crosshair;
   user-select: none;
   -webkit-user-select: none;
 }
 
-body.game #stage canvas { touch-action: none; }
+body.demo #stage canvas { touch-action: none; }
 
 .sim-controls {
   display: flex;

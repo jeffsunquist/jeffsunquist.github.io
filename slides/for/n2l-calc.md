@@ -1,20 +1,17 @@
 ---
+zoom: 0.9
 LO:
   - FOR-38
 ---
 
-## Example: Using $F = ma$
+## Example: Find the acceleration.
 
-A $2\ \mathrm{kg}$ cart is pushed with a net force of $10\ \mathrm{N}$. What is its acceleration?
+A $\overset{m}{\underline{2\ \mathrm{kg}}}$ cart is pushed with a net force of $\overset{F_{net}}{\underline{10\ \mathrm{N\, right}}}$. What is its $\overset{a}{\underline{\text{acceleration}}}$?
 
 <v-clicks>
 
 **Solution**
 
-A <mark>$2\ \mathrm{kg}$</mark> cart is pushed with a <mark>net force of $10\ \mathrm{N}$</mark>. What is its <mark>acceleration</mark>?
-
-$a = \dfrac{F_{net}}{m} = \dfrac{10\ \mathrm{N}}{2\ \mathrm{kg}} = 5\ \mathrm{m/s^2}$
-
-$a$: $\mathrm{m/s^2}$, in the direction of $F_{net}$
+$a = \dfrac{F_{net}}{m} = \dfrac{10\ \mathrm{N}}{2\ \mathrm{kg}} = \boxed{5\ \mathrm{\frac{m}{s^2}\,right}}$
 
 </v-clicks>

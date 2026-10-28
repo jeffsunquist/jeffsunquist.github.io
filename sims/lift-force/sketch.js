@@ -291,7 +291,7 @@ export default function sketch(p) {
     return pointer
   }
 
-  // ------------------------------------------------------------ new game
+  // ------------------------------------------------------------ new run
   function reset() {
     player = {
       x: W / 2, y: GROUND_Y, vx: 0, vy: 0,
@@ -1997,7 +1997,7 @@ export default function sketch(p) {
       p.fill(...C.ink)
       p.textAlign(p.CENTER, p.CENTER)
       p.textSize(56)
-      p.text('Game Over', W / 2, 196)
+      p.text('owari da', W / 2, 196)
 
       p.fill(...C.muted)
       p.textFont(handReady ? 'Patrick Hand' : 'sans-serif')

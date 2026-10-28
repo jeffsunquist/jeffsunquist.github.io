@@ -17,6 +17,6 @@ A book sits on a desk with balanced forces.
 
 <v-click>
 
-**Answer:** It stays at rest — balanced forces leave the motion unchanged.
+**Answer:** It stays at rest. Balanced forces leave the motion unchanged.
 
 </v-click>

@@ -3,7 +3,7 @@ LO:
   - FOR-11
 ---
 
-## Practice — Explaining Inertia
+## Example: Explaining Inertia
 
 Ketchup leaves the bottle when you shake it downward.
 

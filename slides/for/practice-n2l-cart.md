@@ -3,12 +3,16 @@ LO:
   - FOR-38
 ---
 
-## Practice — $F = ma$
+## Practice: Find the net force.
 
-What net force gives a $5\ \mathrm{kg}$ cart an acceleration of $2\ \mathrm{m/s^2}$?
+What net force gives a $5\ \mathrm{kg}$ cart an acceleration of $2\ \mathrm{\frac{m}{s^2}\,left}$?
+
+<div class="absolute bottom-8 left-0 right-0 pr-8 text-right">
 
 <v-click>
 
-**Answer:** $F_{net} = ma = 5\ \mathrm{kg} \cdot 2\ \mathrm{m/s^2} = 10\ \mathrm{N}$.
+**Answer:** $F_{net} = 10\ \mathrm{N\,left}$
 
 </v-click>
+
+</div>

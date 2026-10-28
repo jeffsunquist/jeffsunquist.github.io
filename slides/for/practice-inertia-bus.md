@@ -3,7 +3,7 @@ LO:
   - FOR-11
 ---
 
-## Practice — Explaining Inertia
+## Example: Explaining Inertia
 
 A passenger in a bus loses her balance when the suddenly slows to a stop.
 

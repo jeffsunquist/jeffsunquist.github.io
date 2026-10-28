@@ -5,11 +5,9 @@ LO:
 
 ## Newton's Second Law
 
-> [!IMPORTANT]
-> A net force causes an **acceleration** in the direction of the net force:
-> $F_{net} = ma$
+> [!NOTE] Newton's Second Law
+> AN object's acceleration is directly proportional to the net force acting on it.
+
+$$F_{net} = ma$$
 
 ((n2l_cart: a cart with a net force arrow and an acceleration arrow in the same direction, plus a heavier cart with a smaller acceleration arrow))
-
-- For the same force, more mass gives **less** acceleration.
-- For the same mass, more force gives **more** acceleration.

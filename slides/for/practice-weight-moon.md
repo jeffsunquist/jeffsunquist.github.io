@@ -3,12 +3,16 @@ LO:
   - FOR-06
 ---
 
-## Practice — Weight on the Moon
+## Example: Weight on the Moon
 
-The same $2\ \mathrm{kg}$ bag of flour is taken to the Moon, where $g = 1.6\ \mathrm{m/s^2}$.
+A $\overset{m}{\underline{2\ \mathrm{kg}}}$ bag of flour is taken to the Moon, where $\overset{g}{\underline{g = 1.6\ \mathrm{\frac{m}{s^2}}}}$.
 
-<v-click>
+<v-clicks>
 
-**Answer:** $W = 2\ \mathrm{kg} \cdot 1.6\ \mathrm{m/s^2} = 3.2\ \mathrm{N}$ — same mass, less weight.
+**Solution** 
 
-</v-click>
+$F_g = mg = (2\ \mathrm{kg})(-1.6\ \mathrm{\frac{m}{s^2}}) = 3.2\ \mathrm{N}$
+
+$F_g = \boxed{3.2\ \mathrm{N\,down}}$
+
+</v-clicks>

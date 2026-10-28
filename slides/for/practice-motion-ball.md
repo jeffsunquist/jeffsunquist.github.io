@@ -15,6 +15,6 @@ A kicked ball rolls across grass and slows down.
 
 <v-click>
 
-**Answer:** Friction makes the net force nonzero, so the motion changes — it slows and stops.
+**Answer:** Friction makes the net force nonzero, so it slows down.
 
 </v-click>

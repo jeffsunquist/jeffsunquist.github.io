@@ -3,12 +3,16 @@ LO:
   - FOR-05
 ---
 
-## Practice — Weight on Earth
+## Practice: Weight on Earth
 
 A $2\ \mathrm{kg}$ bag of flour sits on Earth.
 
-<v-click>
+<div class="absolute bottom-8 left-0 right-0 pr-8 text-right">
 
-**Answer:** $W = mg = 2\ \mathrm{kg} \cdot 9.8\ \mathrm{m/s^2} = 19.6\ \mathrm{N}$ downward.
+<v-clicks>
 
-</v-click>
+**Answer:** $F_g =  19.6\ \mathrm{N}$ down
+
+</v-clicks>
+
+</div>

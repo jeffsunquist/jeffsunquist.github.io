@@ -3,18 +3,16 @@ LO:
   - FOR-06
 ---
 
-## Example: Weight on the Moon
+## Practice: Weight on Mars
 
-A $10\ \mathrm{kg}$ toolbox is on the Moon, where $g = 1.6\ \mathrm{m/s^2}$. Find its weight.
+A $32\ \mathrm{kg}$ toolbox is on Mars, where $g = 3.7\ \mathrm{\frac{m}{s^2}}$. Find its weight.
+
+<div class="absolute bottom-8 left-0 right-0 pr-8 text-right">
 
 <v-clicks>
 
-**Solution**
-
-A <mark>$10\ \mathrm{kg}$</mark> toolbox on the <mark>Moon</mark>, where <mark>$g = 1.6\ \mathrm{m/s^2}$</mark>. Find its <mark>weight</mark>.
-
-$W = mg = 10\ \mathrm{kg} \cdot 1.6\ \mathrm{m/s^2} = 16\ \mathrm{N}$
-
-$W$: $\mathrm{N}$, downward
+**Answer:** $F_g = \boxed{118.4\ \mathrm{N\,down}}$
 
 </v-clicks>
+
+</div>
