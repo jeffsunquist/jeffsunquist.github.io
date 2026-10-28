@@ -66,5 +66,5 @@ src: ./slides/for/practice-motion-ball.md
 ---
 
 ---
-src: ./slides/for/recap-mass-inertia-and-newtons-first-law-g7.md
+src: ./slides/for/recap-mass-inertia-and-newtons-first-law.md
 ---

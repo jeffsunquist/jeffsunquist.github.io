@@ -5,11 +5,12 @@ LO:
 
 ## Mass vs Weight
 
-((astronaut_earth_moon: the same astronaut standing on Earth and on the Moon, with the same mass label and a smaller weight arrow on the Moon))
+**Mass** is the amount of matter, unchanged from world to world.
 
-| | Mass | Weight |
-| --- | --- | --- |
-| Definition | amount of matter | force of gravity |
-| Type of quantity | scalar | vector (downward) |
-| Unit| kilogram ($\mathrm{kg}$) | newton ($\mathrm{N}$) |
-| On different worlds | unchanged | smaller |
+**Weight** is the force of gravity, proportional to $g$.
+
+<center>
+
+<img src="/mass_weight_earth_moon.excalidraw.svg" width="720">
+
+</center>

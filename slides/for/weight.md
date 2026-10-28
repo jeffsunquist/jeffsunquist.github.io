@@ -1,6 +1,7 @@
 ---
 LO:
   - FOR-01
+  - FOR-02
 ---
 
 ## Weight

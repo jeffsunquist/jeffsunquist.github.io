@@ -3,16 +3,16 @@ LO:
   - FOR-06
 ---
 
-## Practice: Weight on Mars
+## Example: Weight on the Moon
 
-A $32\ \mathrm{kg}$ toolbox is on Mars, where $g = 3.7\ \mathrm{\frac{m}{s^2}}$. Find its weight.
-
-<div class="absolute bottom-8 left-0 right-0 pr-8 text-right">
+A $\overset{m}{\underline{2\ \mathrm{kg}}}$ bag of flour is taken to the Moon, where $\overset{g}{\underline{g = 1.6\ \mathrm{\frac{m}{s^2}}}}$.
 
 <v-clicks>
 
-**Answer:** $F_g = \boxed{118.4\ \mathrm{N\,down}}$
+**Solution** 
+
+$F_g = mg = (2\ \mathrm{kg})(-1.6\ \mathrm{\frac{m}{s^2}}) = -3.2\ \mathrm{N}$
+
+$F_g = \boxed{3.2\ \mathrm{N\,down}}$
 
 </v-clicks>
-
-</div>

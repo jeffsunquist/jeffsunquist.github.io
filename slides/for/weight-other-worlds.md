@@ -14,4 +14,4 @@ LO:
 | Mars | $3.7$ | $3.7\ \mathrm{N}$ |
 
 > [!IMPORTANT]
-> Use $F_g = mg$ with the **that world's** value of $g$.
+> Use $F_g = mg$ with **that world's** value of $g$.
