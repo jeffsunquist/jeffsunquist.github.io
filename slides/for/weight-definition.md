@@ -5,10 +5,13 @@ LO:
 
 ## Weight
 
-> [!NOTE]
-> **Weight** is the force of gravity on an object.
+> [!NOTE] Weight
+> The force of gravity on an object. Its symbol is $F_g$ and its unit is newton ($\mathrm{N}$).
 
-((weight_vector_earth: an object above the ground with a W arrow pointing toward the centre of the Earth))
+<center>
 
-- Weight is a **force**, so it is measured in newtons (N).
-- Weight always acts **downward** — toward the centre of the planet.
+<img src="/FBD_freefall.svg" width="48">
+
+</center>
+
+- Weight always acts **downward** toward the center of the planet.

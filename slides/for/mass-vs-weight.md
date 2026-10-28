@@ -9,12 +9,7 @@ LO:
 
 | | Mass | Weight |
 | --- | --- | --- |
-| what it is | amount of matter | force of gravity |
-| type | scalar | vector (downward) |
-| unit | kilogram (kg) | newton (N) |
-| on the Moon | unchanged | smaller |
-
-((balance_vs_spring_scale: a balance comparing mass beside a spring scale reading weight))
-
-> [!TIP]
-> A **balance** compares mass; a **spring scale** measures weight.
+| Definition | amount of matter | force of gravity |
+| Type of quantity | scalar | vector (downward) |
+| Unit| kilogram ($\mathrm{kg}$) | newton ($\mathrm{N}$) |
+| On different worlds | unchanged | smaller |

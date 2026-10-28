@@ -58,10 +58,6 @@ src: ./slides/for/net-force-motion.md
 ---
 
 ---
-src: ./slides/for/practice-motion-puck.md
----
-
----
 src: ./slides/for/practice-motion-book.md
 ---
 

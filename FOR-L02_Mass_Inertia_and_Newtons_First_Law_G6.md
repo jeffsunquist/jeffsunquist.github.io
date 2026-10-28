@@ -17,8 +17,6 @@ Forces — Lesson 2 of 9
 
 Define mass and inertia, explain how mass relates to inertia, and state and apply Newton's first law.
 
-(v0.9)
-
 ---
 src: ./slides/for/recap-free-body-diagrams-and-net-force.md
 ---
@@ -53,10 +51,6 @@ src: ./slides/for/newtons-first-law.md
 
 ---
 src: ./slides/for/net-force-motion.md
----
-
----
-src: ./slides/for/practice-motion-puck.md
 ---
 
 ---

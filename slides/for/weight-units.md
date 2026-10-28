@@ -6,7 +6,7 @@ LO:
 ## The Unit of Weight
 
 > [!IMPORTANT]
-> Because weight is a force, its SI unit is the **newton (N)**.
+> Because weight is a force, its SI unit is the **newton ($\mathrm{N}$)**.
 
 | Quantity | Unit | Symbol |
 | --- | --- | --- |

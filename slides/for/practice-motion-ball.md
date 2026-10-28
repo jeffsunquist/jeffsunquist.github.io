@@ -5,9 +5,13 @@ LO:
 
 ## Practice — Predict the Motion
 
-((ball_slowing_grass: a kicked ball rolling across grass and slowing down))
-
 A kicked ball rolls across grass and slows down.
+
+<center>
+
+<img src="/soccer_ball_grass.excalidraw.svg" width="400">
+
+</center>
 
 <v-click>
 

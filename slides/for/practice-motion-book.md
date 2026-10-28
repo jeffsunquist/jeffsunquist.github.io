@@ -5,9 +5,15 @@ LO:
 
 ## Practice — Predict the Motion
 
-((book_at_rest: a book sitting on a desk))
+
 
 A book sits on a desk with balanced forces.
+
+<center>
+
+<img src="/book_at_rest_on_desk.excalidraw.svg" width="320">
+
+</center>
 
 <v-click>
 
