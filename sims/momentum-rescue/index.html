@@ -94,7 +94,7 @@
     vertical-align: baseline;
   }
   .dot.thrust { background: #ffb84d; }
-  .dot.velocity { background: #4499ff; }
+  .dot.velocity { background: rgb(40, 255, 20); }
 
   canvas {
     display: block;
@@ -111,18 +111,6 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  #restart {
-    margin-top: 12px;
-    padding: 8px 20px;
-    font-size: 16px;
-    background: #4290ff;
-    color: #000;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-  #restart:hover { background: #72b0ff; }
 </style>
 </head>
 <body>
@@ -135,11 +123,10 @@
 <div id="game">
   <div id="hud"></div>
   <div id="legend">
-    <span><i class="dot thrust"></i>Engine thrust &mdash; force <b>F</b> (hold)</span>
-    <span><i class="dot velocity"></i>Momentum <b>p</b> &mdash; length = m &times; v</span>
+    <span><i class="dot thrust"></i>Engine Thrust: F</span>
+    <span><i class="dot velocity"></i>Momentum: p=mv</span>
   </div>
   <canvas id="canvas" width="800" height="600"></canvas>
-  <button id="restart">Restart Level</button>
 </div>
 
 <script>
@@ -148,7 +135,6 @@
 
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
-  const restartBtn = document.getElementById('restart');
   const hud = document.getElementById('hud');
   const splash = document.getElementById('splash');
 
@@ -378,22 +364,20 @@
     }
   });
 
-  restartBtn.addEventListener('click', () => {
-    if (started) resetCurrentLevel();
-  });
-
   // ========== Physics ==========
   function thrustDirection() {
     const d = new Vec2(pointer.x, pointer.y).sub(ship.pos);
     return d.mag() < 0.001 ? new Vec2(0, 0) : d.normalize();
   }
 
-  function keepShipInBounds() {
-    const r = ship.radius;
-    if (ship.pos.x < r) { ship.pos.x = r; if (ship.vel.x < 0) ship.vel.x = 0; }
-    if (ship.pos.x > W - r) { ship.pos.x = W - r; if (ship.vel.x > 0) ship.vel.x = 0; }
-    if (ship.pos.y < r) { ship.pos.y = r; if (ship.vel.y < 0) ship.vel.y = 0; }
-    if (ship.pos.y > H - r) { ship.pos.y = H - r; if (ship.vel.y > 0) ship.vel.y = 0; }
+  // Walls are perfectly elastic: the normal velocity flips, the tangent
+  // component is untouched, so speed is conserved.
+  function bounceInBounds(body) {
+    const r = body.radius
+    if (body.pos.x < r) { body.pos.x = r; if (body.vel.x < 0) body.vel.x = -body.vel.x }
+    if (body.pos.x > W - r) { body.pos.x = W - r; if (body.vel.x > 0) body.vel.x = -body.vel.x }
+    if (body.pos.y < r) { body.pos.y = r; if (body.vel.y < 0) body.vel.y = -body.vel.y }
+    if (body.pos.y > H - r) { body.pos.y = H - r; if (body.vel.y > 0) body.vel.y = -body.vel.y }
   }
 
   function resolveShipPodCollision() {
@@ -436,14 +420,6 @@
       return;
     }
 
-    if (
-      pod.pos.x < -pod.radius || pod.pos.x > W + pod.radius ||
-      pod.pos.y < -pod.radius || pod.pos.y > H + pod.radius
-    ) {
-      fail('The pod drifted off the map.');
-      return;
-    }
-
     for (const p of planets) {
       if (p.pos.sub(ship.pos).mag() < p.radius + ship.radius) {
         fail('Your ship hit a planet.');
@@ -464,10 +440,11 @@
     }
     ship.vel = ship.vel.limit(MAX_SPEED);
     ship.pos = ship.pos.add(ship.vel.mul(dt));
-    keepShipInBounds();
+    bounceInBounds(ship);
 
     pod.vel = pod.vel.limit(MAX_SPEED);
     pod.pos = pod.pos.add(pod.vel.mul(dt));
+    bounceInBounds(pod);
 
     resolveShipPodCollision();
     checkWinLose();
@@ -524,15 +501,18 @@
     ctx.lineWidth = 2;
     ctx.stroke();
 
+    // Inner ring breathes in and out.
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 1000 * 3);
     ctx.beginPath();
-    ctx.arc(dockZone.pos.x, dockZone.pos.y, dockZone.radius - 8, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(76, 217, 100, 0.45)';
-    ctx.lineWidth = 1;
+    ctx.arc(dockZone.pos.x, dockZone.pos.y, (dockZone.radius - 8) + pulse * 4, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(76, 217, 100, ${0.3 + 0.45 * pulse})`;
+    ctx.lineWidth = 1 + pulse;
     ctx.stroke();
   }
 
   function drawPlanets() {
-    for (const p of planets) {
+    const t = performance.now() / 1000;
+    planets.forEach((p, i) => {
       ctx.beginPath();
       ctx.arc(p.pos.x, p.pos.y, p.radius, 0, Math.PI * 2);
       ctx.fillStyle = '#dd4444';
@@ -541,11 +521,45 @@
       ctx.lineWidth = 3;
       ctx.stroke();
 
+      // Storm bands: three uneven spiral arms that breathe and drift slowly.
+      const phase = i * 1.7;
+      const breathe = 0.5 + 0.5 * Math.sin(t * 0.8 + phase);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(p.pos.x, p.pos.y, p.radius, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.translate(p.pos.x, p.pos.y);
+      ctx.rotate(t * 0.15 + phase);
+      for (let arm = 0; arm < 3; arm++) {
+        const reach = (1 + 0.05 * Math.sin(t * 0.8 + arm)) * (1 - arm * 0.12);
+        ctx.beginPath();
+        for (let a = 0; a < Math.PI * 2.4; a += 0.14) {
+          const r = p.radius * (0.08 + (a / (Math.PI * 2.4)) * 0.82) * reach;
+          const ang = a + arm * (Math.PI * 2 / 3);
+          const x = Math.cos(ang) * r;
+          const y = Math.sin(ang) * r;
+          if (a === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = `rgba(255, 150, 70, ${0.2 + 0.12 * breathe - arm * 0.03})`;
+        ctx.lineWidth = p.radius * (0.09 + 0.03 * breathe);
+        ctx.stroke();
+      }
+      // Depth: darker limb so the disc reads as a sphere.
+      const limb = ctx.createRadialGradient(0, 0, p.radius * 0.2, 0, 0, p.radius);
+      limb.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      limb.addColorStop(1, 'rgba(60, 0, 0, 0.3)');
+      ctx.beginPath();
+      ctx.arc(0, 0, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = limb;
+      ctx.fill();
+      ctx.restore();
+
       ctx.beginPath();
       ctx.arc(p.pos.x - p.radius * 0.3, p.pos.y - p.radius * 0.3, p.radius * 0.22, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
       ctx.fill();
-    }
+    });
   }
 
   function drawPod() {
@@ -571,7 +585,7 @@
       ctx.restore();
     }
 
-    drawArrow(pod.pos, pod.vel.mul(pod.mass), '#4499ff', MOMENTUM_SCALE, 'p');
+    drawArrow(pod.pos, pod.vel.mul(pod.mass), 'rgb(40, 255, 20)', MOMENTUM_SCALE, 'p');
   }
 
   // Sparse exhaust: one speck at a time, launched opposite the engine force
@@ -659,7 +673,7 @@
     if (thrusting && dir.mag() > 0) {
       drawArrow(ship.pos, dir.mul(THRUST_POWER), '#ffb84d', FORCE_SCALE, 'F');
     }
-    drawArrow(ship.pos, ship.vel.mul(ship.mass), '#4499ff', MOMENTUM_SCALE, 'p');
+    drawArrow(ship.pos, ship.vel.mul(ship.mass), 'rgb(40, 255, 20)', MOMENTUM_SCALE, 'p');
   }
 
   function drawOverlays() {
