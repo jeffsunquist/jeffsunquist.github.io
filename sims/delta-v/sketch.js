@@ -4,7 +4,7 @@
 // drag pushes back; the net force changes the car's velocity. A steady speed
 // is therefore a balanced state: F_engine = F_drag, F_net = 0, a = 0.
 //
-// The stuntman jumps from the target car to the player's car. Because he
+// John Wick jumps from the target car to the player's car. Because he
 // inherits the target car's horizontal velocity, the landing offset is
 //
 //     offset = gap + (v_target - v_player) * jumpTime
@@ -30,6 +30,12 @@ export default function sketch(p) {
   const JUMP_T = 0.8
   const JUMP_RANGE = 5.0
   const JUMP_ARC = 62
+  const POLICE_SHOW_TIME = 20
+  const POLICE_TAIL_END = 27
+  const POLICE_CRASH_TIME = 30
+  const POLICE_TAIL_GAP = 190
+  const POLICE_ARRIVE_START = 800
+  const POLICE_ARRIVE_TIME = 2
   const MASS = 1200
   const ENGINE_MAX = 6000
   const BRAKE_MAX = 8000
@@ -146,11 +152,15 @@ export default function sketch(p) {
   let shake = 0
   let particles = []
   const keys = new Set()
+  let touchDir = 0
   let lastJumpLabel = ''
   let lastJumpDisabled = null
   let lastReadout = ''
   let exhaustTimer = 0
   let targetExhaustTimer = 0
+  let policeActive = false
+  let policeT = 0
+  let bustT = 0
 
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
   const lerp = (a, b, t) => a + (b - a) * t
@@ -210,7 +220,7 @@ export default function sketch(p) {
     if (window.ResizeObserver) new ResizeObserver(resize).observe(stage)
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
-    window.addEventListener('blur', () => keys.clear())
+    window.addEventListener('blur', () => { keys.clear(); touchDir = 0 })
     setupPreview()
   }
 
@@ -295,6 +305,9 @@ export default function sketch(p) {
     roadDist = 0
     titleT = 0
     shake = 0
+    policeActive = false
+    policeT = 0
+    bustT = 0
     engine = 0
     brake = 0
     drag = DRAG_K * playerV * playerV
@@ -335,6 +348,9 @@ export default function sketch(p) {
     particles = []
     roadDist = 0
     shake = 0
+    policeActive = false
+    policeT = 0
+    bustT = 0
     exhaustTimer = 0
     targetExhaustTimer = 0
     engine = 0
@@ -359,7 +375,7 @@ export default function sketch(p) {
     if (state === 'title' || state === 'complete') startNewGame()
     else if (state === 'play') { if (canJump()) startJump() }
     else if (state === 'win') nextLevel()
-    else if (state === 'miss') startLevel(levelIndex)
+    else if (state === 'miss' || state === 'bust') startLevel(levelIndex)
   }
 
   // ------------------------------------------------------------------ input
@@ -396,10 +412,35 @@ export default function sketch(p) {
 
   p.mousePressed = () => {
     const m = mouseLogical()
+    if (state === 'play') {
+      const b = touchButtonRects()
+      if (inRect(m, b.left)) touchDir = -1
+      else if (inRect(m, b.right)) touchDir = 1
+      else if (inRect(m, b.jump) && canJump()) startJump()
+      return
+    }
     if (state === 'title') {
       if (inRect(m, TITLE_BTN)) primaryAction()
-    } else if (state === 'win' || state === 'miss' || state === 'complete') {
+    } else if (state === 'win' || state === 'miss' || state === 'bust' || state === 'complete') {
       if (inRect(m, RESULT_BTN)) primaryAction()
+    }
+  }
+
+  p.mouseReleased = () => {
+    touchDir = 0
+  }
+
+  function touchPanelRect() {
+    return { x: playerScreenX < W / 2 ? 530 : 30, y: 500, w: 400, h: 120 }
+  }
+
+  function touchButtonRects() {
+    const r = touchPanelRect()
+    const y = r.y + 10
+    return {
+      left: { x: r.x + 10, y, w: 100, h: 100 },
+      right: { x: r.x + 118, y, w: 100, h: 100 },
+      jump: { x: r.x + 226, y, w: 164, h: 100 }
     }
   }
 
@@ -438,6 +479,47 @@ export default function sketch(p) {
 
     updateHint(dt)
     updateExhaust(dt)
+
+    if (levelTime >= POLICE_SHOW_TIME) {
+      if (!policeActive) {
+        policeActive = true
+        policeT = 0
+        shake = Math.max(shake, 0.2)
+      } else {
+        policeT += dt
+        if (levelTime >= POLICE_CRASH_TIME) startBust()
+      }
+    }
+  }
+
+  function startBust() {
+    if (state !== 'play') return
+    state = 'bust'
+    bustT = 0
+    policeT = POLICE_CRASH_TIME - POLICE_SHOW_TIME
+    hint = null
+    shake = 0.9
+    spawnDust(playerScreenX + dir * gap * PX_PER_M, TARGET_Y, 24, [208, 208, 216])
+  }
+
+  function updateBust(dt) {
+    bustT = Math.min(1, bustT + dt * 1.6)
+    shake = Math.max(shake, 0.4 * (1 - bustT))
+  }
+
+  function policeScreenX() {
+    const targetX = playerScreenX + dir * gap * PX_PER_M
+    if (levelTime < POLICE_SHOW_TIME + POLICE_ARRIVE_TIME) {
+      const t = clamp((levelTime - POLICE_SHOW_TIME) / POLICE_ARRIVE_TIME, 0, 1)
+      const ease = t * t * (3 - 2 * t)
+      return targetX - dir * (POLICE_ARRIVE_START + (POLICE_TAIL_GAP - POLICE_ARRIVE_START) * ease)
+    }
+    if (levelTime < POLICE_TAIL_END) {
+      return targetX - dir * (POLICE_TAIL_GAP + Math.sin(levelTime * 4) * 8)
+    }
+    const t = clamp((levelTime - POLICE_TAIL_END) / (POLICE_CRASH_TIME - POLICE_TAIL_END), 0, 1)
+    const ease = t * t * (3 - 2 * t)
+    return targetX - dir * (POLICE_TAIL_GAP + (CAR_LEN - POLICE_TAIL_GAP) * ease)
   }
 
   function updateHint(dt) {
@@ -583,12 +665,15 @@ export default function sketch(p) {
       let d = 0
       const accelKey = dir > 0 ? 'ArrowRight' : 'ArrowLeft'
       const brakeKey = dir > 0 ? 'ArrowLeft' : 'ArrowRight'
-      if (keys.has('ArrowUp') || keys.has(accelKey)) d += 1
-      if (keys.has('ArrowDown') || keys.has(brakeKey)) d -= 1
+      if (keys.has(accelKey)) d += 1
+      if (keys.has(brakeKey)) d -= 1
+      if (touchDir) d += touchDir * dir
       if (d) setLever(lever + d * 0.62 * dt)
       updatePlay(dt)
     } else if (state === 'jump') {
       updateJump(dt)
+    } else if (state === 'bust') {
+      updateBust(dt)
     } else if (state === 'title') {
       titleT += dt
       roadDist += dir * 155 * dt
@@ -617,7 +702,7 @@ export default function sketch(p) {
       disabled = true
     } else if (state === 'win') {
       label = levelIndex + 1 < LEVELS.length ? 'Next stunt' : 'Finish'
-    } else if (state === 'miss') {
+    } else if (state === 'miss' || state === 'bust') {
       label = 'Retry'
     } else {
       label = 'Play again'
@@ -645,11 +730,13 @@ export default function sketch(p) {
     } else if (state === 'jump') {
       t = 'Jump in progress…'
     } else if (state === 'title') {
-      t = 'Balance engine and drag. Match the target.'
+      t = 'Balance engine and drag. Catch John Wick.'
     } else if (state === 'win') {
       t = 'Catch complete.'
     } else if (state === 'miss') {
       t = 'Missed. Adjust the throttle and retry.'
+    } else if (state === 'bust') {
+      t = 'Straight to jail.'
     } else {
       t = 'All stunts cleared.'
     }
@@ -675,6 +762,15 @@ export default function sketch(p) {
     if (state === 'play' || state === 'jump') drawHUD()
     if (state === 'title') drawTitleOverlay()
     if (state === 'win' || state === 'miss' || state === 'complete') drawResultOverlay()
+    if (state === 'bust') {
+      const flash = Math.sin(p.millis() / 1000 * 14) > 0
+      p.noStroke()
+      p.fill(flash ? 239 : 47, flash ? 68 : 111, flash ? 68 : 237, 28)
+      p.rect(0, 0, W / 2, H)
+      p.fill(flash ? 47 : 239, flash ? 111 : 68, flash ? 237 : 68, 28)
+      p.rect(W / 2, 0, W / 2, H)
+      if (bustT >= 0.9) drawResultOverlay()
+    }
 
     p.pop()
   }
@@ -686,9 +782,26 @@ export default function sketch(p) {
     drawRoad(pal)
 
     const tx = playerScreenX + dir * gap * PX_PER_M
-    drawCar(tx, TARGET_Y, pal, true)
-    if (state === 'play' || state === 'title') drawTargetMan(tx)
-    drawCar(playerScreenX, PLAYER_Y, pal, false)
+    if (state === 'bust') {
+      const tbx = tx + dir * 46 * bustT
+      const tby = TARGET_Y - 95 * bustT
+      p.push()
+      p.translate(tbx, tby)
+      p.rotate(dir * 1.2 * bustT)
+      p.translate(-tbx, -tby)
+      drawCar(tbx, tby, pal, 'target')
+      p.pop()
+      drawMan(tbx + dir * 10 * bustT, tby - 6 - 44 * bustT, 0.95, dir * 3.0 * bustT, 255, 'tumble')
+    } else {
+      drawCar(tx, TARGET_Y, pal, 'target')
+      if (state === 'play' || state === 'title') drawTargetMan(tx)
+    }
+
+    if (policeActive || state === 'bust') {
+      drawCar(policeScreenX(), TARGET_Y, pal, 'police')
+    }
+
+    drawCar(playerScreenX, PLAYER_Y, pal, 'player')
 
     if (state === 'jump') drawJumpMan()
     else if (state === 'win' || (state === 'complete' && (!result || result.success))) drawManOnPlayer()
@@ -779,9 +892,11 @@ export default function sketch(p) {
     }
   }
 
-  function drawCar(x, y, pal, isTarget) {
+  function drawCar(x, y, pal, kind) {
     const L = CAR_LEN
     const Wd = CAR_W
+    const isTarget = kind === 'target'
+    const isPolice = kind === 'police'
 
     p.noStroke()
     p.fill(0, 0, 0, 55)
@@ -798,7 +913,7 @@ export default function sketch(p) {
     p.rect(x - 38, y + Wd / 2 - 3, 17, 7, 3)
     p.rect(x + 21, y + Wd / 2 - 3, 17, 7, 3)
 
-    const body = isTarget ? [205, 65, 65] : [45, 105, 232]
+    const body = isTarget ? [205, 65, 65] : (isPolice ? [27, 29, 37] : [45, 105, 232])
     p.fill(body[0], body[1], body[2])
     p.rect(x - L / 2, y - Wd / 2, L, Wd, 13)
 
@@ -815,17 +930,32 @@ export default function sketch(p) {
     p.rect(x + 6, y - Wd / 2 + 7, 12, Wd - 14, 6)
     p.rect(x - 24, y - Wd / 2 + 7, 10, Wd - 14, 5)
 
-    p.fill(isTarget ? 58 : 30, isTarget ? 38 : 62, isTarget ? 38 : 132)
+    if (isPolice) p.fill(226, 232, 238)
+    else p.fill(isTarget ? 58 : 30, isTarget ? 38 : 62, isTarget ? 38 : 132)
     p.rect(x - 14, y - Wd / 2 + 8, 20, Wd - 16, 6)
 
-    p.fill(isTarget ? 28 : 240, isTarget ? 28 : 244, isTarget ? 32 : 250)
+    if (isPolice) p.fill(236, 241, 246)
+    else p.fill(isTarget ? 28 : 240, isTarget ? 28 : 244, isTarget ? 32 : 250)
     p.rect(x - L / 2 + 6, y - 2.5, L - 12, 5, 2)
+
+    if (isPolice) {
+      const flash = Math.sin(p.millis() / 1000 * 14) > 0
+      p.fill(16, 18, 24)
+      p.rect(x - 14, y - 5, 28, 10, 3)
+      p.fill(flash ? 255 : 70, flash ? 55 : 18, flash ? 55 : 18)
+      p.rect(x - 11, y - 2.5, 11, 5, 2)
+      p.fill(flash ? 32 : 55, flash ? 60 : 130, flash ? 255 : 255)
+      p.rect(x, y - 2.5, 11, 5, 2)
+      p.fill(flash ? 255 : 60, flash ? 60 : 110, flash ? 60 : 255, 45)
+      p.ellipse(x - 6, y, 24, 16)
+      p.ellipse(x + 6, y, 24, 16)
+    }
 
     p.fill(255, 238, 180)
     p.rect(x + L / 2 - 5, y - Wd / 2 + 8, 4, 7, 2)
     p.rect(x + L / 2 - 5, y + Wd / 2 - 15, 4, 7, 2)
 
-    const braking = isTarget ? targetAccel < -0.25 : brake > 10
+    const braking = isPolice ? false : (isTarget ? targetAccel < -0.25 : brake > 10)
     p.fill(braking ? 255 : 130, braking ? 50 : 35, braking ? 40 : 35)
     p.rect(x - L / 2 + 1, y - Wd / 2 + 8, 4, 7, 2)
     p.rect(x - L / 2 + 1, y + Wd / 2 - 15, 4, 7, 2)
@@ -839,6 +969,17 @@ export default function sketch(p) {
       p.fill(255, 239, 190, 18)
       p.triangle(x + L / 2 - 2, y - 8, x + L / 2 + 52, y - 30, x + L / 2 + 52, y + 2)
       p.triangle(x + L / 2 - 2, y + 8, x + L / 2 + 52, y - 2, x + L / 2 + 52, y + 30)
+    }
+
+    if (!isTarget && !isPolice && engine > 5000) {
+      const flick = 0.75 + 0.25 * Math.sin(p.millis() / 1000 * 40)
+      p.noStroke()
+      p.fill(255, 120, 20, 210)
+      p.triangle(x - L / 2 - 1, y - 12, x - L / 2 - 20 * flick, y - 8, x - L / 2 - 1, y - 4)
+      p.triangle(x - L / 2 - 1, y + 4, x - L / 2 - 20 * flick, y + 8, x - L / 2 - 1, y + 12)
+      p.fill(255, 230, 120, 230)
+      p.triangle(x - L / 2 - 1, y - 10, x - L / 2 - 12 * flick, y - 8, x - L / 2 - 1, y - 6)
+      p.triangle(x - L / 2 - 1, y + 6, x - L / 2 - 12 * flick, y + 8, x - L / 2 - 1, y + 10)
     }
 
     p.pop()
@@ -879,15 +1020,18 @@ export default function sketch(p) {
     p.line(4, -20, 9, -12)
 
     p.noStroke()
-    p.fill(238, 240, 244, alpha)
+    p.fill(22, 24, 30, alpha)
     p.rect(-6, -24, 12, 15, 5)
-    p.fill(190, 55, 55, alpha)
-    p.rect(-6, -24, 12, 4, 2)
+    p.fill(235, 235, 238, alpha)
+    p.rect(-2.5, -23, 5, 12, 1.5)
+    p.fill(18, 20, 26, alpha)
+    p.rect(-1, -22, 2, 9, 1)
 
     p.fill(226, 180, 140, alpha)
     p.ellipse(0, -30, 11, 11)
     p.fill(38, 32, 28, alpha)
     p.arc(0, -32, 11, 8, p.PI, p.TWO_PI)
+    p.ellipse(0, -26.5, 9, 4)
     p.pop()
   }
 
@@ -951,20 +1095,79 @@ export default function sketch(p) {
     if (state === 'play') {
       if (hintsEnabled) drawHint()
       drawForcePanel()
+      drawTouchControls()
     }
   }
 
   function drawLevelPanel() {
-    panel(330, 22, 300, 74)
+    panel(330, 22, 300, 90)
     p.textAlign(p.CENTER, p.TOP)
     p.fill(C.muted[0], C.muted[1], C.muted[2])
     p.textSize(12)
-    p.text(`STUNT ${levelIndex + 1} / ${LEVELS.length}`, 480, 36)
+    p.text(`STUNT ${levelIndex + 1} / ${LEVELS.length}`, 480, 34)
     p.fill(C.white[0], C.white[1], C.white[2])
     p.textSize(28)
     p.textStyle(p.BOLD)
-    p.text(level.name.toUpperCase(), 480, 52)
+    p.text(level.name.toUpperCase(), 480, 48)
     p.textStyle(p.NORMAL)
+
+    const heat = clamp(levelTime / POLICE_CRASH_TIME, 0, 1)
+    const flash = Math.sin(p.millis() / 1000 * 14) > 0
+    let heatCol = C.green
+    if (policeActive) {
+      heatCol = levelTime >= POLICE_TAIL_END ? (flash ? C.red : C.blue) : C.red
+    } else if (heat > 0.85) heatCol = C.red
+    else if (heat > 0.65) heatCol = C.amber
+
+    p.textAlign(p.LEFT, p.BOTTOM)
+    p.fill(C.muted[0], C.muted[1], C.muted[2])
+    p.textSize(9)
+    p.text('HEAT', 346, 88)
+    p.noStroke()
+    p.fill(255, 255, 255, 28)
+    p.rect(346, 94, 268, 4, 2)
+    p.fill(heatCol[0], heatCol[1], heatCol[2])
+    p.rect(346, 94, 268 * heat, 4, 2)
+    p.textAlign(p.LEFT, p.TOP)
+  }
+
+  function drawTouchControls() {
+    const r = touchPanelRect()
+    panel(r.x, r.y, r.w, r.h, 0.9, 14)
+    const b = touchButtonRects()
+    drawTouchButton(b.left, '◀', '←', touchDir === -1, false, false)
+    drawTouchButton(b.right, '▶', '→', touchDir === 1, false, false)
+    drawTouchButton(b.jump, 'JUMP', 'SPACE', false, !canJump(), true)
+  }
+
+  function drawTouchButton(r, icon, keyLabel, active, disabled, accent) {
+    p.noStroke()
+    if (disabled) p.fill(28, 32, 42)
+    else if (accent) p.fill(22, 163, 74)
+    else if (active) p.fill(24, 80, 62)
+    else p.fill(16, 22, 34)
+    p.rect(r.x, r.y, r.w, r.h, 12)
+
+    p.noFill()
+    p.stroke(disabled ? 64 : (accent ? 70 : 90), disabled ? 72 : (accent ? 220 : 130), disabled ? 86 : (accent ? 120 : 160))
+    p.strokeWeight(2)
+    p.rect(r.x + 1, r.y + 1, r.w - 2, r.h - 2, 11)
+    p.noStroke()
+
+    const cx = r.x + r.w / 2
+    const cy = r.y + r.h / 2
+
+    p.fill(disabled ? 96 : 255, disabled ? 104 : 255, disabled ? 122 : 255)
+    p.textAlign(p.CENTER, p.CENTER)
+    p.textStyle(p.BOLD)
+    p.textSize(accent ? 24 : 32)
+    p.text(icon, cx, cy - 9)
+
+    p.textStyle(p.NORMAL)
+    p.fill(disabled ? 90 : (accent ? 210 : 150), disabled ? 98 : (accent ? 225 : 170), disabled ? 114 : (accent ? 200 : 195))
+    p.textSize(10)
+    p.text(keyLabel, cx, cy + 24)
+
     p.textAlign(p.LEFT, p.TOP)
   }
 
@@ -1089,45 +1292,57 @@ export default function sketch(p) {
 
   // --------------------------------------------------------------- overlays
   function drawTitleOverlay() {
+    const t = titleT
+
+    const ctx = p.drawingContext
+    const g = ctx.createLinearGradient(0, 0, 0, H)
+    g.addColorStop(0, '#07040f')
+    g.addColorStop(0.42, '#16082b')
+    g.addColorStop(0.68, '#3d1231')
+    g.addColorStop(0.82, '#7a2a25')
+    g.addColorStop(1, '#08050c')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, W, H)
+
+    drawTitleCity(t)
+
     p.noStroke()
-    p.fill(6, 8, 15, 168)
-    p.rect(0, 0, W, H)
+    p.fill(20, 20, 30)
+    p.beginShape()
+    p.vertex(0, 372)
+    p.vertex(W, 332)
+    p.vertex(W, H)
+    p.vertex(0, H)
+    p.endShape(p.CLOSE)
+    p.fill(255, 255, 255, 8)
+    p.rect(0, 392, W, 3)
+    p.fill(20, 220, 255, 120)
+    p.rect(0, 370, W, 2)
+    p.fill(255, 60, 170, 90)
+    p.rect(0, 616, W, 2)
 
-    const cx = 480, cy = 142
-    p.fill(34, 197, 94)
-    p.triangle(cx - 30, cy + 26, cx + 30, cy + 26, cx, cy - 30)
-    p.fill(6, 8, 15)
-    p.triangle(cx - 15, cy + 18, cx + 15, cy + 18, cx, cy - 8)
+    const slide = mod(t * 420, 110)
+    p.fill(245, 230, 190, 170)
+    for (let x = -slide - 40; x < W; x += 110) p.rect(x, 468, 54, 4, 2)
+    p.fill(255, 255, 255, 18)
+    for (let i = 0; i < 18; i++) {
+      const x = mod(i * 83 - t * 520, W + 200) - 100
+      const y = 385 + (i * 31) % 210
+      p.rect(x, y, 40 + (i % 5) * 30, 1.5)
+    }
 
-    p.fill(255, 255, 255, 255)
-    p.textAlign(p.CENTER, p.CENTER)
-    p.textStyle(p.BOLD)
-    p.textSize(58)
-    p.text('DELTA-V', cx, cy + 78)
-    p.textStyle(p.NORMAL)
-    p.textSize(17)
-    p.fill(180, 193, 210)
-    p.text('MATCH SPEED  ·  BALANCE FORCES  ·  MAKE THE JUMP', cx, cy + 118)
+    drawTitleFlames(t)
+    drawTitleCar(280, 520, -0.05, 1.32, 'player', false)
+    drawTitleCar(520, 430, 0.05, 1.26, 'target', true)
+    drawTitleCar(92, 566, -0.03, 1.12, 'police', false)
 
-    panel(536, 300, 372, 164, 0.82)
-    p.textAlign(p.LEFT, p.TOP)
-    p.textSize(16)
-    p.fill(C.white[0], C.white[1], C.white[2])
-    p.textStyle(p.BOLD)
-    p.text('HOW TO PLAY', 560, 316)
-    p.textStyle(p.NORMAL)
-    p.fill(C.muted[0], C.muted[1], C.muted[2])
-    p.textSize(14)
-    p.text('Engine pushes forward. Drag pushes back.', 560, 344)
-    p.text('Balance the arrows to hold a steady speed.', 560, 366)
-    p.text("Match the target's speed and position, then jump.", 560, 388)
-    p.fill(C.green[0], C.green[1], C.green[2])
-    p.text('SPEED UP / SLOW DOWN tells you which way to adjust.', 560, 414)
+    drawTitleText(t)
+    drawTitleCard()
 
     const b = TITLE_BTN
     const hover = inRect(mouseLogical(), b)
     p.noStroke()
-    if (hover) p.fill(30, 180, 90)
+    if (hover) p.fill(30, 190, 95)
     else p.fill(22, 163, 74)
     p.rect(b.x, b.y, b.w, b.h, 14)
     p.fill(255, 255, 255, 255)
@@ -1136,9 +1351,127 @@ export default function sketch(p) {
     p.textSize(24)
     p.text('PLAY', b.x + b.w / 2, b.y + b.h / 2 - 1)
     p.textStyle(p.NORMAL)
-    p.fill(160, 172, 190)
+    p.textAlign(p.LEFT, p.TOP)
+  }
+
+  function drawTitleCity(t) {
+    p.noStroke()
+    p.fill(255, 100, 60, 18)
+    p.ellipse(500, 334, 540, 270)
+    p.fill(255, 150, 80, 16)
+    p.ellipse(500, 334, 370, 190)
+    p.fill(255, 185, 105, 22)
+    p.ellipse(500, 334, 220, 120)
+
+    for (let layer = 0; layer < 2; layer++) {
+      const base = 340 - layer * 18
+      p.fill(layer ? 18 : 12, layer ? 10 : 8, layer ? 26 : 20)
+      for (let i = 0; i < 18; i++) {
+        const w = 34 + ((i * 37) % 42)
+        const h = 40 + ((i * 53 + layer * 29) % 120)
+        const x = i * 61 - 20 + layer * 30
+        p.rect(x, base - h, w, h)
+        p.fill(255, 190, 100, 28)
+        for (let wy = base - h + 8; wy < base - 8; wy += 12) {
+          for (let wx = x + 5; wx < x + w - 5; wx += 10) {
+            if ((wx + wy + i + layer) % 5 === 0) p.rect(wx, wy, 3, 4)
+          }
+        }
+        p.fill(layer ? 18 : 12, layer ? 10 : 8, layer ? 26 : 20)
+      }
+    }
+
+    p.fill(255, 50, 150, 190)
+    p.rect(150, 250, 70, 4, 2)
+    p.rect(150, 262, 42, 3, 1)
+    p.fill(40, 220, 255, 190)
+    p.rect(760, 236, 80, 4, 2)
+    p.rect(782, 248, 40, 3, 1)
+
+    for (let i = 0; i < 7; i++) {
+      const x = 60 + i * 145
+      p.fill(10, 8, 14)
+      p.rect(x, 320, 3, 58)
+      p.fill(255, 190, 110, 30)
+      p.ellipse(x + 1, 320, 18, 10)
+    }
+  }
+
+  function drawTitleFlames(t) {
+    p.noStroke()
+    for (let i = 0; i < 9; i++) {
+      const a = 20 + (i * 23) % 60
+      p.fill(220, 220, 230, 18)
+      p.ellipse(180 - (i * 13) % 90 - (t * 30) % 30, 514 + (i * 17) % 26, 22 + (i % 3) * 10, 12)
+    }
+    for (let i = 0; i < 10; i++) {
+      const sx = 190 - (i * 19) % 130
+      const sy = 508 + (i * 11) % 28
+      p.fill(255, 190, 70, 120)
+      p.rect(sx, sy, 2, 2)
+    }
+  }
+
+  function drawTitleCar(x, y, angle, scale, kind, wick) {
+    p.push()
+    p.translate(x, y)
+    p.rotate(angle)
+    p.scale(scale)
+    p.translate(-x, -y)
+    drawCar(x, y, PALETTES[4], kind)
+    p.pop()
+
+    if (wick) {
+      p.push()
+      p.translate(x, y)
+      p.scale(scale)
+      p.translate(-x, -y)
+      drawMan(x, y - 4, 1.0, 0.06, 255, 'stand')
+      p.pop()
+    }
+  }
+
+  function drawTitleText(t) {
+    p.push()
+    p.textAlign(p.CENTER, p.CENTER)
+    p.textFont('sans-serif')
+    p.textStyle(p.BOLDITALIC)
+    p.textSize(94)
+    p.drawingContext.shadowColor = 'rgba(255, 30, 160, 0.85)'
+    p.drawingContext.shadowBlur = 30
+    p.fill(255, 246, 225)
+    p.text('DELTA-V', 480, 126)
+    p.drawingContext.shadowBlur = 0
+    p.stroke(12, 8, 20)
+    p.strokeWeight(3)
+    p.noFill()
+    p.text('DELTA-V', 480, 126)
+    p.pop()
+
+    p.noStroke()
+    p.textFont(FONT)
+    p.textAlign(p.CENTER, p.CENTER)
+    p.fill(255, 236, 210)
+    p.textSize(17)
+    p.text('MATCH SPEED  ·  BALANCE FORCES  ·  MAKE THE JUMP', 480, 192)
+    p.fill(255, 200, 120)
     p.textSize(13)
-    p.text('↑↓ throttle  ·  SPACE jump  ·  R restart', cx, 570)
+    p.text('S T A R R I N G   J O H N   W I C K', 480, 218)
+    p.textAlign(p.LEFT, p.TOP)
+  }
+
+  function drawTitleCard() {
+    panel(596, 360, 340, 110, 0.9, 14)
+    p.textAlign(p.LEFT, p.TOP)
+    p.fill(C.white[0], C.white[1], C.white[2])
+    p.textSize(15)
+    p.textStyle(p.BOLD)
+    p.text('HOW TO PLAY', 620, 376)
+    p.textStyle(p.NORMAL)
+    p.fill(C.muted[0], C.muted[1], C.muted[2])
+    p.textSize(14)
+    p.text('←/→: throttle/brake', 620, 404)
+    p.text('SPACE: jump', 620, 426)
     p.textAlign(p.LEFT, p.TOP)
   }
 
@@ -1146,6 +1479,17 @@ export default function sketch(p) {
     p.noStroke()
     p.fill(6, 8, 15, 190)
     p.rect(0, 0, W, H)
+
+    if (state === 'bust') {
+      const flash = Math.sin(p.millis() / 1000 * 14) > 0
+      p.fill(flash ? 239 : 47, flash ? 68 : 111, flash ? 68 : 237, 32)
+      p.rect(0, 0, W / 2, H)
+      p.fill(flash ? 47 : 239, flash ? 111 : 68, flash ? 237 : 68, 32)
+      p.rect(W / 2, 0, W / 2, H)
+      p.fill(0, 0, 0, 95)
+      for (let x = 24; x < W; x += 74) p.rect(x, 0, 7, H)
+    }
+
     panel(238, 138, 484, 366, 0.93, 16)
 
     const cx = 480
@@ -1172,11 +1516,14 @@ export default function sketch(p) {
       })
     } else {
       const win = state === 'win'
+      const bust = state === 'bust'
       const stars = result ? result.stars : 0
       if (win) p.fill(34, 197, 94)
       else p.fill(239, 68, 68)
-      p.textSize(40)
-      const headline = !win ? 'MISSED!' : (stars >= 3 ? 'PERFECT CATCH!' : (stars === 2 ? 'CLEAN CATCH!' : 'CAUGHT!'))
+      p.textSize(bust ? 34 : 40)
+      const headline = bust
+        ? 'STRAIGHT TO JAIL'
+        : (!win ? 'MISSED!' : (stars >= 3 ? 'PERFECT CATCH!' : (stars === 2 ? 'CLEAN CATCH!' : 'CAUGHT!')))
       p.text(headline, cx, 166)
 
       p.textStyle(p.NORMAL)
@@ -1184,7 +1531,17 @@ export default function sketch(p) {
       p.textSize(15)
       p.text(level.name, cx, 216)
 
-      if (result) {
+      if (bust) {
+        p.fill(C.white[0], C.white[1], C.white[2])
+        p.textSize(17)
+        p.text('You took too long.', cx, 252)
+        p.fill(C.muted[0], C.muted[1], C.muted[2])
+        p.textSize(14)
+        p.text('The police knocked John Wick off the road.', cx, 282)
+        p.fill(C.amber[0], C.amber[1], C.amber[2])
+        p.textSize(13)
+        p.text('HEAT 30 / 30  ·  BUSTED', cx, 316)
+      } else if (result) {
         drawStars(cx, 252, 15, result.stars)
         p.fill(C.white[0], C.white[1], C.white[2])
         p.textSize(16)
@@ -1201,7 +1558,7 @@ export default function sketch(p) {
         const note = !win
           ? 'Match the speed and position, then try again.'
           : (stars >= 2
-            ? 'Speed and position matched. The stuntman is safe.'
+            ? 'Speed and position matched. John Wick is safe.'
             : 'Caught, but the match was loose. Try for a cleaner catch.')
         p.text(note, cx, 350)
       }
@@ -1219,7 +1576,9 @@ export default function sketch(p) {
     p.textSize(20)
     const label = state === 'complete'
       ? 'PLAY AGAIN'
-      : (state === 'win' ? (levelIndex + 1 < LEVELS.length ? 'NEXT STUNT' : 'FINISH') : 'RETRY')
+      : (state === 'win'
+        ? (levelIndex + 1 < LEVELS.length ? 'NEXT STUNT' : 'FINISH')
+        : (state === 'bust' ? 'RETRY STAGE' : 'RETRY'))
     p.text(label, b.x + b.w / 2, b.y + b.h / 2 - 1)
     p.textStyle(p.NORMAL)
     p.textAlign(p.LEFT, p.TOP)

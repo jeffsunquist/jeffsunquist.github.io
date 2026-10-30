@@ -48,9 +48,10 @@ self-contained page plus a `sketch.js` ES module) and is described by
 `sims/` tree is copied to `dist/sims/` at build time; p5 is vendored at
 `sims/vendor/p5.min.js`. `sims/lift-force/` is the arena shooter: A/D move, W
 jumps (twice for a double), the mouse aims and fires, `1`–`4` swap weapons.
-`sims/delta-v/` is the top-down velocity-matching stunt: balance engine force
-against drag, match the target car's speed and position, then press Space to
-make the jump. `sims/momentum-rescue/` is the gravity-and-collisions rescue game.
+`sims/delta-v/` is the top-down John Wick chase: balance engine force against
+drag, match the target car's speed and position, then press Space to make the
+jump before the 60-second heat catches up. `sims/momentum-rescue/` is the
+gravity-and-collisions rescue game.
 
 The decks are built and published automatically by the Pages workflow in
 `.github/workflows/deploy.yml` — just commit and push to `main`.
