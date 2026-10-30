@@ -44,6 +44,7 @@ export default function sketch(p) {
 
   const TITLE_BTN = { x: 380, y: 482, w: 200, h: 56 }
   const RESULT_BTN = { x: 360, y: 430, w: 240, h: 54 }
+  const RESUME_BTN = { x: 360, y: 548, w: 240, h: 52 }
 
   const C = {
     panel: [10, 14, 24],
@@ -126,7 +127,7 @@ export default function sketch(p) {
   ]
 
   // ------------------------------------------------------------------ state
-  let stage, controls, slider, sliderVal, jumpBtn, restartBtn, hintsCb, readout
+  let stage, controls, canvasEl, slider, sliderVal, jumpBtn, restartBtn, hintsCb, readout
   const view = { s: 1, ox: 0, oy: 0 }
 
   let state = 'title'            // title | play | jump | win | miss | complete
@@ -153,6 +154,9 @@ export default function sketch(p) {
   let particles = []
   const keys = new Set()
   let touchDir = 0
+  let steerPointer = null
+  let paused = false
+  let pauseT = 0
   let lastJumpLabel = ''
   let lastJumpDisabled = null
   let lastReadout = ''
@@ -214,13 +218,20 @@ export default function sketch(p) {
     const sw = stage.clientWidth || W
     const sh = stage.clientHeight || H
     p.createCanvas(sw, sh)
+    canvasEl = document.querySelector('#stage canvas')
+    if (canvasEl) {
+      canvasEl.addEventListener('pointerdown', onPointerDown)
+      canvasEl.addEventListener('pointerup', onPointerUp)
+      canvasEl.addEventListener('pointercancel', onPointerUp)
+      canvasEl.addEventListener('lostpointercapture', onPointerUp)
+    }
     p.textFont(FONT)
     p.frameRate(60)
     resize()
     if (window.ResizeObserver) new ResizeObserver(resize).observe(stage)
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
-    window.addEventListener('blur', () => { keys.clear(); touchDir = 0 })
+    window.addEventListener('blur', () => { keys.clear(); touchDir = 0; steerPointer = null })
     setupPreview()
   }
 
@@ -308,6 +319,10 @@ export default function sketch(p) {
     policeActive = false
     policeT = 0
     bustT = 0
+    paused = false
+    pauseT = 0
+    touchDir = 0
+    steerPointer = null
     engine = 0
     brake = 0
     drag = DRAG_K * playerV * playerV
@@ -351,6 +366,10 @@ export default function sketch(p) {
     policeActive = false
     policeT = 0
     bustT = 0
+    paused = false
+    pauseT = 0
+    touchDir = 0
+    steerPointer = null
     exhaustTimer = 0
     targetExhaustTimer = 0
     engine = 0
@@ -400,6 +419,7 @@ export default function sketch(p) {
     }
     keys.add(e.code)
     if (e.code === 'Space' && !e.repeat) primaryAction()
+    if (e.code === 'KeyP' && !e.repeat) togglePause()
     if (e.code === 'KeyR') {
       if (state === 'play' || state === 'jump' || state === 'win' || state === 'miss') startLevel(levelIndex)
       else startNewGame()
@@ -410,15 +430,47 @@ export default function sketch(p) {
     keys.delete(e.code)
   }
 
-  p.mousePressed = () => {
-    const m = mouseLogical()
-    if (state === 'play') {
-      const b = touchButtonRects()
-      if (inRect(m, b.left)) touchDir = -1
-      else if (inRect(m, b.right)) touchDir = 1
-      else if (inRect(m, b.jump) && canJump()) startJump()
+  function onPointerDown(e) {
+    if (!canvasEl) return
+    e.preventDefault()
+    const m = pointerLogical(e)
+    try { canvasEl.setPointerCapture(e.pointerId) } catch (_) { /* ignore */ }
+
+    if (paused) {
+      if (inRect(m, RESUME_BTN)) {
+        paused = false
+        pauseT = 0
+        touchDir = 0
+        steerPointer = null
+      }
       return
     }
+
+    if (state === 'play' || state === 'jump') {
+      if (inRect(m, pauseButtonRect())) {
+        togglePause()
+        return
+      }
+      if (state === 'play') {
+        const b = touchButtonRects()
+        if (inRect(m, b.left)) {
+          steerPointer = e.pointerId
+          touchDir = -1
+          return
+        }
+        if (inRect(m, b.right)) {
+          steerPointer = e.pointerId
+          touchDir = 1
+          return
+        }
+        if (inRect(m, b.jump) && canJump()) {
+          startJump()
+          return
+        }
+      }
+      return
+    }
+
     if (state === 'title') {
       if (inRect(m, TITLE_BTN)) primaryAction()
     } else if (state === 'win' || state === 'miss' || state === 'bust' || state === 'complete') {
@@ -426,8 +478,34 @@ export default function sketch(p) {
     }
   }
 
-  p.mouseReleased = () => {
-    touchDir = 0
+  function onPointerUp(e) {
+    if (e.pointerId === steerPointer) {
+      touchDir = 0
+      steerPointer = null
+    }
+  }
+
+  function pointerLogical(e) {
+    const r = canvasEl.getBoundingClientRect()
+    const x = (e.clientX - r.left) / r.width * p.width
+    const y = (e.clientY - r.top) / r.height * p.height
+    return { x: (x - view.ox) / view.s, y: (y - view.oy) / view.s }
+  }
+
+  function pauseButtonRect() {
+    return { x: W - 62, y: 22, w: 40, h: 40 }
+  }
+
+  function togglePause() {
+    if (state !== 'play' && state !== 'jump') return
+    paused = !paused
+    if (paused) {
+      touchDir = 0
+      steerPointer = null
+      keys.clear()
+    } else {
+      pauseT = 0
+    }
   }
 
   function touchPanelRect() {
@@ -661,28 +739,33 @@ export default function sketch(p) {
   p.draw = () => {
     const dt = clamp((p.deltaTime || 16) / 1000, 0, 0.05)
 
-    if (state === 'play') {
-      let d = 0
-      const accelKey = dir > 0 ? 'ArrowRight' : 'ArrowLeft'
-      const brakeKey = dir > 0 ? 'ArrowLeft' : 'ArrowRight'
-      if (keys.has(accelKey)) d += 1
-      if (keys.has(brakeKey)) d -= 1
-      if (touchDir) d += touchDir * dir
-      if (d) setLever(lever + d * 0.62 * dt)
-      updatePlay(dt)
-    } else if (state === 'jump') {
-      updateJump(dt)
-    } else if (state === 'bust') {
-      updateBust(dt)
-    } else if (state === 'title') {
-      titleT += dt
-      roadDist += dir * 155 * dt
+    if (paused) {
+      pauseT += dt
     } else {
-      resultT += dt
+      if (state === 'play') {
+        let d = 0
+        const accelKey = dir > 0 ? 'ArrowRight' : 'ArrowLeft'
+        const brakeKey = dir > 0 ? 'ArrowLeft' : 'ArrowRight'
+        if (keys.has(accelKey)) d += 1
+        if (keys.has(brakeKey)) d -= 1
+        if (touchDir) d += touchDir * dir
+        if (d) setLever(lever + d * 0.62 * dt)
+        updatePlay(dt)
+      } else if (state === 'jump') {
+        updateJump(dt)
+      } else if (state === 'bust') {
+        updateBust(dt)
+      } else if (state === 'title') {
+        titleT += dt
+        roadDist += dir * 155 * dt
+      } else {
+        resultT += dt
+      }
+
+      updateParticles(dt)
+      shake = Math.max(0, shake - dt * 1.8)
     }
 
-    updateParticles(dt)
-    shake = Math.max(0, shake - dt * 1.8)
     refreshPrimary()
     updateReadout()
     drawFrame()
@@ -695,8 +778,13 @@ export default function sketch(p) {
     if (state === 'title') {
       label = 'Start'
     } else if (state === 'play') {
-      label = 'Jump'
-      disabled = !canJump()
+      if (paused) {
+        label = 'Paused'
+        disabled = true
+      } else {
+        label = 'Jump'
+        disabled = !canJump()
+      }
     } else if (state === 'jump') {
       label = 'Jumping…'
       disabled = true
@@ -716,14 +804,16 @@ export default function sketch(p) {
       jumpBtn.disabled = disabled
       lastJumpDisabled = disabled
     }
-    if (slider) slider.disabled = state !== 'play'
+    if (slider) slider.disabled = state !== 'play' || paused
     if (restartBtn) restartBtn.style.display = (state === 'title' || state === 'complete') ? 'none' : ''
   }
 
   function updateReadout() {
     if (!readout) return
     let t
-    if (state === 'play') {
+    if (paused) {
+      t = 'Paused. Press P or tap RESUME.'
+    } else if (state === 'play') {
       const netScreen = dir * net
       const sign = netScreen > 0.5 ? '+' : ''
       t = `Engine ${Math.round(engine).toLocaleString()} N · Drag ${Math.round(drag).toLocaleString()} N · F_net ${sign}${Math.round(netScreen).toLocaleString()} N`
@@ -762,6 +852,7 @@ export default function sketch(p) {
     if (state === 'play' || state === 'jump') drawHUD()
     if (state === 'title') drawTitleOverlay()
     if (state === 'win' || state === 'miss' || state === 'complete') drawResultOverlay()
+    if (paused && (state === 'play' || state === 'jump')) drawPauseOverlay()
     if (state === 'bust') {
       const flash = Math.sin(p.millis() / 1000 * 14) > 0
       p.noStroke()
@@ -1092,7 +1183,8 @@ export default function sketch(p) {
   // -------------------------------------------------------------------- HUD
   function drawHUD() {
     drawLevelPanel()
-    if (state === 'play') {
+    if (!paused && (state === 'play' || state === 'jump')) drawPauseButton()
+    if (!paused && state === 'play') {
       if (hintsEnabled) drawHint()
       drawForcePanel()
       drawTouchControls()
@@ -1129,6 +1221,213 @@ export default function sketch(p) {
     p.fill(heatCol[0], heatCol[1], heatCol[2])
     p.rect(346, 94, 268 * heat, 4, 2)
     p.textAlign(p.LEFT, p.TOP)
+  }
+
+  function drawPauseButton() {
+    const r = pauseButtonRect()
+    p.noStroke()
+    p.fill(10, 14, 24, 205)
+    p.rect(r.x, r.y, r.w, r.h, 10)
+    p.noFill()
+    p.stroke(255, 255, 255, 40)
+    p.strokeWeight(1)
+    p.rect(r.x, r.y, r.w, r.h, 10)
+    p.noStroke()
+    p.fill(230, 235, 240)
+    p.rect(r.x + 12, r.y + 11, 5, 18, 2)
+    p.rect(r.x + 23, r.y + 11, 5, 18, 2)
+  }
+
+  function drawPauseOverlay() {
+    const t = pauseT
+    p.noStroke()
+    p.fill(4, 5, 12, 228)
+    p.rect(0, 0, W, H)
+
+    for (let row = 0; row < 5; row++) {
+      for (let col = 0; col < 12; col++) {
+        const x = col * 80
+        const y = 430 + row * 42
+        p.fill(32 + col * 4, 18 + row * 8, 68 + (col % 3) * 10, 90)
+        p.rect(x + 1, y + 1, 78, 40, 3)
+      }
+    }
+
+    for (let i = 0; i < 7; i++) {
+      const a = t * 0.5 + i * Math.PI * 2 / 7
+      const ex = 480 + Math.cos(a) * 430
+      const ey = 430 + Math.sin(a) * 210
+      p.fill(i % 2 === 0 ? 50 : 255, i % 2 === 0 ? 200 : 60, i % 2 === 0 ? 255 : 170, 17)
+      p.triangle(480, 66, ex - 85, 640, ex + 85, 640)
+    }
+
+    p.fill(180, 190, 210)
+    p.ellipse(480, 64, 30, 30)
+    p.fill(255, 255, 255, 110)
+    p.ellipse(474, 57, 8, 8)
+    p.stroke(80, 90, 110, 100)
+    p.strokeWeight(1)
+    p.line(466, 64, 494, 64)
+    p.line(480, 49, 480, 79)
+    p.noStroke()
+
+    drawDancingWick(t)
+
+    p.textAlign(p.CENTER, p.CENTER)
+    p.fill(255, 255, 255, 255)
+    p.textSize(44)
+    p.textStyle(p.BOLD)
+    p.text('PAUSED', 480, 130)
+    p.textStyle(p.NORMAL)
+    p.textSize(14)
+    p.fill(170, 182, 205)
+    p.text('P or tap RESUME', 480, 168)
+
+    const b = RESUME_BTN
+    const hover = inRect(mouseLogical(), b)
+    p.noStroke()
+    if (hover) p.fill(30, 190, 95)
+    else p.fill(22, 163, 74)
+    p.rect(b.x, b.y, b.w, b.h, 13)
+    p.fill(255, 255, 255, 255)
+    p.textAlign(p.CENTER, p.CENTER)
+    p.textStyle(p.BOLD)
+    p.textSize(20)
+    p.text('RESUME', b.x + b.w / 2, b.y + b.h / 2 - 1)
+    p.textStyle(p.NORMAL)
+    p.textAlign(p.LEFT, p.TOP)
+  }
+
+  function drawDancingWick(t) {
+    const CYCLE = 7.0
+    const tt = ((t % CYCLE) + CYCLE) % CYCLE
+    const KEYS = [
+      { t: 0.0, lf: [-8, 0], rf: [8, 0], lh: [-16, -16], rh: [16, -16], hip: 0, lean: -0.06, bob: 0 },
+      { t: 0.3, lf: [-12, -1], rf: [5, 0], lh: [-22, -10], rh: [10, -22], hip: 0, lean: -0.12, bob: -1 },
+      { t: 0.65, lf: [-5, 0], rf: [12, -1], lh: [-10, -22], rh: [22, -10], hip: 0, lean: 0.12, bob: -1 },
+      { t: 1.0, lf: [-7, 0], rf: [9, 0], lh: [-14, -18], rh: [18, -14], hip: 0, lean: 0.04, bob: 0 },
+      { t: 1.35, lf: [-14, 0], rf: [4, -1], lh: [-8, -18], rh: [14, -20], hip: 0, lean: -0.14, bob: 0 },
+      { t: 1.7, lf: [-4, -1], rf: [14, 0], lh: [-18, -20], rh: [8, -18], hip: 0, lean: 0.14, bob: -1 },
+      { t: 2.0, lf: [-8, 0], rf: [8, 0], lh: [-6, -12.5], rh: [6, -12.5], hip: 0, lean: 0, bob: 0 },
+      { t: 2.75, lf: [-9, -1], rf: [7, 0], lh: [-14, -14.72], rh: [-2, -14.72], hip: 4.0, lean: -0.05, bob: 0 },
+      { t: 3.5, lf: [-8, 0], rf: [8, 0], lh: [-6, -12.5], rh: [6, -12.5], hip: 0, lean: 0, bob: -1 },
+      { t: 4.25, lf: [-7, 0], rf: [9, -1], lh: [2, -14.72], rh: [14, -14.72], hip: -4.0, lean: 0.05, bob: 0 },
+      { t: 5.0, lf: [-8, 0], rf: [8, 0], lh: [-6, -12.5], rh: [6, -12.5], hip: 0, lean: 0, bob: 0 },
+      { t: 5.3, lf: [-14, 0], rf: [4, 0], lh: [-22, -20], rh: [18, -12], hip: 0, lean: -0.12, bob: 0 },
+      { t: 5.7, lf: [-4, 0], rf: [14, 0], lh: [-12, -18], rh: [22, -20], hip: 0, lean: 0.12, bob: 0 },
+      { t: 6.0, lf: [-8, 0], rf: [8, 0], lh: [-16, -16], rh: [16, -16], hip: 0, lean: 0, bob: 0 },
+      { t: 6.35, lf: [-8, 0], rf: [7, 0], lh: [-6, -22], rh: [16, -40], hip: 0, lean: 0.18, bob: 0 },
+      { t: 6.7, lf: [-10, 0], rf: [6, 0], lh: [-4, -20], rh: [20, -42], hip: 0, lean: 0.2, bob: -1 },
+      { t: 7.0, lf: [-8, 0], rf: [8, 0], lh: [-16, -16], rh: [16, -16], hip: 0, lean: 0, bob: 0 }
+    ]
+
+    let i = 0
+    while (i < KEYS.length - 1 && tt > KEYS[i + 1].t) i++
+    const a = KEYS[i]
+    const b = KEYS[Math.min(i + 1, KEYS.length - 1)]
+    const u = b.t > a.t ? clamp((tt - a.t) / (b.t - a.t), 0, 1) : 0
+    const e = u * u * (3 - 2 * u)
+    const mix = (p1, p2) => ({ x: lerp(p1[0], p2[0], e), y: lerp(p1[1], p2[1], e) })
+    const lf = mix(a.lf, b.lf)
+    const rf = mix(a.rf, b.rf)
+    const lh = mix(a.lh, b.lh)
+    const rh = mix(a.rh, b.rh)
+    let hip = lerp(a.hip, b.hip, e)
+    let lean = lerp(a.lean, b.lean, e)
+    let bob = lerp(a.bob, b.bob, e)
+
+    // Pendulum: both arms stay parallel and fixed-length while the hips
+    // swing the opposite way. Three full left-right cycles in the same
+    // 3-second window, with the feet swinging opposite the hands.
+    if (tt >= 2.0 && tt < 5.0) {
+      const phase = (tt - 2.0) / 3.0 * p.TWO_PI * 3
+      const swing = Math.sin(phase)
+      const angle = swing * 0.55
+      const armLen = 15.5
+      lh.x = -6 + Math.sin(angle) * armLen
+      lh.y = -28 + Math.cos(angle) * armLen
+      rh.x = 6 + Math.sin(angle) * armLen
+      rh.y = -28 + Math.cos(angle) * armLen
+      hip = -swing * 6.0
+      lean = -swing * 0.05
+      bob = -Math.abs(swing) * 0.7
+      // No hip compensation here: the feet follow the hips, which move
+      // opposite the hands, so the hands and feet counter-swing.
+      lf.x = -8
+      lf.y = -bob
+      rf.x = 8
+      rf.y = -bob
+    }
+
+    const cx = 480
+    const cy = 470
+    p.noStroke()
+    p.fill(0, 0, 0, 90)
+    p.ellipse(cx, cy + 8, 46, 12)
+
+    p.push()
+    p.translate(cx + hip, cy + bob)
+    p.rotate(lean)
+    p.scale(3.0)
+
+    const hipL = { x: -4, y: -18 }
+    const hipR = { x: 4, y: -18 }
+    drawDanceLeg(hipL, lf)
+    drawDanceLeg(hipR, rf)
+
+    const shL = { x: -6, y: -28 }
+    const shR = { x: 6, y: -28 }
+
+    p.noStroke()
+    p.fill(20, 22, 28)
+    p.rect(-7, -30, 14, 16, 4)
+    p.fill(235, 235, 238)
+    p.beginShape()
+    p.vertex(-3, -30)
+    p.vertex(3, -30)
+    p.vertex(0, -19)
+    p.endShape(p.CLOSE)
+    p.fill(16, 18, 24)
+    p.rect(-1, -29, 2, 9, 1)
+    p.fill(29, 31, 40)
+    p.triangle(-7, -30, -2, -30, -5, -21)
+    p.triangle(7, -30, 2, -30, 5, -21)
+
+    drawDanceArm(shL, lh)
+    drawDanceArm(shR, rh)
+
+    p.fill(226, 180, 140)
+    p.ellipse(0, -36, 11, 11)
+    p.fill(38, 32, 28)
+    p.arc(0, -38, 11, 8, p.PI, p.TWO_PI)
+    p.ellipse(0, -32, 9, 4)
+    p.pop()
+  }
+
+  function drawDanceLeg(hip, foot) {
+    p.stroke(22, 24, 30)
+    p.strokeWeight(4.6)
+    p.line(hip.x, hip.y, foot.x, foot.y)
+    p.noStroke()
+    p.fill(8, 9, 12)
+    p.ellipse(foot.x + 0.5, foot.y + 0.8, 8, 4)
+    p.fill(32, 34, 42)
+    p.ellipse(foot.x, foot.y - 0.2, 7, 3.2)
+  }
+
+  function drawDanceArm(shoulder, hand) {
+    const dx = hand.x - shoulder.x
+    const dy = hand.y - shoulder.y
+    const d = Math.hypot(dx, dy) || 1
+    const len = Math.min(16, d)
+    const hx = shoulder.x + dx / d * len
+    const hy = shoulder.y + dy / d * len
+    p.stroke(22, 24, 30)
+    p.strokeWeight(4.0)
+    p.line(shoulder.x, shoulder.y, hx, hy)
+    p.noStroke()
+    p.fill(226, 180, 140)
+    p.ellipse(hx, hy, 5.2, 5.2)
   }
 
   function drawTouchControls() {
