@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Delta-V — Physics Demos</title>
+<link rel="stylesheet" href="../sim.css" />
+<style>
+  body.demo #stage { cursor: default; }
+  body.demo .sim-head h1 { white-space: nowrap; }
+  #controls .throttle { width: 230px; }
+  #controls .throttle-val {
+    min-width: 8.4rem;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  #controls .jump {
+    min-width: 9rem;
+    font-weight: 600;
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+  #controls .jump:disabled {
+    background: #eef0f3;
+    border-color: #e5e7eb;
+    color: #9aa3af;
+  }
+  @media (max-width: 640px) {
+    #controls .throttle { width: 150px; }
+    #controls .throttle-val { min-width: 6.4rem; }
+  }
+</style>
+</head>
+<body class="demo">
+  <header class="sim-head">
+    <h1>Delta-V</h1>
+    <span class="sub">match speed · balance forces · make the jump</span>
+    <a href="/">← Home</a>
+  </header>
+  <div id="stage"></div>
+  <div id="controls" class="sim-controls"></div>
+  <script src="../vendor/p5.min.js"></script>
+  <script type="module">
+    import sketch from './sketch.js'
+    new p5(sketch, document.getElementById('stage'))
+  </script>
+</body>
+</html>

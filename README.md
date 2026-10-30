@@ -40,13 +40,17 @@ classified by their `_G6` / `_G7` filename token (a file with neither token
 appears in both columns), and include the A4 double-sided **formula sheets**
 (`pdfs/Formula_Sheet_G6.pdf` / `_G7.pdf`, built from `reference/formula-sheet-*.md`).
 
-There is also a **Sims & Demos** section listing standalone p5.js physics
-simulations and browser demos. Each one lives in `sims/<slug>/` (a
+There is also a **Tutorials** section of animated worked examples (a problem,
+then the solution steps on a draggable timeline) and a **Sims & Demos**
+section listing standalone p5.js simulations and browser demos. Each one lives in `sims/<slug>/` (a
 self-contained page plus a `sketch.js` ES module) and is described by
 `data/sims.csv` or `data/demos.csv` (`slug,title,grade,description`). The whole
 `sims/` tree is copied to `dist/sims/` at build time; p5 is vendored at
 `sims/vendor/p5.min.js`. `sims/lift-force/` is the arena shooter: A/D move, W
 jumps (twice for a double), the mouse aims and fires, `1`–`4` swap weapons.
+`sims/delta-v/` is the top-down velocity-matching stunt: balance engine force
+against drag, match the target car's speed and position, then press Space to
+make the jump. `sims/momentum-rescue/` is the gravity-and-collisions rescue game.
 
 The decks are built and published automatically by the Pages workflow in
 `.github/workflows/deploy.yml` — just commit and push to `main`.

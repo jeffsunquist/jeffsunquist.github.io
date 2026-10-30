@@ -6,7 +6,7 @@ LO:
 
 ## Example: Find the acceleration.
 
-A $\overset{m}{\underline{2\ \mathrm{kg}}}$ cart is pushed with a net force of $\overset{F_{net}}{\underline{10\ \mathrm{N\, right}}}$. What is its $\overset{a}{\underline{\text{acceleration}}}$?
+A $\overset{m}{\underline{2\ \mathrm{kg}}}$ cart is pushed with a net force of $\overset{F_{net}}{\underline{10\ \mathrm{N\, right}}}$. Find its $\overset{a}{\underline{\text{acceleration}}}$.
 
 <v-clicks>
 

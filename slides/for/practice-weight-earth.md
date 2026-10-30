@@ -5,7 +5,7 @@ LO:
 
 ## Practice: Weight on Earth
 
-A $2\ \mathrm{kg}$ bag of flour sits on Earth.
+A $2\ \mathrm{kg}$ bag of flour sits on Earth. Find its weight.
 
 <div class="absolute bottom-8 left-0 right-0 pr-8 text-right">
 

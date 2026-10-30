@@ -5,7 +5,7 @@ LO:
 
 ## Example: Weight on Earth
 
-An $\overset{m}{\underline{8\ \mathrm{kg}}}$ backpack is held $\overset{g}{\underline{\text{on Earth}}}$. What is its $\overset{F_g}{\underline{\text{weight}}}$?
+An $\overset{m}{\underline{8\ \mathrm{kg}}}$ backpack is held $\overset{g}{\underline{\text{on Earth}}}$. Find its $\overset{F_g}{\underline{\text{weight}}}$.
 
 <v-clicks>
 

@@ -64,6 +64,15 @@ if [ -d sims ]; then
   cp -r sims dist/sims
 fi
 
+# Interactive tutorials: page + shared player, plus the KaTeX runtime they use.
+# Sources live in tutorials/ and are copied verbatim (like sims/).
+if [ -d tutorials ]; then
+  cp -r tutorials dist/tutorials
+fi
+if [ -d node_modules/katex/dist ]; then
+  cp -r node_modules/katex/dist dist/katex
+fi
+
 # Lesson decks follow the handout naming scheme {TOPIC}-{KIND}{NN}_{Title}
 # (KIND `L` = lesson; see physics/AGENTS.md), so only files matching that shape
 # are built — docs such as AGENTS.md, README.md and LO_TAGGING_REVIEW.md never
@@ -339,6 +348,33 @@ if [ -f data/demos.csv ]; then
   demos_json="[$demo_items]"
 fi
 
+# Tutorials from data/tutorials.csv (`slug,title,grade,description`; keep
+# descriptions comma-free). Pages live in tutorials/<slug>/.
+tutorials_json='[]'
+if [ -f data/tutorials.csv ]; then
+  tutorial_items=''
+  tf=1
+  while IFS=, read -r slug title grade description; do
+    slug="$(clean "${slug:-}")"
+    title="$(clean "${title:-}")"
+    grade="$(clean "${grade:-}")"
+    description="$(clean "${description:-}")"
+    [ -z "$slug" ] && continue
+    [ "$slug" = "slug" ] && continue
+
+    case "$grade" in
+      G6|g6|6) g_g6=true; g_g7=false ;;
+      G7|g7|7) g_g6=false; g_g7=true ;;
+      *)       g_g6=true; g_g7=true ;;
+    esac
+
+    [ "$tf" -eq 1 ] || tutorial_items+=','
+    tf=0
+    tutorial_items+="{\"slug\":$(json_str "$slug"),\"url\":$(json_str "/tutorials/$slug/"),\"kind\":$(json_str "Tutorial"),\"title\":$(json_str "$title"),\"description\":$(json_str "$description"),\"icon\":$(json_str "/icons/tutorial.svg"),\"g6\":$g_g6,\"g7\":$g_g7}"
+  done < data/tutorials.csv
+  tutorials_json="[$tutorial_items]"
+fi
+
 # 3D Club: publish 3d-club/ -> dist/3d-club/ and render a listing page.
 # Files are grouped by their top-level folder (folders are named for the
 # meeting date, e.g. 2026-09-22), newest folder first. Loose files at the
@@ -411,6 +447,7 @@ template="${template//__LESSONS_JSON__/$lessons_json}"
 template="${template//__HANDOUTS_JSON__/$handouts_json}"
 template="${template//__SIMS_JSON__/$sims_json}"
 template="${template//__DEMOS_JSON__/$demos_json}"
+template="${template//__TUTORIALS_JSON__/$tutorials_json}"
 template="${template//__ELEMENT_TIERS_JSON__/$element_tiers_json}"
 template="${template//__AURA_LABELS__/$aura_labels_js}"
 template="${template//__AURA_DATA__/$aura_data_js}"

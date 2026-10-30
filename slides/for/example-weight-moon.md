@@ -5,7 +5,7 @@ LO:
 
 ## Example: Weight on the Moon
 
-A $\overset{m}{\underline{2\ \mathrm{kg}}}$ bag of flour is taken to the Moon, where $\overset{g}{\underline{g = 1.6\ \mathrm{\frac{m}{s^2}}}}$.
+A $\overset{m}{\underline{2\ \mathrm{kg}}}$ bag of flour is taken to the Moon, where $\overset{g}{\underline{g = 1.6\ \mathrm{\frac{m}{s^2}}}}$. Find its weight.
 
 <v-clicks>
 

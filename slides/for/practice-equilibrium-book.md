@@ -3,12 +3,16 @@ LO:
   - FOR-34
 ---
 
-## Practice — In Equilibrium?
+## Practice: In Equilibrium?
 
 A book sits motionless on a desk.
+
+<div class="absolute bottom-8 left-0 right-0 pr-8 text-right">
 
 <v-click>
 
 **Answer:** Yes — at rest with zero net force.
 
 </v-click>
+
+</div>

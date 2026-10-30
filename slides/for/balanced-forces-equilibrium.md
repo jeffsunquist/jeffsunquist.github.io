@@ -1,4 +1,5 @@
 ---
+zoom: 0.9
 LO:
   - FOR-35
 ---
@@ -7,13 +8,14 @@ LO:
 
 - Balanced forces $\Leftrightarrow$ zero net force $\Leftrightarrow$ zero acceleration $\Leftrightarrow$ constant velocity.
 
-$$ \sum F = 0 \quad\Longleftrightarrow\quad a = 0 $$
+<center>
+
+((balanced_vs_unbalanced: a box with equal and opposite force arrows beside a box with unequal arrows))
+
+</center>
 
 | If you know… | Then… |
 | --- | --- |
 | the forces are balanced | the object is in equilibrium |
 | the object is in equilibrium | its acceleration is zero |
 | its acceleration is zero | its velocity is constant |
-
-> [!TIP]
-> All four statements describe the same situation.

@@ -350,6 +350,11 @@
     .card.sim.demo .card-icon { background: #dbeafe; color: var(--link); }
     .card.sim.demo .card-glyph { background-color: var(--link); }
 
+    /* Tutorials get their own teal accent. */
+    .card.sim.tutorial { border-left-color: #0f766e; }
+    .card.sim.tutorial .card-icon { background: #ccfbf1; color: #0f766e; }
+    .card.sim.tutorial .card-glyph { background-color: #0f766e; }
+
     .empty {
       margin: 0.5rem 0 0;
       font-size: 0.9rem;
@@ -492,6 +497,23 @@
       </div>
     </section>
 
+    <section id="tutorials-section">
+      <div class="section-head">
+        <h2>Tutorials</h2>
+        <span class="rule"></span>
+      </div>
+      <div class="columns">
+        <div class="column" data-grade="6">
+          <h3><span class="grade-dot"></span>Grade 6</h3>
+          <div class="cards" id="tutorials-g6"></div>
+        </div>
+        <div class="column" data-grade="7">
+          <h3><span class="grade-dot"></span>Grade 7</h3>
+          <div class="cards" id="tutorials-g7"></div>
+        </div>
+      </div>
+    </section>
+
     <section id="sims-section">
       <div class="section-head">
         <h2>Sims &amp; Demos</h2>
@@ -531,6 +553,7 @@
     const HANDOUTS = __HANDOUTS_JSON__;
     const SIMS = __SIMS_JSON__;
     const DEMOS = __DEMOS_JSON__;
+    const TUTORIALS = __TUTORIALS_JSON__;
     const AURA_LABELS = __AURA_LABELS__;
     const AURA_DATA = __AURA_DATA__;
     const ELEMENT_TIERS = __ELEMENT_TIERS_JSON__;
@@ -584,7 +607,8 @@
 
     function simCard(s) {
       const a = document.createElement('a');
-      a.className = 'card sim' + (s.kind === 'Demo' ? ' demo' : '');
+      const kind = (s.kind || 'Sim').toLowerCase();
+      a.className = 'card sim' + (kind === 'sim' ? '' : ' ' + kind);
       a.href = s.url;
       a.innerHTML =
         iconGlyph(s.icon) +
@@ -605,6 +629,8 @@
     fill('lessons-g7', LESSONS.filter(function (l) { return l.g7; }), lessonCard);
     fill('handouts-g6', HANDOUTS.filter(function (h) { return h.g6; }), handoutCard);
     fill('handouts-g7', HANDOUTS.filter(function (h) { return h.g7; }), handoutCard);
+    fill('tutorials-g6', TUTORIALS.filter(function (t) { return t.g6; }), simCard);
+    fill('tutorials-g7', TUTORIALS.filter(function (t) { return t.g7; }), simCard);
     fill('sims-g6', SIMS.concat(DEMOS).filter(function (s) { return s.g6; }), simCard);
     fill('sims-g7', SIMS.concat(DEMOS).filter(function (s) { return s.g7; }), simCard);
 

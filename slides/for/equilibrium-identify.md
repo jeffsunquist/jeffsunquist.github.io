@@ -1,14 +1,18 @@
 ---
+zoom: 0.92
 LO:
   - FOR-34
 ---
 
 ## Is the Object in Equilibrium?
 
-- If the net force is **zero**, the object is in equilibrium.
-- If the net force is **not zero**, it is not in equilibrium.
+- Judge by the **motion**:
+  - **Constant velocity** (including at rest) $\Rightarrow$ zero acceleration $\Rightarrow$ **equilibrium**.
+  - **Changing velocity** (speeding up, slowing down, or turning) $\Rightarrow$ nonzero acceleration $\Rightarrow$ **not** in equilibrium.
+- **Speed alone does not decide.**
 
-> [!TIP]
-> Equilibrium means constant velocity — either at rest or moving steadily.
+<center>
 
-((equilibrium_identify: three panels — a book at rest, a car cruising at constant speed, a ball speeding up as it falls))
+((equilibrium_decision: a flow chart from motion to equilibrium))
+
+</center>
