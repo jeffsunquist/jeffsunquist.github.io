@@ -12,11 +12,10 @@
 # appear in both columns.
 #
 # The landing page is rendered from scripts/index.template.html: a "Lessons"
-# section and a "Handouts" section, each split into a Grade 6 and a Grade 7
-# column, with the Aura tracker full width below. Lesson cards are derived from
-# each deck's frontmatter (`title:`, `info:`) and its "## Learning Objective"
-# sentence; handouts are classified by their `_G6` / `_G7` filename token (a
-# file with neither token appears in both columns).
+# section split into Grade 6 and Grade 7 columns, with the Aura tracker full
+# width below. Lesson cards are derived from each deck's frontmatter (`title:`,
+# `info:`) and its "## Learning Objective" sentence. PDFs under pdfs/ are kept
+# local and are not published.
 #
 # Used by .github/workflows/deploy.yml and for manual local builds.
 set -euo pipefail
@@ -31,18 +30,6 @@ if [ -f CNAME ]; then
   cp CNAME dist/CNAME
 fi
 
-# Build the A4 formula sheets (reference/*.md -> pdfs/Formula_Sheet_*.pdf) so
-# they are freshly published alongside the other handouts.
-if [ -f scripts/build_formula_sheet.mjs ]; then
-  echo "Building formula sheets"
-  node scripts/build_formula_sheet.mjs || echo "WARN: formula sheet build skipped"
-fi
-
-# Publish the annotatable PDFs (pdfs/ -> dist/pdfs/). Empty is fine.
-if [ -d pdfs ]; then
-  cp -r pdfs dist/pdfs
-fi
-
 # Self-hosted handwriting font for the landing page (public/fonts/ -> dist/fonts/).
 if [ -d public/fonts ]; then
   mkdir -p dist/fonts
@@ -50,8 +37,7 @@ if [ -d public/fonts ]; then
 fi
 
 # Landing-page icons (public/icons/ -> dist/icons/). Each lesson code has an
-# optional <CODE>.svg; default.svg is the fallback and handout.svg is used for
-# all handout cards.
+# optional <CODE>.svg; default.svg is the fallback.
 if [ -d public/icons ]; then
   mkdir -p dist/icons
   cp -r public/icons/. dist/icons/
@@ -240,27 +226,6 @@ for f in *.md; do
 done
 lessons_json+=']'
 
-# Handouts from pdfs/; `_G6` / `_G7` token selects the grade column, otherwise both.
-handouts_json='['
-first=1
-if [ -d pdfs ]; then
-  shopt -s nullglob
-  for pdf in pdfs/*.pdf; do
-    name="${pdf##*/}"
-    label="$(printf '%s' "${name%.pdf}" | tr '_' ' ')"
-    case "$name" in
-      *_G6*) g6=true; g7=false ;;
-      *_G7*) g6=false; g7=true ;;
-      *)     g6=true; g7=true ;;
-    esac
-    [ "$first" -eq 1 ] || handouts_json+=','
-    first=0
-    handouts_json+="{\"name\":$(json_str "$name"),\"label\":$(json_str "$label"),\"url\":$(json_str "/pdfs/annotate.html?pdf=/pdfs/$name"),\"icon\":$(json_str "/icons/handout.svg"),\"g6\":$g6,\"g7\":$g7}"
-  done
-  shopt -u nullglob
-fi
-handouts_json+=']'
-
 # Element tier list from data/element_tier.csv (`tier,elements` rows; the
 # `elements` field is a space-separated list, so a tier can hold several).
 # Build-time input; empty file -> empty tier list.
@@ -444,7 +409,6 @@ fi
 # injected verbatim (no sed `&` / delimiter pitfalls).
 template="$(cat scripts/index.template.html)"
 template="${template//__LESSONS_JSON__/$lessons_json}"
-template="${template//__HANDOUTS_JSON__/$handouts_json}"
 template="${template//__SIMS_JSON__/$sims_json}"
 template="${template//__DEMOS_JSON__/$demos_json}"
 template="${template//__TUTORIALS_JSON__/$tutorials_json}"

@@ -31,14 +31,11 @@ content slide by editing the `src:` list in the relevant deck file. The textbook
 builder resolves these imports when it compiles the PDFs.
 
 The landing `index.html` is rendered from `scripts/index.template.html` and has a
-**Lessons** section and a **Handouts** section, each split into a Grade 6 and a
-Grade 7 column, plus an **Aura Tracker** section pairing the aura chart with an
-element tier list (from `data/element_tier.csv`). Lesson cards show an
-icon, the lesson code, "Lesson N of M", the topic, and the deck's objective,
-with an All / Grade 6 / Grade 7 filter. Handouts are
-classified by their `_G6` / `_G7` filename token (a file with neither token
-appears in both columns), and include the A4 double-sided **formula sheets**
-(`pdfs/Formula_Sheet_G6.pdf` / `_G7.pdf`, built from `reference/formula-sheet-*.md`).
+**Lessons** section split into Grade 6 and Grade 7 columns, plus an **Aura
+Tracker** section pairing the aura chart with an element tier list (from
+`data/element_tier.csv`). Lesson cards show an icon, lesson code, "Lesson N of
+M", topic, and objective, with an All / Grade 6 / Grade 7 filter. PDFs under
+`pdfs/` remain local reference files and are no longer published.
 
 There is also a **Tutorials** section of animated worked examples (a problem,
 then the solution steps on a draggable timeline) and a **Sims & Demos**

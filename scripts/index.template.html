@@ -480,23 +480,6 @@
       </div>
     </section>
 
-    <section id="handouts-section">
-      <div class="section-head">
-        <h2>Handouts</h2>
-        <span class="rule"></span>
-      </div>
-      <div class="columns">
-        <div class="column" data-grade="6">
-          <h3><span class="grade-dot"></span>Grade 6</h3>
-          <div class="cards" id="handouts-g6"></div>
-        </div>
-        <div class="column" data-grade="7">
-          <h3><span class="grade-dot"></span>Grade 7</h3>
-          <div class="cards" id="handouts-g7"></div>
-        </div>
-      </div>
-    </section>
-
     <section id="tutorials-section">
       <div class="section-head">
         <h2>Tutorials</h2>
@@ -550,7 +533,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const LESSONS = __LESSONS_JSON__;
-    const HANDOUTS = __HANDOUTS_JSON__;
     const SIMS = __SIMS_JSON__;
     const DEMOS = __DEMOS_JSON__;
     const TUTORIALS = __TUTORIALS_JSON__;
@@ -592,19 +574,6 @@
       return a;
     }
 
-    function handoutCard(h) {
-      const a = document.createElement('a');
-      a.className = 'card handout';
-      a.href = h.url;
-      a.innerHTML =
-        iconGlyph(h.icon) +
-        '<div class="card-body">' +
-          '<div class="card-top"><span class="code">Handout</span></div>' +
-          '<h4 class="card-title">' + esc(h.label) + '</h4>' +
-        '</div>';
-      return a;
-    }
-
     function simCard(s) {
       const a = document.createElement('a');
       const kind = (s.kind || 'Sim').toLowerCase();
@@ -627,8 +596,6 @@
 
     fill('lessons-g6', LESSONS.filter(function (l) { return l.g6; }), lessonCard);
     fill('lessons-g7', LESSONS.filter(function (l) { return l.g7; }), lessonCard);
-    fill('handouts-g6', HANDOUTS.filter(function (h) { return h.g6; }), handoutCard);
-    fill('handouts-g7', HANDOUTS.filter(function (h) { return h.g7; }), handoutCard);
     fill('tutorials-g6', TUTORIALS.filter(function (t) { return t.g6; }), simCard);
     fill('tutorials-g7', TUTORIALS.filter(function (t) { return t.g7; }), simCard);
     fill('sims-g6', SIMS.concat(DEMOS).filter(function (s) { return s.g6; }), simCard);
@@ -641,7 +608,7 @@
     let currentGrade = 'all';
 
     function applyFilters() {
-      ['lessons-section', 'handouts-section', 'sims-section'].forEach(function (sectionId) {
+      ['lessons-section', 'sims-section'].forEach(function (sectionId) {
         const section = document.getElementById(sectionId);
         let anyVisible = false;
         section.querySelectorAll('.column').forEach(function (col) {
