@@ -6,15 +6,13 @@ LO:
 ## Equilibrium
 
 > [!NOTE] Equilibrium
-> Equilibrium is the state when the net force on an object is **zero**.
->
-> $$F_{net} = 0$$
+> The state when the net force on an object is **zero**.
+
 
 <center>
 
-((equilibrium_lamp: a lamp hanging from a ceiling by a cord, with a tension arrow up and a weight arrow down of equal length))
+<img src="/FBD_box_hanging_from_ceiling.svg" width="160">
 
 </center>
 
-- The forces on the object are **balanced**.
-- Equilibrium does **not** mean the object is stopped.
+- The forces on the object are **balanced**. $F_{net} = 0$

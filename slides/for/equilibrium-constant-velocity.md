@@ -5,13 +5,10 @@ LO:
 
 ## Equilibrium and Constant Velocity
 
-- An object in equilibrium has **zero acceleration**, so its velocity does **not** change.
+An object in equilibrium has **zero acceleration**, so its velocity does **not** change.
 
-$$F_{net}=0 \quad\Longleftrightarrow\quad a=0 \quad\Longleftrightarrow\quad v \text{ is constant}$$
+<center>
 
-- That constant velocity may be **zero** (at rest) or nonzero (moving steadily).
+<img src="/zero_net_force_velocities.excalidraw.svg" width="540">
 
-| Net force | Acceleration | Velocity |
-| --- | --- | --- |
-| zero | zero | constant |
-| nonzero | nonzero | changing |
+</center>

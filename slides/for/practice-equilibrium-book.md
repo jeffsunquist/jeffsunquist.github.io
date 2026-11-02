@@ -5,13 +5,13 @@ LO:
 
 ## Practice: In Equilibrium?
 
-A book sits motionless on a desk.
+A cat sleeps on the windowsill and he does not move.
 
-<div class="absolute bottom-8 left-0 right-0 pr-8 text-right">
+<div class="absolute bottom-16 left-0 right-0 pr-8 text-right">
 
 <v-click>
 
-**Answer:** Yes — at rest with zero net force.
+**Answer:** Yes, because the cat remains at rest.
 
 </v-click>
 
