@@ -1,20 +1,36 @@
 ---
+zoom: 0.85
+
 LO:
   - FOR-22
 ---
 
 ## Example: Tension in a Cord
 
-A $3\ \mathrm{kg}$ lamp hangs motionless from one cord. Find the tension in the cord.
+A $\overset{m}{\underline{3\ \mathrm{kg}}}$ lamp hangs motionless from one cord. Find the $\overset{F_T}{\underline{\text{tension}}}$ in the cord.
+
+<div style="display:flex; align-items:flex-start; gap:2rem;">
+
+<div style="flex:1;">
 
 <v-clicks>
 
 **Solution**
 
-A <mark>$3\ \mathrm{kg}$</mark> lamp hangs <mark>motionless</mark> from <mark>one cord</mark>. Find the <mark>tension</mark>.
+The lamp is in equilibrium, so $F_{net}=0$.
 
-$T = W = mg = 3\ \mathrm{kg} \cdot 9.8\ \mathrm{m/s^2} = 29.4\ \mathrm{N}$
+$F_{net} = F_T - F_g = 0$
 
-$T$: $\mathrm{N}$, upward
+$F_T = F_g = mg = (3\ \mathrm{kg})(9.8\ \mathrm{\frac{m}{s^2}}) = \boxed{29.4\ \mathrm{N\,up}}$
 
 </v-clicks>
+
+</div>
+
+<div style="flex:0 0 auto;">
+
+<img src="/FBD_lamp_hanging_from_ceiling.svg" width="45">
+
+</div>
+
+</div>

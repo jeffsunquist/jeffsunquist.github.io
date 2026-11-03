@@ -5,7 +5,13 @@ LO:
 
 ## Tension, Normal Force, and Friction
 
-((tnf_diagrams: three labeled diagrams side by side — a hanging mass with T up, a book on a desk with N up, a sliding block with f opposite the motion))
+<div style="display:flex; justify-content:space-around; align-items:center; gap:1rem;">
+
+<img src="/FBD_lamp_hanging_from_ceiling.svg" width="60">
+<img src="/FBD_mass_on_table.svg" width="120">
+<img src="/FBD_push_box_with_friction.svg" width="150">
+
+</div>
 
 - **Tension** pulls **along** a rope, away from the object.
 - **Normal force** is **perpendicular** to the surface, pushing the object away.

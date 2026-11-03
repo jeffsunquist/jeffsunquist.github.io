@@ -136,13 +136,20 @@
       color: #fff;
     }
 
-    /* --- Floating "3D Club" button --- */
+    /* --- Floating page links --- */
 
-    .fab-3d {
+    .fab-actions {
       position: fixed;
       top: 1rem;
       right: 1rem;
       z-index: 30;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    .fab-3d {
       display: inline-flex;
       align-items: center;
       padding: 0.45rem 0.9rem;
@@ -163,9 +170,12 @@
     }
 
     @media (max-width: 560px) {
-      .fab-3d {
+      .fab-actions {
         top: 0.5rem;
         right: 0.5rem;
+      }
+
+      .fab-3d {
         font-size: 0.9rem;
         padding: 0.4rem 0.7rem;
       }
@@ -460,7 +470,10 @@
     </div>
   </div>
 
-  <a class="fab-3d" href="/3d-club/">3D Club</a>
+  <div class="fab-actions">
+    <a class="fab-3d" href="/clock/">Class Clock</a>
+    <a class="fab-3d" href="/3d-club/">3D Club</a>
+  </div>
 
   <main>
     <section id="lessons-section">

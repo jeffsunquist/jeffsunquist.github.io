@@ -1,15 +1,32 @@
 ---
+zoom: 0.9
+
 LO:
   - FOR-22
 ---
 
-## Tension and Normal Force Balancing Weight
+## Tension and Normal Force vs. Weight
 
 > [!IMPORTANT]
-> When a single tension or normal force balances an object's weight:
-> $T = W = mg \qquad N = W = mg$
+> When one upward force balances the object's weight in equilibrium:
+>
+> $F_T = F_g = mg$
+>
+> $F_N = F_g = mg$
 
-((hanging_lamp_tension: a lamp hanging from one cord, T up and W down, with T = W))
+<div style="display:flex; align-items:center; gap:2rem;">
 
-- Tension pulls **along** the rope, toward whatever holds it.
-- The normal force is **perpendicular** to the surface.
+<div style="flex:0 0 auto;">
+
+<img src="/FBD_lamp_hanging_from_ceiling.svg" width="60">
+
+</div>
+
+<div>
+
+- **Tension** $F_T$ pulls upward along the rope.
+- **Normal force** $F_N$ pushes upward, perpendicular to the surface.
+
+</div>
+
+</div>

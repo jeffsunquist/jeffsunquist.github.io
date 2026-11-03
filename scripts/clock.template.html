@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<title>Class</title>
+<style>
+  :root {
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --paper: #ffffff;
+    --accent: #0d9488;
+    --accent-soft: #ecfdf5;
+    --sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+      Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Fixed drawing surface above the page content. */
+  #draw {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    touch-action: none;
+    cursor: crosshair;
+  }
+
+  #countdown {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15;
+    display: none;
+    padding: 0.55rem 1.1rem;
+    border: 2px solid var(--accent);
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: #0f766e;
+    font-size: clamp(1.15rem, 3.2vw, 1.8rem);
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(16, 24, 40, 0.12);
+    pointer-events: none;
+  }
+
+  #clock {
+    position: fixed;
+    right: 18px;
+    bottom: 82px;
+    z-index: 15;
+    text-align: right;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  #clock-time {
+    font-size: clamp(2.4rem, 7vw, 4.2rem);
+    line-height: 0.95;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+  }
+
+  #clock-date {
+    margin-top: 0.25rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  #toolbar {
+    position: fixed;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    z-index: 30;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    max-width: calc(100vw - 24px);
+    padding: 6px 8px;
+    border-radius: 12px;
+    background: #202124;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+  }
+
+  #toolbar button,
+  #toolbar a {
+    height: 36px;
+    min-width: 36px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 7px;
+    background: #3c4043;
+    color: #fff;
+    font: inherit;
+    font-size: 0.95rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  #toolbar button:hover,
+  #toolbar a:hover { background: #5f6368; }
+
+  #toolbar button.active { background: #1a73e8; }
+
+  #toolbar .swatch {
+    width: 26px;
+    min-width: 26px;
+    height: 26px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.28);
+  }
+
+  #toolbar .swatch.active { border-color: #fff; }
+
+  #toolbar .sizeBtn {
+    width: 30px;
+    min-width: 30px;
+    padding: 0;
+  }
+
+  #toolbar .dot {
+    display: block;
+    border-radius: 50%;
+    background: currentColor;
+    width: var(--dsz, 6px);
+    height: var(--dsz, 6px);
+  }
+</style>
+</head>
+<body>
+  <div id="countdown"></div>
+
+  <div id="clock">
+    <div id="clock-time">--:--:--</div>
+    <div id="clock-date">&nbsp;</div>
+  </div>
+
+  <svg id="draw" xmlns="http://www.w3.org/2000/svg"></svg>
+
+  <div id="toolbar">
+    <a id="btnHome" href="/" title="Back to basado">⌂</a>
+    <button id="t-draw" class="active" title="Pen">✏️</button>
+    <button id="t-line" title="Line">╱</button>
+    <button id="t-arrow" title="Arrow">→</button>
+    <button id="t-erase" title="Eraser">⌫</button>
+    <span id="palette"></span>
+    <span id="sizes" title="Size"></span>
+    <button id="btnUndo" title="Undo">↶</button>
+    <button id="btnRedo" title="Redo">↷</button>
+    <button id="btnClear" title="Clear drawing">🗑</button>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "drauu": "./vendor/drauu.js",
+        "@drauu/core": "./vendor/drauu-core.js"
+      }
+    }
+  </script>
+  <script type="module">
+    const HK_TZ = 'Asia/Hong_Kong';
+    const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const clockTime = document.getElementById('clock-time');
+    const clockDate = document.getElementById('clock-date');
+    const countdownEl = document.getElementById('countdown');
+    const drawSvg = document.getElementById('draw');
+    const toolbar = document.getElementById('toolbar');
+
+    let schedule = [];
+
+    function parseCsv(text) {
+      text = text.replace(/^\uFEFF/, '');
+      const rows = [];
+      let row = [];
+      let cell = '';
+      let quoted = false;
+      for (let i = 0; i < text.length; i += 1) {
+        const ch = text[i];
+        if (quoted) {
+          if (ch === '"') {
+            if (text[i + 1] === '"') { cell += '"'; i += 1; }
+            else quoted = false;
+          } else {
+            cell += ch;
+          }
+        } else if (ch === '"') {
+          quoted = true;
+        } else if (ch === ',') {
+          row.push(cell);
+          cell = '';
+        } else if (ch === '\n') {
+          row.push(cell);
+          rows.push(row);
+          row = [];
+          cell = '';
+        } else if (ch !== '\r') {
+          cell += ch;
+        }
+      }
+      if (cell.length || row.length) {
+        row.push(cell);
+        rows.push(row);
+      }
+      return rows.filter(r => r.some(c => c.trim() !== ''));
+    }
+
+    function toMinutes(value) {
+      const m = /^([0-9]{1,2}):([0-9]{2})$/.exec(String(value).trim());
+      return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+    }
+
+    function hkNow() {
+      const fmt = new Intl.DateTimeFormat('en-GB', {
+        timeZone: HK_TZ,
+        weekday: 'short',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false,
+      });
+      const parts = {};
+      fmt.formatToParts(new Date()).forEach(p => { parts[p.type] = p.value; });
+      return {
+        weekday: parts.weekday,
+        hour: Number(parts.hour) % 24,
+        minute: Number(parts.minute),
+        second: Number(parts.second),
+      };
+    }
+
+    function clockString(now) {
+      return [now.hour, now.minute, now.second]
+        .map(n => String(n).padStart(2, '0')).join(':');
+    }
+
+    function dateString() {
+      return new Intl.DateTimeFormat('en-GB', {
+        timeZone: HK_TZ, weekday: 'long', day: 'numeric',
+        month: 'long', year: 'numeric',
+      }).format(new Date());
+    }
+
+    function countdownString(totalSeconds) {
+      const s = Math.max(0, Math.ceil(totalSeconds));
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${m}:${String(sec).padStart(2, '0')}`;
+    }
+
+    function render() {
+      const now = hkNow();
+      const nowMinutes = now.hour * 60 + now.minute + now.second / 60;
+      clockTime.textContent = clockString(now);
+      clockDate.textContent = dateString();
+
+      const active = schedule.filter(e =>
+        e.weekday === now.weekday &&
+        nowMinutes >= e.startMin && nowMinutes < e.endMin);
+
+      if (!active.length) {
+        countdownEl.style.display = 'none';
+        return;
+      }
+
+      // If periods overlap, use the most recently started class.
+      const current = active.reduce(
+        (best, e) => e.startMin > best.startMin ? e : best, active[0]);
+      const elapsed = (nowMinutes - current.startMin) * 60;
+      const remaining = 5 * 60 - elapsed;
+      if (remaining <= 0) {
+        countdownEl.style.display = 'none';
+        return;
+      }
+      countdownEl.textContent =
+        `Turn in Do-Now and Homework in ${countdownString(remaining)}`;
+      countdownEl.style.display = 'block';
+    }
+
+    clockTime.textContent = clockString(hkNow());
+    clockDate.textContent = dateString();
+    setInterval(render, 1000);
+
+    fetch('/data/schedule.csv', { cache: 'no-store' })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.text();
+      })
+      .then(text => {
+        const rows = parseCsv(text);
+        if (rows.length < 2) throw new Error('empty schedule');
+        const header = rows[0].map(h => h.trim());
+        const index = Object.fromEntries(header.map((h, i) => [h, i]));
+        schedule = rows.slice(1).map(row => ({
+          weekday: (row[index.weekday] || '').trim(),
+          startMin: toMinutes(row[index.start] || ''),
+          endMin: toMinutes(row[index.end] || ''),
+        })).filter(e => DAY_NAMES.includes(e.weekday) &&
+          e.startMin !== null && e.endMin !== null);
+        render();
+      })
+      .catch(err => {
+        console.error('Could not load schedule:', err);
+      });
+
+    // --- Drauu drawing surface ------------------------------------------------
+    let drauu = null;
+    const state = {
+      tool: 'draw',
+      color: '#ff595e',
+      size: 4,
+    };
+    const DRAW_KEY = 'class:drawing:v1';
+
+    function brushFor() {
+      const arrow = state.tool === 'arrow';
+      return {
+        color: state.color,
+        size: state.size,
+        mode: arrow ? 'line' : state.tool,
+        arrowEnd: arrow,
+      };
+    }
+
+    let saveTimer = 0;
+    function saveDrawing() {
+      if (!drauu) return;
+      try { localStorage.setItem(DRAW_KEY, drauu.dump()); } catch {}
+    }
+    function scheduleSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveDrawing, 500);
+    }
+
+    try {
+      const { createDrauu } = await import('drauu');
+      drauu = createDrauu({
+        el: drawSvg,
+        brush: brushFor(),
+        acceptsInputTypes: ['mouse', 'touch', 'pen'],
+        coordinateTransform: false,
+      });
+      drauu.on('changed', scheduleSave);
+      drauu.on('end', scheduleSave);
+
+      const palette = [
+        '#ff595e', '#ffca3a', '#8ac926', '#1982c4',
+        '#6a4c93', '#ffffff', '#000000',
+      ];
+      const paletteEl = document.getElementById('palette');
+      palette.forEach(color => {
+        const b = document.createElement('button');
+        b.className = 'swatch';
+        b.dataset.color = color;
+        b.style.background = color;
+        b.title = color;
+        b.onclick = () => setColor(color);
+        paletteEl.appendChild(b);
+      });
+
+      const sizes = [1, 2, 4, 8, 16];
+      const sizesEl = document.getElementById('sizes');
+      sizes.forEach(size => {
+        const b = document.createElement('button');
+        b.className = 'sizeBtn';
+        b.dataset.size = size;
+        b.title = String(size);
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        dot.style.setProperty('--dsz', `${2 + size}px`);
+        b.appendChild(dot);
+        b.onclick = () => setSize(size);
+        sizesEl.appendChild(b);
+      });
+
+      function setTool(tool) {
+        state.tool = tool;
+        const brush = brushFor();
+        drauu.mode = brush.mode;
+        drauu.brush = brush;
+        document.querySelectorAll('[id^=t-]').forEach(b => {
+          b.classList.toggle('active', b.id === `t-${tool}`);
+        });
+      }
+
+      function setColor(color) {
+        state.color = color;
+        drauu.brush = brushFor();
+        document.querySelectorAll('#palette .swatch').forEach(b => {
+          b.classList.toggle('active', b.dataset.color === color);
+        });
+      }
+
+      function setSize(size) {
+        state.size = size;
+        drauu.brush = brushFor();
+        document.querySelectorAll('#sizes .sizeBtn').forEach(b => {
+          b.classList.toggle('active', Number(b.dataset.size) === size);
+        });
+      }
+
+      document.getElementById('t-draw').onclick = () => setTool('draw');
+      document.getElementById('t-line').onclick = () => setTool('line');
+      document.getElementById('t-arrow').onclick = () => setTool('arrow');
+      document.getElementById('t-erase').onclick = () => setTool('eraseLine');
+      document.getElementById('btnUndo').onclick = () => drauu.undo();
+      document.getElementById('btnRedo').onclick = () => drauu.redo();
+      document.getElementById('btnClear').onclick = () => {
+        if (!window.confirm('Clear the drawing?')) return;
+        drauu.clear();
+        saveDrawing();
+      };
+
+      setTool(state.tool);
+      setColor(state.color);
+      setSize(state.size);
+
+      const saved = localStorage.getItem(DRAW_KEY);
+      if (saved) {
+        try { drauu.load(saved); } catch {}
+      }
+    } catch (err) {
+      console.error('Drawing tools failed to load:', err);
+      toolbar.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

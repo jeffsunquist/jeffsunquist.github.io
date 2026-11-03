@@ -340,6 +340,22 @@ if [ -f data/tutorials.csv ]; then
   tutorials_json="[$tutorial_items]"
 fi
 
+# Class Clock: standalone page at /clock/, with the schedule CSV served from
+# /data/schedule.csv. The CSV lives in this repo so GitHub Pages builds are
+# self-contained.
+if [ -f scripts/clock.template.html ]; then
+  mkdir -p dist/clock
+  cp scripts/clock.template.html dist/clock/index.html
+  if [ -f pdfs/vendor/drauu.js ] && [ -f pdfs/vendor/drauu-core.js ]; then
+    mkdir -p dist/clock/vendor
+    cp pdfs/vendor/drauu.js pdfs/vendor/drauu-core.js dist/clock/vendor/
+  fi
+fi
+if [ -f data/schedule.csv ]; then
+  mkdir -p dist/data
+  cp data/schedule.csv dist/data/schedule.csv
+fi
+
 # 3D Club: publish 3d-club/ -> dist/3d-club/ and render a listing page.
 # Files are grouped by their top-level folder (folders are named for the
 # meeting date, e.g. 2026-09-22), newest folder first. Loose files at the
