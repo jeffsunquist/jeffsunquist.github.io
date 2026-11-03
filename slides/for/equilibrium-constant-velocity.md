@@ -7,8 +7,6 @@ LO:
 
 An object in equilibrium has **zero acceleration**, so its velocity does **not** change.
 
-<center>
+- velocity is constant $\rightarrow$ dynamic equilibrum
 
-<img src="/zero_net_force_velocities.excalidraw.svg" width="540">
-
-</center>
+- velocity is zero $\rightarrow$ static equilibrium

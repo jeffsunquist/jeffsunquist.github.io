@@ -6,7 +6,7 @@ LO:
 
 ## Practice: Find the Final Velocity
 
-A $\overset{m}{\underline{5\ \mathrm{kg}}}$ box is initially moving right at $\overset{v_0}{\underline{4\ \mathrm{\frac{m}{s}}}}$. A push of $\overset{F_{push}}{\underline{30\ \mathrm{N}}}$ acts right while friction is $\overset{F_f}{\underline{20\ \mathrm{N}}}$ left. The box travels $\overset{\Delta x}{\underline{21\ \mathrm{m}}}$. Find its final velocity.
+A $5\ \mathrm{kg}$ box is initially moving right at $4\ \mathrm{\frac{m}{s}}$. A push of $30\ \mathrm{N}$ acts right while friction is $20\ \mathrm{N}$ left. The box travels $21\ \mathrm{m}$. Find its final velocity.
 
 <div class="absolute bottom-8 left-0 right-0 pr-8 text-right">
 

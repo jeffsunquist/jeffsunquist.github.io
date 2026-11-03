@@ -11,7 +11,7 @@ LO:
 
 <center>
 
-<img src="/FBD_box_hanging_from_ceiling.svg" width="160">
+<img src="/zero_net_force_velocities.excalidraw.svg" width="720">
 
 </center>
 

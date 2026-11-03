@@ -6,7 +6,7 @@ LO:
 
 ## Example: From Net Force to Acceleration
 
-A $\overset{m}{\underline{5\ \mathrm{kg}}}$ box is pushed right with $\overset{F_{push}}{\underline{30\ \mathrm{N}}}$ while friction pulls left with $\overset{F_f}{\underline{10\ \mathrm{N}}}$. Find its net force and acceleration.
+A $\overset{m}{\underline{5\ \mathrm{kg}}}$ box is pushed right with $\overset{F_{push}}{\underline{30\ \mathrm{N}}}$ while friction pulls left with $\overset{F_f}{\underline{10\ \mathrm{N}}}$. Find its $\overset{F_{net}}{\underline{\text{net force}}}$ and $\overset{a}{\underline{\text{acceleration}}}$.
 
 <v-clicks>
 

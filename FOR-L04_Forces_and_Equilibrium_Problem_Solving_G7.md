@@ -15,7 +15,7 @@ fonts:
 
 Forces — Lesson 4 of 9
 
-Find acceleration from net force, use the Grade 7 kinematics equations to find velocity and displacement, and apply the conditions for static and dynamic equilibrium.
+Find acceleration from net force, use the kinematics equations to find velocity and displacement, and apply the conditions for static and dynamic equilibrium.
 
 ---
 src: ./slides/for/recap-gravity-free-fall-and-second-law.md
@@ -27,10 +27,6 @@ src: ./slides/for/equilibrium-definition.md
 
 ---
 src: ./slides/for/equilibrium-constant-velocity.md
----
-
----
-src: ./slides/for/equilibrium-identify.md
 ---
 
 ---
@@ -75,10 +71,6 @@ src: ./slides/for/practice-force-to-motion-g7.md
 
 ---
 src: ./slides/for/balanced-forces-equilibrium.md
----
-
----
-src: ./slides/for/static-dynamic-equilibrium.md
 ---
 
 ---

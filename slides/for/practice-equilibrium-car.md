@@ -11,7 +11,7 @@ A car cruises along a straight highway at $80\ \mathrm{km/h}$.
 
 <v-click>
 
-**Answer:** Yes, because the car's speed and direction do not change.
+**Answer:** Dynamic equilibrium, because the car's velocity is constant.
 
 </v-click>
 

@@ -1,12 +1,12 @@
 ---
-zoom: 0.85
+zoom: 0.80
 LO:
   - FOR-34
 ---
 
 ## Example: Force, Acceleration, and Velocity
 
-The cart is already moving right at $2\ \mathrm{\frac{m}{s}}$. A push of $20\ \mathrm{N}$ acts right while friction is $8\ \mathrm{N}$ left. This lasts for $5\ \mathrm{s}$. Find its acceleration and final velocity.
+A cart is initially moving right at $\overset{v_0}{\underline{2\ \mathrm{\frac{m}{s}}}}$. A push of $\overset{F_{push}}{\underline{20\ \mathrm{N}}}$ acts right while friction is $\overset{F_f}{\underline{8\ \mathrm{N}}}$ left. This lasts for $\overset{t}{\underline{5\ \mathrm{s}}}$. Find its $\overset{a}{\underline{\text{acceleration}}}$ and $\overset{v}{\underline{\text{final velocity}}}$.
 
 
 <v-clicks>

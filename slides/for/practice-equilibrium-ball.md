@@ -11,7 +11,7 @@ A ball speeds up as it falls.
 
 <v-click>
 
-**Answer:** No, because its speed is increasing.
+**Answer:** Not in equilibrium, because its velocity is changing.
 
 </v-click>
 

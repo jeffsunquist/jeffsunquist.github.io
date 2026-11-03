@@ -5,13 +5,13 @@ LO:
 
 ## Practice: In Equilibrium?
 
-A cat sleeps on the windowsill and he does not move.
+A cat sleeps on the windowsill and he does not move. What kind of equilibrium is this?
 
 <div class="absolute bottom-16 left-0 right-0 pr-8 text-right">
 
 <v-click>
 
-**Answer:** Yes, because the cat remains at rest.
+**Answer:** Static equilibrium, because the cat remains at rest.
 
 </v-click>
 
