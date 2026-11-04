@@ -9,55 +9,92 @@
   html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; background: #e8eaed; }
   body { display: flex; flex-direction: column; }
 
-  #toolbar {
-    position: sticky; bottom: 0; order: 2; z-index: 10;
-    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
-    padding: 8px 10px; background: #202124; color: #fff;
-    font-size: 14px;
+  .tool-panel {
+    position: fixed;
+    bottom: 12px;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 12px;
+    background: #202124;
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
   }
-  #toolbar button {
-    height: 38px; min-width: 40px; padding: 0 10px; border: 0; border-radius: 6px;
-    background: #3c4043; color: #fff; font: inherit; cursor: pointer; touch-action: manipulation;
-  }
-  #toolbar button.active { background: #1a73e8; }
-  #toolbar button.wide { padding: 0 14px; }
-  #toolbar button.icon-btn {
-    width: 40px; min-width: 40px; padding: 0;
-    display: inline-flex; align-items: center; justify-content: center;
-  }
-  #toolbar label { display: flex; align-items: center; gap: 6px; }
-  #toolbar .spacer { flex: 1; }
-  #status {
-    position: fixed; right: 16px; bottom: 62px; z-index: 30;
-    font-size: 13px; pointer-events: none;
-    background: rgba(255,255,255,.80); color: #202124;
-    padding: 5px 10px; border-radius: 6px;
-    box-shadow: 0 1px 4px rgba(0,0,0,.18);
-    border: 1px solid rgba(0,0,0,.08);
-  }
-  #toolbar a.home-btn {
-    display: inline-flex; align-items: center; justify-content: center;
-    height: 38px; width: 40px; border-radius: 6px;
-    background: #3c4043; color: #fff; text-decoration: none;
-  }
-  #toolbar a.home-btn:hover { background: #5f6368; }
 
-  #scroll { flex: 1; overflow-y: auto; padding: 16px 8px; }
-  #pages { max-width: 1040px; margin: 0 auto; }
-
-  .page {
-    position: relative; margin: 0 auto 18px; background: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,.25); border-radius: 3px; overflow: hidden;
+  #toolbar-left { left: 12px; }
+  #toolbar-main {
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: calc(100vw - 308px);
   }
-  .page canvas { display: block; background: #fff; }
-  .page svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-  .page svg.touch-none { touch-action: none; }
-  .page svg.pointer-events-none { pointer-events: none; }
-  .swatch { width: 28px !important; height: 28px !important; min-width: 28px !important; padding: 0 !important; border: 2px solid rgba(255,255,255,.3) !important; }
-  .swatch.active { border-color: #fff !important; }
-  #toolbar .sizeBtn {
+  #toolbar-right { right: 12px; }
+
+  .tool-panel button {
+    height: 36px;
+    min-width: 36px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 7px;
+    background: #3c4043;
+    color: #fff;
+    font: inherit;
+    font-size: 0.95rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: manipulation;
+    flex: 0 0 auto;
+  }
+  .tool-panel button:hover { background: #5f6368; }
+  .tool-panel button.active { background: #1a73e8; }
+  .tool-panel button.wide { padding: 0 14px; }
+  .tool-panel button.icon-btn {
+    width: 36px;
+    min-width: 36px;
+    padding: 0;
+  }
+  .swatch {
     position: relative;
-    height: 38px; width: 38px; min-width: 38px;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 8px;
+    background: #3c4043;
+  }
+  .swatch::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 22px;
+    height: 22px;
+    margin: auto;
+    border-radius: 50%;
+    background: var(--swatch, #fff);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+  }
+  .swatch.active {
+    background: #1a73e8 !important;
+    box-shadow: inset 0 0 0 2px #8ab4f8;
+  }
+  #palette, #sizes {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 36px;
+  }
+  .tool-panel .sizeBtn {
+    position: relative;
+    height: 36px;
+    width: 36px;
+    min-width: 36px;
     padding: 0; flex: 0 0 auto;
   }
   .sizeBtn .dot {
@@ -67,12 +104,52 @@
     width: var(--dsz, 6px); height: var(--dsz, 6px);
   }
 
+  .tool-panel a.home-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 36px; width: 36px; border-radius: 7px;
+    background: #3c4043; color: #fff; text-decoration: none;
+  }
+  .tool-panel a.home-btn:hover { background: #5f6368; }
+
+  #status {
+    position: fixed; right: 16px; bottom: 92px; z-index: 30;
+    font-size: 13px; pointer-events: none;
+    background: rgba(255,255,255,.80); color: #202124;
+    padding: 5px 10px; border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.18);
+    border: 1px solid rgba(0,0,0,.08);
+  }
+
+  #scroll { flex: 1; overflow-y: auto; padding: 16px 8px 92px; }
+  #pages { max-width: 1040px; margin: 0 auto; }
+
+  @media (max-width: 1099px) {
+    #status { bottom: 150px; }
+    #scroll { padding-bottom: 150px; }
+  }
+  /* On phones the drawing panel sits above the two corner panels. */
+  @media (max-width: 760px) {
+    #toolbar-main {
+      bottom: 74px;
+      max-width: calc(100vw - 24px);
+    }
+    #status { bottom: 220px; }
+    #scroll { padding-bottom: 240px; }
+  }
+
+  .page {
+    position: relative; margin: 0 auto 18px; background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25); border-radius: 3px; overflow: hidden;
+  }
+  .page canvas { display: block; background: #fff; }
+  .page svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; }
+
   #empty { text-align: center; color: #5f6368; padding: 60px 20px; }
   #empty button { font-size: 16px; padding: 12px 22px; }
 
   /* Print: show only the pages (with annotations), one per sheet. */
   @media print {
-    #toolbar, #status, #empty { display: none !important; }
+    .tool-panel, #status, #empty { display: none !important; }
     html, body { height: auto; background: #fff; }
     body { display: block; }
     #scroll { overflow: visible; padding: 0; }
@@ -92,25 +169,29 @@
 </style>
 </head>
 <body>
-  <div id="toolbar">
+  <div id="toolbar-left" class="tool-panel">
+    <button id="btnFull" title="Fullscreen">⛶</button>
     <button class="icon-btn" id="btnOpen" title="Open a PDF">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/></svg>
     </button>
-    <button class="wide" id="btnMode" title="Toggle draw / scroll">Draw</button>
+    <button class="icon-btn" id="btnPrint" title="Print">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 8H5a3 3 0 0 0-3 3v4h4v4h12v-4h4v-4a3 3 0 0 0-3-3zm-3 9H8v-5h8v5zm3-6a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM18 3H6v4h12V3z"/></svg>
+    </button>
+  </div>
+
+  <div id="toolbar-main" class="tool-panel">
+    <button id="btnUndo" title="Undo">↶</button>
+    <button id="btnRedo" title="Redo">↷</button>
     <button id="t-draw" class="active" title="Pen">🖊️</button>
     <button id="t-line" title="Line">╱</button>
     <button id="t-arrow" title="Arrow">→</button>
     <button id="t-erase" title="Eraser">⌫</button>
     <span id="palette"></span>
     <span id="sizes" title="Size"></span>
-    <button id="btnUndo" title="Undo">↶</button>
-    <button id="btnRedo" title="Redo">↷</button>
     <button id="btnClear" title="Clear this page">🗑</button>
-    <span class="spacer"></span>
-    <button class="icon-btn" id="btnPrint" title="Print">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 8H5a3 3 0 0 0-3 3v4h4v4h12v-4h4v-4a3 3 0 0 0-3-3zm-3 9H8v-5h8v5zm3-6a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM18 3H6v4h12V3z"/></svg>
-    </button>
-    <button id="btnFull" title="Fullscreen">⛶</button>
+  </div>
+
+  <div id="toolbar-right" class="tool-panel">
     <a id="btnHome" class="home-btn" href="https://www.basado.org/" title="Home">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20" fill="currentColor"><path d="M16.612 2.214a1.01 1.01 0 0 0-1.242 0L1 13.419l1.243 1.572L4 13.621V26a2.004 2.004 0 0 0 2 2h20a2.004 2.004 0 0 0 2-2V13.63L29.757 15L31 13.428ZM18 26h-4v-8h4Zm2 0v-8a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v8H6V12.062l10-7.79l10 7.8V26Z"/></svg>
     </a>
@@ -145,7 +226,6 @@
       tool: "draw",
       color: "#ff595e",
       size: 4,
-      drawMode: true,
     };
     const palette = ["#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93", "#ffffff", "#000000"];
     let pages = [];
@@ -214,14 +294,10 @@
       });
       pages.forEach(p => { p.drauu.brush = brushFor(); });
     }
-    function applyDrawMode() {
-      const inputs = state.drawMode ? ["mouse", "touch", "pen"] : ["pen"];
+    function enableDrawing() {
       pages.forEach(p => {
-        p.drauu.options.acceptsInputTypes = inputs;
-        p.svg.classList.toggle("touch-none", state.drawMode);
-        p.svg.classList.toggle("pointer-events-none", !state.drawMode);
+        p.drauu.options.acceptsInputTypes = ["mouse", "touch", "pen"];
       });
-      document.getElementById("btnMode").textContent = state.drawMode ? "Draw" : "Scroll";
     }
 
     async function loadPdf(url, name) {
@@ -273,7 +349,7 @@
         const saved = localStorage.getItem(key(i - 1));
         if (saved) { try { d.load(saved); } catch {} }
       }
-      applyDrawMode();
+      enableDrawing();
       updateStatus("Ready — " + doc.numPages + " pages");
       try { await loadingTask.destroy(); } catch {}
       } catch (e) {
@@ -284,8 +360,6 @@
     function updateStatus(msg) { statusEl.textContent = msg; }
 
     // wire toolbar
-    const modeButton = document.getElementById("btnMode");
-    modeButton.onclick = () => { state.drawMode = !state.drawMode; applyDrawMode(); };
     document.getElementById("btnOpen").onclick = () => document.getElementById("file").click();
     document.getElementById("btnOpen2").onclick = () => document.getElementById("file").click();
     document.getElementById("file").onchange = e => {
@@ -301,7 +375,7 @@
       const b = document.createElement("button");
       b.className = "swatch";
       b.dataset.color = c;
-      b.style.background = c;
+      b.style.setProperty('--swatch', c);
       b.title = c;
       b.onclick = () => setColor(c);
       palEl.appendChild(b);
@@ -372,7 +446,7 @@
     updateFullIcon();
 
     setTool(state.tool);
-    applyDrawMode();
+    enableDrawing();
 
     if (params.get("pdf")) {
       const p = params.get("pdf");

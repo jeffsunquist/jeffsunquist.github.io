@@ -111,27 +111,33 @@
     font-size: 0.85rem;
   }
 
-  #toolbar {
+  .tool-panel {
     position: fixed;
-    left: 50%;
     bottom: 12px;
-    transform: translateX(-50%);
     z-index: 30;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: 5px;
-    width: max-content;
-    max-width: calc(100vw - 24px);
     padding: 6px 8px;
     border-radius: 12px;
     background: #202124;
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
   }
 
-  #toolbar button,
-  #toolbar a {
+  #toolbar-left { left: 12px; }
+  #toolbar-right { right: 12px; }
+
+  #toolbar {
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: calc(100vw - 160px);
+  }
+
+  .tool-panel button,
+  .tool-panel a {
     height: 36px;
     min-width: 36px;
     padding: 0 8px;
@@ -151,10 +157,10 @@
     flex: 0 0 auto;
   }
 
-  #toolbar button:hover,
-  #toolbar a:hover { background: #5f6368; }
+  .tool-panel button:hover,
+  .tool-panel a:hover { background: #5f6368; }
 
-  #toolbar button.active { background: #1a73e8; }
+  .tool-panel button.active { background: #1a73e8; }
 
   #palette,
   #sizes {
@@ -164,7 +170,7 @@
     height: 36px;
   }
 
-  #toolbar .swatch {
+  .tool-panel .swatch {
     position: relative;
     width: 36px;
     min-width: 36px;
@@ -175,7 +181,7 @@
     border: 0;
   }
 
-  #toolbar .swatch::after {
+  .tool-panel .swatch::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -187,19 +193,19 @@
     border: 1px solid rgba(255, 255, 255, 0.28);
   }
 
-  #toolbar .swatch.active {
+  .tool-panel .swatch.active {
     background: #1a73e8;
     box-shadow: inset 0 0 0 2px #8ab4f8;
   }
 
-  #toolbar .sizeBtn {
+  .tool-panel .sizeBtn {
     width: 36px;
     min-width: 36px;
     height: 36px;
     padding: 0;
   }
 
-  #toolbar .dot {
+  .tool-panel .dot {
     display: block;
     border-radius: 50%;
     background: currentColor;
@@ -218,8 +224,11 @@
 
   <svg id="draw" xmlns="http://www.w3.org/2000/svg"></svg>
 
-  <div id="toolbar">
+  <div id="toolbar-left" class="tool-panel">
     <button id="btnFull" title="Fullscreen">⛶</button>
+  </div>
+
+  <div id="toolbar" class="tool-panel">
     <button id="btnUndo" title="Undo">↶</button>
     <button id="btnRedo" title="Redo">↷</button>
     <button id="t-draw" class="active" title="Pen">✏️</button>
@@ -229,6 +238,9 @@
     <span id="palette"></span>
     <span id="sizes" title="Size"></span>
     <button id="btnClear" title="Clear drawing">🗑</button>
+  </div>
+
+  <div id="toolbar-right" class="tool-panel">
     <a id="btnHome" href="/" title="Back to basado">⌂</a>
   </div>
 
