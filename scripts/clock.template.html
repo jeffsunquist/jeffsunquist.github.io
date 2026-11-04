@@ -105,8 +105,16 @@
     letter-spacing: -0.03em;
   }
 
+  #clock-class {
+    margin-top: 0.2rem;
+    color: var(--accent);
+    font-size: clamp(0.95rem, 2.2vw, 1.25rem);
+    font-weight: 600;
+    line-height: 1.15;
+  }
+
   #clock-date {
-    margin-top: 0.25rem;
+    margin-top: 0.15rem;
     color: var(--muted);
     font-size: 0.85rem;
   }
@@ -219,6 +227,7 @@
 
   <div id="clock">
     <div id="clock-time">--:--:--</div>
+    <div id="clock-class">&nbsp;</div>
     <div id="clock-date">&nbsp;</div>
   </div>
 
@@ -256,6 +265,7 @@
     const HK_TZ = 'Asia/Hong_Kong';
     const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const clockTime = document.getElementById('clock-time');
+    const clockClass = document.getElementById('clock-class');
     const clockDate = document.getElementById('clock-date');
     const countdownEl = document.getElementById('countdown');
     const drawSvg = document.getElementById('draw');
@@ -291,6 +301,8 @@
     });
 
     let schedule = [];
+    let scheduleLoaded = false;
+    let scheduleError = false;
 
     function parseCsv(text) {
       text = text.replace(/^\uFEFF/, '');
@@ -371,6 +383,54 @@
       return `${m}:${String(sec).padStart(2, '0')}`;
     }
 
+    function formatMinutes(minutes) {
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+
+    function classLabel(entry) {
+      return entry.label || entry.group || 'Class';
+    }
+
+    function findNextClass(now, nowMinutes) {
+      if (!schedule.length) return null;
+      const today = DAY_NAMES.indexOf(now.weekday);
+      let best = null;
+      schedule.forEach(entry => {
+        const day = DAY_NAMES.indexOf(entry.weekday);
+        if (day < 0) return;
+        let dayOffset = (day - today + 7) % 7;
+        if (dayOffset === 0 && entry.startMin <= nowMinutes) dayOffset = 7;
+        const key = dayOffset * 1440 + entry.startMin;
+        if (!best || key < best.key) best = { ...entry, key, dayOffset };
+      });
+      return best;
+    }
+
+    function updateClassLine(now, nowMinutes, current) {
+      if (!scheduleLoaded) {
+        clockClass.textContent = '\u00a0';
+        return;
+      }
+      if (scheduleError) {
+        clockClass.textContent = 'Schedule unavailable';
+        return;
+      }
+      if (current) {
+        clockClass.textContent = `Current: ${classLabel(current)}`;
+        return;
+      }
+      const next = findNextClass(now, nowMinutes);
+      if (!next) {
+        clockClass.textContent = 'No upcoming class';
+        return;
+      }
+      const time = formatMinutes(next.startMin);
+      const when = next.dayOffset === 0 ? time : `${next.weekday} ${time}`;
+      clockClass.textContent = `Next: ${classLabel(next)} · ${when}`;
+    }
+
     function render() {
       const now = hkNow();
       const nowMinutes = now.hour * 60 + now.minute + now.second / 60;
@@ -381,16 +441,19 @@
         e.weekday === now.weekday &&
         nowMinutes >= e.startMin && nowMinutes < e.endMin);
 
-      if (!active.length) {
+      // If periods overlap, use the most recently started class.
+      const current = active.length
+        ? active.reduce((best, e) => e.startMin > best.startMin ? e : best, active[0])
+        : null;
+      updateClassLine(now, nowMinutes, current);
+
+      if (!current) {
         countdownEl.style.display = 'none';
         countdownEl.classList.remove('expired');
         countdownEl.style.pointerEvents = 'none';
         return;
       }
 
-      // If periods overlap, use the most recently started class.
-      const current = active.reduce(
-        (best, e) => e.startMin > best.startMin ? e : best, active[0]);
       const sessionKey = `${now.date}|${now.weekday}|${current.startMin}`;
       countdownEl.dataset.sessionKey = sessionKey;
 
@@ -438,11 +501,18 @@
           weekday: (row[index.weekday] || '').trim(),
           startMin: toMinutes(row[index.start] || ''),
           endMin: toMinutes(row[index.end] || ''),
+          group: (row[index.group] || '').trim(),
+          label: (row[index.label] || '').trim(),
         })).filter(e => DAY_NAMES.includes(e.weekday) &&
           e.startMin !== null && e.endMin !== null);
+        scheduleLoaded = true;
+        scheduleError = false;
         render();
       })
       .catch(err => {
+        scheduleLoaded = true;
+        scheduleError = true;
+        render();
         console.error('Could not load schedule:', err);
       });
 
