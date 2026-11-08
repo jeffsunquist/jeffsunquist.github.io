@@ -3,7 +3,7 @@ theme: default
 colorSchema: light
 title: Forces — Problem Solving with Forces and Equilibrium
 info: |
-  Grade 7 Physics · FOR · Lesson 4 of 9
+  Grade 7 Physics · FOR · Lesson 4 of 8
 fonts:
   sans: Patrick Hand
   local:
@@ -13,7 +13,7 @@ fonts:
 
 # Problem Solving with Forces and Equilibrium
 
-Forces — Lesson 4 of 9
+Forces — Lesson 4 of 8
 
 Find acceleration from net force, use the kinematics equations to find velocity and displacement, and apply the conditions for static and dynamic equilibrium.
 

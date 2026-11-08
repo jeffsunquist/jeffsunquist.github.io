@@ -3,7 +3,7 @@ theme: default
 colorSchema: light
 title: Forces — Gravity, Free-Fall, and Newton's Second Law
 info: |
-  Grade 7 Physics · FOR · Lesson 3 of 9
+  Grade 7 Physics · FOR · Lesson 3 of 8
 fonts:
   sans: Patrick Hand
   local:
@@ -13,7 +13,7 @@ fonts:
 
 # Gravity, Free-Fall, and Newton's Second Law
 
-Forces — Lesson 3 of 9
+Forces — Lesson 3 of 8
 
 Distinguish mass from weight, use $F_g = mg$ on Earth and other worlds, separate free fall from motion with drag, and apply Newton's second law to find an acceleration.
 
@@ -55,6 +55,10 @@ src: ./slides/for/practice-weight-mars.md
 
 ---
 src: ./slides/for/free-fall.md
+---
+
+---
+src: ./slides/for/air-resistance.md
 ---
 
 ---

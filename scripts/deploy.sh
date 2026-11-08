@@ -102,6 +102,50 @@ for f in *.md; do
 HTML
 done
 
+# Renumbered lessons and the retired friction lesson: map the old slug to its
+# new home with the same meta-refresh stub (the hash is carried across).
+redirect_old() {
+  local old="$1" new="$2"
+  if [ ! -e "dist/$new" ] || [ -e "dist/$old" ]; then
+    return 0
+  fi
+  mkdir -p "dist/$old"
+  cat > "dist/$old/index.html" <<HTML
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Moved: /$new/</title>
+<link rel="canonical" href="/$new/">
+<meta http-equiv="refresh" content="1; url=/$new/">
+<script>location.replace("/$new/" + location.hash);</script>
+</head>
+<body>
+<p>This deck moved to <a href="/$new/">/$new/</a>.</p>
+</body>
+</html>
+HTML
+}
+
+redirect_old "FOR-L06_Friction_and_Air_Resistance_G6" "FOR-L05_Types_of_Forces_G6"
+redirect_old "FOR-L06_Friction_and_the_Friction_Equation_G7" "FOR-L05_Types_of_Forces_G7"
+redirect_old "FOR-L07_Newtons_Third_Law_G6" "FOR-L06_Newtons_Third_Law_G6"
+redirect_old "FOR-L07_Newtons_Third_Law_G7" "FOR-L06_Newtons_Third_Law_G7"
+redirect_old "FOR-L08_Simple_Machines_G6" "FOR-L07_Simple_Machines_G6"
+redirect_old "FOR-L08_Moments_G7" "FOR-L07_Moments_G7"
+redirect_old "FOR-L09_Simple_Machines_in_Action_G6" "FOR-L08_Simple_Machines_in_Action_G6"
+redirect_old "FOR-L09_Universal_Gravitation_G7" "FOR-L08_Universal_Gravitation_G7"
+
+# Also preserve the older bare {TOPIC}-{NN} links for the moved lessons.
+redirect_old "FOR-06_Friction_and_Air_Resistance_G6" "FOR-L05_Types_of_Forces_G6"
+redirect_old "FOR-06_Friction_and_the_Friction_Equation_G7" "FOR-L05_Types_of_Forces_G7"
+redirect_old "FOR-07_Newtons_Third_Law_G6" "FOR-L06_Newtons_Third_Law_G6"
+redirect_old "FOR-07_Newtons_Third_Law_G7" "FOR-L06_Newtons_Third_Law_G7"
+redirect_old "FOR-08_Simple_Machines_G6" "FOR-L07_Simple_Machines_G6"
+redirect_old "FOR-08_Moments_G7" "FOR-L07_Moments_G7"
+redirect_old "FOR-09_Simple_Machines_in_Action_G6" "FOR-L08_Simple_Machines_in_Action_G6"
+redirect_old "FOR-09_Universal_Gravitation_G7" "FOR-L08_Universal_Gravitation_G7"
+
 # Aura tracker data is a build-time input from data/aura.csv (date,value rows).
 # Build JS array literals; empty CSV -> empty chart.
 clean() {

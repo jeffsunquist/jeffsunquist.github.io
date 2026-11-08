@@ -1,5 +1,6 @@
 ## Review: Types of Forces
 
-- Forces are either **contact** (the objects touch) or **non-contact** (they act at a distance).
-- Contact forces: **tension** (a pull along a rope), the **normal force** (perpendicular to a surface), and **friction** (opposes motion).
-- The non-contact force is **weight** — the downward force of gravity.
+- Forces are either **contact** or **non-contact**.
+- $F_T$ and $F_N$ have **no formula of their own**. They are given or found using $F_{net}$ equations.
+- **Friction** is a **contact** force that opposes motion.
+- **Static friction** holds an object still. **Kinetic friction** acts on a sliding object. **Static is stronger**.

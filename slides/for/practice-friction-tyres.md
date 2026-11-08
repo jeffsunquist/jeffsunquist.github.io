@@ -3,12 +3,16 @@ LO:
   - FOR-20
 ---
 
-## Practice — Why Is There Friction?
+## Practice: Why Is There Friction?
 
-Car tyres grip a dry road but slip on ice.
+Car tires grip on a dry road but slip on ice.
 
 <v-click>
 
-**Answer:** friction depends on the surfaces in contact — ice is much smoother, so there is less friction.
+<div class="absolute bottom-16 left-12 right-12 pr-8 text-right">
+
+**Answer:** friction depends on the surfaces in contact. Ice is much smoother, so there is less friction.
+
+</div>
 
 </v-click>

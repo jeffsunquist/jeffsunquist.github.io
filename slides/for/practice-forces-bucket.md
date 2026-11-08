@@ -3,16 +3,18 @@ LO:
   - FOR-19
 ---
 
-## Practice — Name the Force
+## Example: Identify the Forces
 
 A bucket hangs from a rope.
 
-<div class="absolute bottom-16 left-0 right-0 pr-8 text-right">
-
 <v-click>
 
-**Answer:** tension, pulling up along the rope.
+- $\overset{F_g}{\underline{\text{weight}}}$: non-contact; Earth pulls the book **down**.
 
 </v-click>
 
-</div>
+<v-click>
+
+- $\overset{F_T}{\underline{\text{tension}}}$: contact; the table pulls the book **up**.
+
+</v-click>

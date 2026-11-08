@@ -1,17 +1,16 @@
 ---
+zoom: 0.9
 LO:
   - FOR-19
 ---
 
-## Types of Forces
+## Contact and Non-Contact Forces
 
 > [!NOTE]
-> Forces are either **contact** (the objects touch) or **non-contact** (they act at a distance).
+> **Contact forces** come from two objects touching. **Non-contact forces** act across from distance.
 
-| Force | Type | Description |
-| --- | --- | --- |
-| tension | contact | a pull along a rope, string, or cable |
-| normal force | contact | a support force perpendicular to a surface |
-| friction | contact | opposes motion between surfaces |
-| applied force | contact | a push or pull from a person or object |
-| weight | non-contact | the downward force of gravity |
+**Contact Forces:** normal force $(F_N)$, tension $(F_T)$, friction $(F_f)$, drag force $(F_d)$, and applied forces $(F_{app},\, F_{push},\, F_{pull},\, F_p$).
+
+**Non-Contact Forces:** gravity $(F_g)$, electrostatic force $(F_e)$, magnetic force $(F_m)$*.
+
+*magnetic force is not in G6 or G7

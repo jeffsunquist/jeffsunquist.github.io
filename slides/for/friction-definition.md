@@ -5,10 +5,9 @@ LO:
 
 ## Friction
 
-> [!NOTE]
-> **Friction** is a force that opposes motion between surfaces that touch. It is caused by two surfaces **rubbing or sliding** past each other.
+> [!NOTE] Friction
+> A force $(F_f)$ that opposes motion between surfaces that touch. It is caused by two surfaces **rubbing or sliding** past each other.
 
-((friction_surface_closeup: a magnified view of two surfaces with interlocking bumps, with motion arrows and an opposing friction arrow))
+<div style="height:160px; width:100%; border:1px dashed #999; background:#f5f5f5;"></div>
 
-- Even smooth surfaces have microscopic bumps that catch on each other.
-- Friction can be **useful** (walking, brakes, grip) or **unwanted** (wear, heat).
+- Even smooth surfaces have microscopic bumps that catch on each other. Friction converts motion into heat.

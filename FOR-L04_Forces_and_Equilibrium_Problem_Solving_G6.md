@@ -3,7 +3,7 @@ theme: default
 colorSchema: light
 title: Forces — Problem Solving with Forces and Equilibrium
 info: |
-  Grade 6 Physics · FOR · Lesson 4 of 9
+  Grade 6 Physics · FOR · Lesson 4 of 8
 fonts:
   sans: Patrick Hand
   local:
@@ -13,7 +13,7 @@ fonts:
 
 # Problem Solving with Forces and Equilibrium
 
-Forces — Lesson 4 of 9
+Forces — Lesson 4 of 8
 
 Find the net force and acceleration on an object, use them to predict its motion, and identify when an object is in equilibrium.
 

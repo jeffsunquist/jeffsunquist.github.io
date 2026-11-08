@@ -72,10 +72,10 @@ Common: $1\ \mathrm{km}=1000\ \mathrm{m}$ · $1\ \mathrm{h}=3600\ \mathrm{s}$ ·
 | force | $F$ | $\mathrm{N}$ | V |
 | net force | $F_{\text{net}}$ | $\mathrm{N}$ | V |
 | weight | $W$ | $\mathrm{N}$ | V |
-| friction | $f$ | $\mathrm{N}$ | V |
-| normal force | $N$ | $\mathrm{N}$ | V |
+| friction | $F_f$ | $\mathrm{N}$ | V |
+| normal force | $F_N$ | $\mathrm{N}$ | V |
 | tension | $T$ | $\mathrm{N}$ | V |
-| coeff. of friction | $\mu$ | — | S |
+| coeff. of friction | $\mu,\ \mu_s,\ \mu_k$ | — | S |
 | moment | $M$ | $\mathrm{N\cdot m}$ | V |
 | gravity | $g$ | $9.8\ \mathrm{m/s^2}$ | V |
 | grav. constant | $G$ | $6.67\times10^{-11}\ \mathrm{N\cdot m^2/kg^2}$ | S |
@@ -135,17 +135,20 @@ $$1\ \mathrm{N} = 1\ \mathrm{kg\cdot \dfrac{m}{s^2}}$$
 
 ## Friction
 
-$$f = \mu N$$
+**Template:** $F_f = \mu F_N$
 
-- $f$ = friction $(\mathrm{N})$, $\mu$ = coefficient of friction (no units), $N$ = normal force $(\mathrm{N})$.
-- **Kinetic friction** acts **opposite** the motion; **static friction** holds a still object in place.
-- Bigger $\mu$ or bigger $N$ → bigger friction.
+- $F_f$ = generic friction force $(\mathrm{N})$, $\mu$ = coefficient of friction (no units), $F_N$ = normal force $(\mathrm{N})$.
+- **Sliding:** use $F_k = \mu_k F_N$. **At rest:** use $F_s \le \mu_s F_N$, with maximum $F_{s,\max} = \mu_s F_N$.
+- **Static friction is stronger:** $\mu_s > \mu_k$, so $F_{s,\max} > F_k$ at the same normal force.
+- Bigger $\mu$ or bigger $F_N$ → bigger friction; rearrange to find the normal force: $F_N = F_k/\mu_k$ (or $F_{s,\max}/\mu_s$).
 
 ## Balancing Weight
 
 When a single tension or normal force balances weight:
 
-$$T = W = mg \qquad N = W = mg$$
+$$T = W = mg \qquad F_N = W = mg$$
+
+- Tension and normal force have **no formula of their own**; these equations come from $F_{net}=0$.
 
 ## Moments
 

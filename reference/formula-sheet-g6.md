@@ -72,7 +72,7 @@ Common: $1\ \mathrm{km}=1000\ \mathrm{m}$ · $1\ \mathrm{h}=3600\ \mathrm{s}$ ·
 | force | $F$ | $\mathrm{N}$ | V |
 | net force | $F_{\text{net}}$ | $\mathrm{N}$ | V |
 | weight | $W$ | $\mathrm{N}$ | V |
-| friction | $f$ | $\mathrm{N}$ | V |
+| friction | $F_f$ | $\mathrm{N}$ | V |
 | gravity | $g$ | $9.8\ \mathrm{m/s^2}$ | V |
 
 S = scalar, V = vector.

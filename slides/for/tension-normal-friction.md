@@ -1,18 +1,18 @@
 ---
+zoom: 0.85
+
 LO:
   - FOR-19
 ---
 
 ## Tension, Normal Force, and Friction
 
-<div style="display:flex; justify-content:space-around; align-items:center; gap:1rem;">
+<center>
 
-<img src="/FBD_lamp_hanging_from_ceiling.svg" width="60">
-<img src="/FBD_mass_on_table.svg" width="120">
-<img src="/FBD_push_box_with_friction.svg" width="150">
+<div style="height:240px; width:100%; border:1px dashed #999; background:#f5f5f5;"></div>
 
-</div>
+</center>
 
-- **Tension** pulls **along** a rope, away from the object.
-- **Normal force** is **perpendicular** to the surface, pushing the object away.
-- **Friction** acts **along** the surface, opposing motion or attempted motion.
+- **Tension** $F_T$ pulls **along** a rope, away from the object.
+- **Normal force** $F_N$ is **perpendicular** to the surface, pushing the object away.
+- **Friction** $F_f$ acts **along** the surface, opposing motion or attempted motion.
