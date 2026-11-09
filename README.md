@@ -35,7 +35,12 @@ The landing `index.html` is rendered from `scripts/index.template.html` and has 
 Tracker** section pairing the aura chart with an element tier list (from
 `data/element_tier.csv`). Lesson cards show an icon, lesson code, "Lesson N of
 M", topic, and objective, with an All / Grade 6 / Grade 7 filter. PDFs under
-`pdfs/` remain local reference files and are no longer published.
+`pdfs/` remain local reference files and are no longer published. The floating
+page links next to the filter open the Class Clock (`/clock/`), the 3D Club
+listing (`/3d-club/`), and a generic PDF annotator (`/pdf/`) that can open a
+local file, a `?pdf=` link, or any PDF published under `3d-club/`, with pen,
+line, arrow, eraser, colour, undo/redo, and print tools. Annotations autosave in
+the browser on that device.
 
 There is also a **Tutorials** section of animated worked examples (a problem,
 then the solution steps on a draggable timeline) and a **Sims & Demos**

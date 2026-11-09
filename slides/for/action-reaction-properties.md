@@ -7,8 +7,12 @@ LO:
 
 - Equal in **magnitude**.
 - Opposite in **direction**.
-- Occur **simultaneously** — neither one causes the other.
+- Occur **simultaneously** (at the same time).
 
-$$ \vec{F}_{AB} = -\vec{F}_{BA} $$
+$$ F_{AB} = -F_{BA} $$
 
-((action_reaction_equal_opposite: two blocks labeled A and B with equal, opposite force arrows between them))
+<center>
+
+<img src="/newton_third_law.excalidraw.svg" width="400">
+
+</center>

@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<title>PDF Viewer</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; background: #e8eaed; }
+  body { display: flex; flex-direction: column; }
+
+  .tool-panel {
+    position: fixed;
+    bottom: 12px;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 12px;
+    background: #202124;
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+  }
+
+  #toolbar-left { left: 12px; }
+  #toolbar-main {
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: calc(100vw - 308px);
+  }
+  #toolbar-right { right: 12px; }
+
+  .tool-panel button {
+    height: 36px;
+    min-width: 36px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 7px;
+    background: #3c4043;
+    color: #fff;
+    font: inherit;
+    font-size: 0.95rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: manipulation;
+    flex: 0 0 auto;
+  }
+  .tool-panel button:hover { background: #5f6368; }
+  .tool-panel button.active { background: #1a73e8; }
+  .tool-panel button.wide { padding: 0 14px; }
+  .tool-panel button.icon-btn {
+    width: 36px;
+    min-width: 36px;
+    padding: 0;
+  }
+  .swatch {
+    position: relative;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 8px;
+    background: #3c4043;
+  }
+  .swatch::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 22px;
+    height: 22px;
+    margin: auto;
+    border-radius: 50%;
+    background: var(--swatch, #fff);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+  }
+  .swatch.active {
+    background: #1a73e8 !important;
+    box-shadow: inset 0 0 0 2px #8ab4f8;
+  }
+  #palette, #sizes {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 36px;
+  }
+  .tool-panel .sizeBtn {
+    position: relative;
+    height: 36px;
+    width: 36px;
+    min-width: 36px;
+    padding: 0; flex: 0 0 auto;
+  }
+  .sizeBtn .dot {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    display: block; border-radius: 50%; background: #fff;
+    width: var(--dsz, 6px); height: var(--dsz, 6px);
+  }
+
+  .tool-panel a.home-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 36px; width: 36px; border-radius: 7px;
+    background: #3c4043; color: #fff; text-decoration: none;
+  }
+  .tool-panel a.home-btn:hover { background: #5f6368; }
+
+  #status {
+    position: fixed; right: 16px; bottom: 92px; z-index: 30;
+    font-size: 13px; pointer-events: none;
+    background: rgba(255,255,255,.80); color: #202124;
+    padding: 5px 10px; border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.18);
+    border: 1px solid rgba(0,0,0,.08);
+  }
+
+  #scroll { flex: 1; overflow-y: auto; padding: 16px 8px 92px; }
+  #pages { max-width: 1040px; margin: 0 auto; }
+
+  @media (max-width: 1099px) {
+    #status { bottom: 150px; }
+    #scroll { padding-bottom: 150px; }
+  }
+  /* On phones the drawing panel sits above the two corner panels. */
+  @media (max-width: 760px) {
+    #toolbar-main {
+      bottom: 74px;
+      max-width: calc(100vw - 24px);
+    }
+    #status { bottom: 220px; }
+    #scroll { padding-bottom: 240px; }
+  }
+
+  .page {
+    position: relative; margin: 0 auto 18px; background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25); border-radius: 3px; overflow: hidden;
+  }
+  .page canvas { display: block; background: #fff; }
+  .page svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; }
+
+  #empty { text-align: center; color: #5f6368; padding: 60px 20px; }
+  #empty button { font-size: 16px; padding: 12px 22px; }
+
+  /* Browse the PDFs published elsewhere on the site. */
+  #siteWrap {
+    max-width: 720px;
+    margin: 1.8rem auto 0;
+    text-align: left;
+  }
+  #siteWrap[hidden] { display: none; }
+  #siteWrap h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin: 0 0 0.7rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #3c4043;
+  }
+  #siteWrap h2::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #dadce0;
+  }
+  .pdf-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.5rem;
+  }
+  .pdf-link {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    background: #fff;
+    color: #202124;
+    text-decoration: none;
+    text-align: left;
+  }
+  .pdf-link:hover {
+    border-color: #1a73e8;
+    box-shadow: 0 1px 4px rgba(26, 115, 232, 0.15);
+    text-decoration: none;
+  }
+  .pdf-badge {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 38px;
+    border-radius: 4px;
+    background: #fce8e6;
+    color: #c5221f;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .pdf-name {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .pdf-meta {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.75rem;
+    color: #5f6368;
+  }
+
+  /* Print: show only the pages (with annotations), one per sheet. */
+  @media print {
+    .tool-panel, #status, #empty { display: none !important; }
+    html, body { height: auto; background: #fff; }
+    body { display: block; }
+    #scroll { overflow: visible; padding: 0; }
+    #pages { max-width: none; }
+    .page {
+      width: 100% !important;
+      margin: 0;
+      box-shadow: none;
+      border-radius: 0;
+      break-inside: avoid;
+      break-after: page;
+    }
+    .page:last-child { break-after: auto; }
+    .page canvas { width: 100% !important; height: auto !important; }
+    @page { margin: 10mm; }
+  }
+</style>
+</head>
+<body>
+  <div id="toolbar-left" class="tool-panel">
+    <button id="btnFull" title="Fullscreen">⛶</button>
+    <button class="icon-btn" id="btnOpen" title="Open a PDF">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/></svg>
+    </button>
+    <button class="icon-btn" id="btnPrint" title="Print">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 8H5a3 3 0 0 0-3 3v4h4v4h12v-4h4v-4a3 3 0 0 0-3-3zm-3 9H8v-5h8v5zm3-6a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM18 3H6v4h12V3z"/></svg>
+    </button>
+  </div>
+
+  <div id="toolbar-main" class="tool-panel">
+    <button id="btnUndo" title="Undo">↶</button>
+    <button id="btnRedo" title="Redo">↷</button>
+    <button id="t-draw" class="active" title="Pen">🖊️</button>
+    <button id="t-line" title="Line">╱</button>
+    <button id="t-arrow" title="Arrow">→</button>
+    <button id="t-erase" title="Eraser">⌫</button>
+    <span id="palette"></span>
+    <span id="sizes" title="Size"></span>
+    <button id="btnClear" title="Clear this page">🗑</button>
+  </div>
+
+  <div id="toolbar-right" class="tool-panel">
+    <a id="btnHome" class="home-btn" href="/" title="Home">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20" fill="currentColor"><path d="M16.612 2.214a1.01 1.01 0 0 0-1.242 0L1 13.419l1.243 1.572L4 13.621V26a2.004 2.004 0 0 0 2 2h20a2.004 2.004 0 0 0 2-2V13.63L29.757 15L31 13.428ZM18 26h-4v-8h4Zm2 0v-8a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v8H6V12.062l10-7.79l10 7.8V26Z"/></svg>
+    </a>
+  </div>
+
+  <div id="scroll">
+    <div id="pages"></div>
+    <div id="empty">
+      <p>Open a PDF to annotate,<br />then swipe to scroll or switch to <b>Draw</b> mode to mark it up.</p>
+      <button id="btnOpen2">Open PDF</button>
+      <div id="siteWrap" hidden>
+        <h2>PDFs on this site</h2>
+        <div id="siteList" class="pdf-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="file" accept="application/pdf" hidden />
+  <span id="status"></span>
+
+  <script type="importmap">
+    { "imports": { "drauu": "./vendor/drauu.js", "@drauu/core": "./vendor/drauu-core.js" } }
+  </script>
+  <script type="module">
+    import * as pdfjsLib from "./vendor/pdf.js";
+    import { createDrauu } from "drauu";
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "./vendor/pdf.worker.js";
+
+    const SITE_PDFS = __SITE_PDFS_JSON__;
+    const params = new URLSearchParams(location.search);
+    const pagesEl = document.getElementById("pages");
+    const emptyEl = document.getElementById("empty");
+    const statusEl = document.getElementById("status");
+
+    const state = {
+      tool: "draw",
+      color: "#ff595e",
+      size: 4,
+    };
+    const palette = ["#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93", "#ffffff", "#000000"];
+    let pages = [];
+    let pdfName = "document";
+    let saveTimer = 0;
+
+    const DISPLAY_W = 1040;
+
+    function key(i) { return `pdf:${pdfName}:${i}`; }
+    function store(i) { try { localStorage.setItem(key(i), pages[i].drauu.dump()); } catch {} }
+    function saveAll() { pages.forEach((_, i) => store(i)); updateStatus("Autosaved"); }
+    function scheduleSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveAll, 600);
+    }
+
+    function prettyName(name) {
+      return (name || "")
+        .replace(/_+/g, " ")
+        .replace(/-+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function titleFromUrl(raw) {
+      try {
+        const u = new URL(raw, location.href);
+        const last = u.pathname.split("/").filter(Boolean).pop() || "";
+        return prettyName(decodeURIComponent(last).replace(/\.pdf$/i, "")) || "PDF";
+      } catch {
+        return "PDF";
+      }
+    }
+
+    function folderLabel(folder) {
+      if (!folder) return "PDF";
+      if (folder === "Unsorted") return "3D Club";
+      if (/^\d{4}-\d{2}-\d{2}$/.test(folder)) {
+        const parts = folder.split("-").map(Number);
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        return d.toLocaleDateString("en-US", {
+          year: "numeric", month: "long", day: "numeric",
+        });
+      }
+      return folder;
+    }
+
+    function setShareUrl(url) {
+      try {
+        const u = new URL(url, location.href);
+        if (u.protocol === "blob:") {
+          history.replaceState(null, "", location.pathname);
+          return;
+        }
+        let value = u.href;
+        if (u.origin === location.origin) {
+          let path = u.pathname;
+          try { path = decodeURIComponent(path); } catch {}
+          value = path + u.search;
+        }
+        history.replaceState(null, "", location.pathname + "?pdf=" + encodeURIComponent(value));
+      } catch {}
+    }
+
+    function renderSitePdfs() {
+      if (!Array.isArray(SITE_PDFS) || !SITE_PDFS.length) return;
+
+      const wrap = document.getElementById("siteWrap");
+      const list = document.getElementById("siteList");
+      wrap.hidden = false;
+
+      const frag = document.createDocumentFragment();
+      for (const item of SITE_PDFS) {
+        const a = document.createElement("a");
+        a.className = "pdf-link";
+        a.href = item.url;
+        a.dataset.pdf = item.url;
+
+        const badge = document.createElement("span");
+        badge.className = "pdf-badge";
+        badge.textContent = "PDF";
+
+        const info = document.createElement("span");
+        const name = document.createElement("span");
+        name.className = "pdf-name";
+        name.textContent = titleFromUrl(item.url);
+        const meta = document.createElement("span");
+        meta.className = "pdf-meta";
+        meta.textContent = folderLabel(item.folder);
+
+        info.append(name, meta);
+        a.append(badge, info);
+        frag.appendChild(a);
+      }
+      list.replaceChildren(frag);
+
+      list.addEventListener("click", (e) => {
+        const link = e.target.closest("a[data-pdf]");
+        if (!link) return;
+        e.preventDefault();
+        loadPdf(link.dataset.pdf, titleFromUrl(link.dataset.pdf));
+      });
+    }
+
+    let lastPointerType = "";
+    function brushFor() {
+      const arrow = state.tool === "arrow";
+      return {
+        color: state.color,
+        size: state.size,
+        mode: arrow ? "line" : state.tool,
+        arrowEnd: arrow,
+      };
+    }
+    function makeDrauu(svg, wrap) {
+      const d = createDrauu({
+        el: svg,
+        brush: brushFor(),
+        acceptsInputTypes: ["mouse", "touch", "pen"],
+        coordinateTransform: false,
+      });
+      wrap.addEventListener("pointerdown", e => { lastPointerType = e.pointerType; }, { passive: true });
+      d.on("changed", scheduleSave);
+      d.on("end", scheduleSave);
+      d.on("start", () => updateStatus("Drawing · " + state.tool + " · " + lastPointerType));
+      d.on("end", () => updateStatus("Ready"));
+      return d;
+    }
+
+    const TOOL_IDS = {
+      draw: "t-draw", line: "t-line", arrow: "t-arrow", eraseLine: "t-erase",
+    };
+
+    function setTool(t) {
+      state.tool = t;
+      pages.forEach(p => {
+        const b = brushFor();
+        p.drauu.mode = b.mode;
+        p.drauu.brush = b;
+      });
+      document.querySelectorAll("[id^=t-]").forEach(b => b.classList.remove("active"));
+      const btn = document.getElementById(TOOL_IDS[t]);
+      if (btn) btn.classList.add("active");
+    }
+    function setColor(c) {
+      state.color = c;
+      pages.forEach(p => { p.drauu.brush = brushFor(); });
+      document.querySelectorAll("#palette .swatch").forEach(s => s.classList.toggle("active", s.dataset.color === c));
+    }
+    function setSize(s) {
+      state.size = s;
+      document.querySelectorAll("#sizes .sizeBtn").forEach(b => {
+        b.classList.toggle("active", +b.dataset.size === s);
+      });
+      pages.forEach(p => { p.drauu.brush = brushFor(); });
+    }
+    function enableDrawing() {
+      pages.forEach(p => {
+        p.drauu.options.acceptsInputTypes = ["mouse", "touch", "pen"];
+      });
+    }
+
+    async function loadPdf(url, name) {
+      try {
+      setShareUrl(url);
+      statusEl.textContent = "Loading " + name + "…";
+      const loadingTask = pdfjsLib.getDocument({
+        url,
+        wasmUrl: "./vendor/wasm/",
+        standardFontDataUrl: "./vendor/standard_fonts/",
+        cMapUrl: "./vendor/cmaps/",
+        imageResourcesPath: "./vendor/image_decoders/",
+        iccUrl: "./vendor/iccs/",
+      });
+      const doc = await loadingTask.promise;
+      pdfName = name;
+      document.title = "PDF Viewer — " + name;
+      pagesEl.innerHTML = "";
+      pages = [];
+      emptyEl.style.display = "none";
+      document.getElementById("scroll").scrollTop = 0;
+
+      const pg1 = await doc.getPage(1);
+      const vp1 = pg1.getViewport({ scale: 1 });
+      const scale = DISPLAY_W / vp1.width;
+      const dpr = window.devicePixelRatio || 1;
+      const transform = dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : undefined;
+
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const vp = page.getViewport({ scale });
+        const wrap = document.createElement("div");
+        wrap.className = "page";
+        wrap.style.width = "100%";
+
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.floor(vp.width * dpr);
+        canvas.height = Math.floor(vp.height * dpr);
+        canvas.style.width = "100%";
+        canvas.style.height = "auto";
+        wrap.appendChild(canvas);
+
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        wrap.appendChild(svg);
+
+        pagesEl.appendChild(wrap);
+
+        await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp, transform }).promise;
+
+        const d = makeDrauu(svg, wrap);
+        pages.push({ drauu: d, canvas, svg, wrap, index: i - 1 });
+        const saved = localStorage.getItem(key(i - 1));
+        if (saved) { try { d.load(saved); } catch {} }
+      }
+      enableDrawing();
+      updateStatus("Ready — " + doc.numPages + " pages");
+      try { await loadingTask.destroy(); } catch {}
+      } catch (e) {
+        updateStatus("Error: " + (e && e.message ? e.message : e));
+      }
+    }
+
+    function updateStatus(msg) { statusEl.textContent = msg; }
+
+    // wire toolbar
+    document.getElementById("btnOpen").onclick = () => document.getElementById("file").click();
+    document.getElementById("btnOpen2").onclick = () => document.getElementById("file").click();
+    document.getElementById("file").onchange = e => {
+      const f = e.target.files[0];
+      if (f) loadPdf(URL.createObjectURL(f), f.name.replace(/\.pdf$/i, ""));
+      e.target.value = "";
+    };
+    Object.entries(TOOL_IDS).forEach(([mode, id]) => {
+      document.getElementById(id).onclick = () => setTool(mode);
+    });
+    const palEl = document.getElementById("palette");
+    palette.forEach(c => {
+      const b = document.createElement("button");
+      b.className = "swatch";
+      b.dataset.color = c;
+      b.style.setProperty('--swatch', c);
+      b.title = c;
+      b.onclick = () => setColor(c);
+      palEl.appendChild(b);
+    });
+    setColor(state.color);
+
+    const SIZES = [1, 2, 4, 8, 16];
+    const sizeEl = document.getElementById("sizes");
+    SIZES.forEach(s => {
+      const b = document.createElement("button");
+      b.className = "sizeBtn";
+      b.dataset.size = s;
+      b.title = s;
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      dot.style.setProperty("--dsz", (2 + s) + "px");
+      b.appendChild(dot);
+      b.onclick = () => setSize(s);
+      sizeEl.appendChild(b);
+    });
+    setSize(state.size);
+
+    document.getElementById("btnUndo").onclick = () => pages.forEach(p => p.drauu.undo());
+    document.getElementById("btnRedo").onclick = () => pages.forEach(p => p.drauu.redo());
+
+    // The page currently in view (nearest the scroller's vertical center).
+    function currentPage() {
+      const sc = document.getElementById("scroll").getBoundingClientRect();
+      const midY = sc.top + sc.height / 2;
+      let best = null, bestD = Infinity;
+      pages.forEach(p => {
+        const r = p.wrap.getBoundingClientRect();
+        if (r.bottom <= sc.top || r.top >= sc.bottom) return;
+        const d = Math.abs((r.top + r.height / 2) - midY);
+        if (d < bestD) { bestD = d; best = p; }
+      });
+      return best;
+    }
+
+    document.getElementById("btnClear").onclick = () => {
+      const p = currentPage();
+      if (!p) { updateStatus("No page in view"); return; }
+      if (!window.confirm(`Clear annotations on page ${p.index + 1}? This can't be undone.`)) return;
+      p.drauu.clear();
+      scheduleSave();
+      updateStatus(`Cleared page ${p.index + 1}`);
+    };
+
+    // Print (annotated view)
+    document.getElementById("btnPrint").onclick = () => {
+      if (!pages.length) { updateStatus("Open a PDF to print"); return; }
+      updateStatus("Preparing print…");
+      setTimeout(() => window.print(), 50);
+    };
+
+    // Fullscreen (toggle icon + title on state change)
+    const fullBtn = document.getElementById("btnFull");
+    function updateFullIcon() {
+      const fs = !!document.fullscreenElement;
+      fullBtn.textContent = fs ? "🗗" : "⛶";
+      fullBtn.title = fs ? "Exit fullscreen" : "Fullscreen";
+    }
+    fullBtn.onclick = () => {
+      if (document.fullscreenElement) {
+        if (document.exitFullscreen) document.exitFullscreen();
+      } else if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {
+          updateStatus("Fullscreen isn’t available here.");
+        });
+      } else {
+        updateStatus("Fullscreen isn’t available in this browser.");
+      }
+    };
+    document.addEventListener("fullscreenchange", updateFullIcon);
+    updateFullIcon();
+
+    renderSitePdfs();
+    setTool(state.tool);
+    enableDrawing();
+
+    if (params.get("pdf")) {
+      const p = params.get("pdf");
+      loadPdf(p, titleFromUrl(p));
+    } else {
+      updateStatus("Open a PDF to begin");
+    }
+  </script>
+</body>
+</html>

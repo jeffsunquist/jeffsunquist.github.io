@@ -3,7 +3,7 @@ LO:
   - FOR-40
 ---
 
-## Practice — Find the Reaction
+## Practice: Find the Reaction
 
 A rocket pushes hot gas downward.
 

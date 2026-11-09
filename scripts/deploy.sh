@@ -465,6 +465,44 @@ if [ -d 3d-club ]; then
   printf '%s\n' "$club_template" > dist/3d-club/index.html
 fi
 
+# Generic PDF annotator: standalone page at /pdf/ backed by the pdf.js + drauu
+# runtime in pdfs/vendor/ (the PDFs themselves stay local and are not
+# published). Its start screen lists every PDF already published under
+# 3d-club/, so club handouts can be opened and marked up without a raw-PDF
+# detour. Annotations autosave per page to localStorage.
+pdf_list_json='[]'
+if [ -f scripts/pdf.template.html ]; then
+  mkdir -p dist/pdf
+  if [ -d pdfs/vendor ]; then
+    mkdir -p dist/pdf/vendor
+    for f in pdf.js pdf.worker.js drauu.js drauu-core.js; do
+      [ -f "pdfs/vendor/$f" ] && cp "pdfs/vendor/$f" dist/pdf/vendor/
+    done
+    for sub in cmaps standard_fonts wasm image_decoders iccs; do
+      [ -d "pdfs/vendor/$sub" ] && cp -r "pdfs/vendor/$sub" dist/pdf/vendor/
+    done
+  fi
+
+  pdf_items=''
+  pf=1
+  if [ -d 3d-club ]; then
+    while IFS= read -r f; do
+      [ -n "$f" ] || continue
+      relpath="${f#3d-club/}"
+      folder="${relpath%%/*}"
+      [ "$folder" = "$relpath" ] && folder='Unsorted'
+      [ "$pf" -eq 1 ] || pdf_items+=','
+      pf=0
+      pdf_items+="{\"url\":$(json_str "/3d-club/$relpath"),\"folder\":$(json_str "$folder")}"
+    done < <(find 3d-club -type f -iname '*.pdf' ! -path '*/.*' | LC_ALL=C sort -r)
+  fi
+  pdf_list_json="[$pdf_items]"
+
+  pdf_template="$(cat scripts/pdf.template.html)"
+  pdf_template="${pdf_template//__SITE_PDFS_JSON__/$pdf_list_json}"
+  printf '%s\n' "$pdf_template" > dist/pdf/index.html
+fi
+
 # Render the template. Bash parameter substitution is literal, so the JSON is
 # injected verbatim (no sed `&` / delimiter pitfalls).
 template="$(cat scripts/index.template.html)"

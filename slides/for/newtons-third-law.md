@@ -8,7 +8,10 @@ LO:
 > [!IMPORTANT]
 > For every action force there is an **equal and opposite** reaction force.
 
-((action_reaction_swimmer: a swimmer pushing water backward, with the water pushing the swimmer forward))
+<center>
 
-- Forces always come in **pairs**.
-- The two forces are equal in size and opposite in direction.
+<img src="/FBD_action_reaction_pair.svg" width="240">
+
+</center>
+
+The force of the bat on the ball is equal and opposite to the force of the ball on the bat.
