@@ -26,15 +26,7 @@ src: ./slides/for/types-of-forces.md
 ---
 
 ---
-src: ./slides/for/forces-with-without-equations.md
----
-
----
 src: ./slides/for/tension-normal-friction.md
----
-
----
-src: ./slides/for/balance-tension-normal.md
 ---
 
 ---
@@ -91,18 +83,6 @@ src: ./slides/for/practice-friction-crate.md
 
 ---
 src: ./slides/for/practice-friction-sled.md
----
-
----
-src: ./slides/for/example-static-vs-kinetic.md
----
-
----
-src: ./slides/for/identify-forces.md
----
-
----
-src: ./slides/for/practice-identify-forces.md
 ---
 
 ---

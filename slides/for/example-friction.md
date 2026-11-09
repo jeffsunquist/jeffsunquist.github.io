@@ -3,20 +3,18 @@ LO:
   - FOR-23
 ---
 
-## Example: Kinetic Friction Force
+## Practice: Kinetic Friction Force
 
-A $10\ \mathrm{kg}$ box slides across a floor with $\mu_k = 0.4$. Find the kinetic friction force.
+A force of $39.2\ \mathrm{N}$ is applied to a $10\ \mathrm{kg}$ box to push left across a floor at a constant velocity. Find the kinetic friction force.
 
-<v-clicks>
 
-**Solution**
 
-A <mark>$10\ \mathrm{kg}$</mark> box slides with <mark>$\mu_k = 0.4$</mark>. Find the <mark>kinetic friction force</mark>.
+<v-click>
 
-$F_N = mg = 10\ \mathrm{kg} \cdot 9.8\ \mathrm{m/s^2} = 98\ \mathrm{N}$
+<div class="absolute bottom-16 left-12 right-12 pr-8 text-right">
 
-$F_k = \mu_k F_N = 0.4 \cdot 98\ \mathrm{N} = 39.2\ \mathrm{N}$
+**Answer:** $\boxed{F_k = 39.2\ \mathrm{N\,right}}$
 
-$F_k$: $\mathrm{N}$, opposite the motion
+</div>
 
-</v-clicks>
+</v-click>

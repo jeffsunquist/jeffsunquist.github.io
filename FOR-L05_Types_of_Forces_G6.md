@@ -26,10 +26,6 @@ src: ./slides/for/types-of-forces.md
 ---
 
 ---
-src: ./slides/for/forces-with-without-equations.md
----
-
----
 src: ./slides/for/tension-normal-friction.md
 ---
 

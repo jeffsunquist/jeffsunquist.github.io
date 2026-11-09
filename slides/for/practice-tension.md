@@ -11,7 +11,7 @@ A $5\ \mathrm{kg}$ sign hangs motionless from one cord. Find the tension in the 
 
 <v-clicks>
 
-**Answer:** $F_T = F_g = mg = (5\ \mathrm{kg})(9.8\ \mathrm{\frac{m}{s^2}}) = \boxed{49\ \mathrm{N\,up}}$
+**Answer:** $\boxed{F_T = 49\ \mathrm{N\,up}}$
 
 </v-clicks>
 

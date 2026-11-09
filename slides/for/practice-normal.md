@@ -11,7 +11,7 @@ A $12\ \mathrm{kg}$ box rests on a table. Find the normal force on the box.
 
 <v-clicks>
 
-**Answer:** $F_N = F_g = mg = (12\ \mathrm{kg})(9.8\ \mathrm{\frac{m}{s^2}}) = \boxed{117.6\ \mathrm{N\,up}}$
+**Answer:** $\boxed{F_N = 117.6\ \mathrm{N\,up}}$
 
 </v-clicks>
 

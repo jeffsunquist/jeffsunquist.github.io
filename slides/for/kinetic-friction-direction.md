@@ -3,12 +3,10 @@ LO:
   - FOR-21
 ---
 
-## Direction of Kinetic Friction
+## Direction of Friction
 
-- **Kinetic friction** is friction while an object is **sliding**.
-- It acts **opposite** to the direction of motion.
+- **Kinetic friction** happens while an object is **moving**. It acts opposite to the direction of motion.
 
-((kinetic_friction_opposes: a block sliding right across a floor with an $F_k$ arrow pointing left, and the same block sliding left with $F_k$ pointing right))
+- **Static friction** happens while an object is at rest. It acts opposite to an applied force.
 
-> [!TIP]
-> Kinetic friction never pushes an object forward — it always slows it down.
+<div style="height:200px; width:100%; border:1px dashed #999; background:#f5f5f5;"></div>
