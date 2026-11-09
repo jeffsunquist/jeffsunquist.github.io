@@ -40,19 +40,19 @@
   }
 
   #countdown {
-    position: fixed;
-    top: 150px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 15;
     display: none;
-    padding: 0.55rem 1.1rem;
+    margin: 0.4rem 0 0 auto;
+    width: fit-content;
+    max-width: min(92vw, 40rem);
+    padding: 0.4rem 0.8rem;
     border: 2px solid var(--accent);
-    border-radius: 999px;
+    border-radius: 14px;
     background: var(--accent-soft);
     color: #0f766e;
-    font-size: clamp(1.15rem, 3.2vw, 1.8rem);
+    font-size: clamp(1rem, 2.4vw, 1.35rem);
     font-weight: 700;
+    line-height: 1.2;
+    text-align: right;
     white-space: nowrap;
     box-shadow: 0 4px 16px rgba(16, 24, 40, 0.12);
     pointer-events: none;
@@ -63,6 +63,13 @@
     pointer-events: auto;
     cursor: pointer;
     animation: hbCountdownFlash 0.7s steps(1, end) infinite;
+  }
+
+  @media (max-width: 640px) {
+    #countdown {
+      white-space: normal;
+      text-align: center;
+    }
   }
 
   @keyframes hbCountdownFlash {
@@ -114,9 +121,9 @@
   }
 
   #clock-date {
-    margin-top: 0.15rem;
+    margin: 0 0 0.2rem;
     color: var(--muted);
-    font-size: 0.85rem;
+    font-size: 0.95rem;
   }
 
   .tool-panel {
@@ -223,12 +230,11 @@
 </style>
 </head>
 <body>
-  <div id="countdown"></div>
-
   <div id="clock">
-    <div id="clock-time">--:--:--</div>
-    <div id="clock-class">&nbsp;</div>
     <div id="clock-date">&nbsp;</div>
+    <div id="clock-time">--:--</div>
+    <div id="clock-class">&nbsp;</div>
+    <div id="countdown"></div>
   </div>
 
   <svg id="draw" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -365,7 +371,7 @@
     }
 
     function clockString(now) {
-      return [now.hour, now.minute, now.second]
+      return [now.hour, now.minute]
         .map(n => String(n).padStart(2, '0')).join(':');
     }
 
@@ -472,11 +478,11 @@
       const remaining = 5 * 60 - elapsed;
       if (remaining > 0) {
         countdownEl.textContent =
-          `Turn in Do-Now and Homework in ${countdownString(remaining)}`;
+          `Finish Do-Now in ${countdownString(remaining)}`;
         countdownEl.classList.remove('expired');
         countdownEl.style.pointerEvents = 'none';
       } else {
-        countdownEl.textContent = 'Turn in Do-Now and Homework in 0:00';
+        countdownEl.textContent = 'Finish Do-Now in 0:00';
         countdownEl.classList.add('expired');
         countdownEl.style.pointerEvents = 'auto';
       }
