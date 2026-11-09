@@ -74,10 +74,6 @@ src: ./slides/for/static-vs-kinetic.md
 ---
 
 ---
-src: ./slides/for/example-friction-from-net-force.md
----
-
----
 src: ./slides/for/practice-friction-from-net-force.md
 ---
 

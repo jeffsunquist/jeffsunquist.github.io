@@ -34,10 +34,6 @@ src: ./slides/for/example-tension.md
 ---
 
 ---
-src: ./slides/for/practice-tension.md
----
-
----
 src: ./slides/for/practice-normal.md
 ---
 

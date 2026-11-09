@@ -11,7 +11,7 @@ A box slides right while pushed with $55\ \mathrm{N}$. The net force is $20\ \ma
 
 <v-click>
 
-**Answer:** $F_k = F_A - F_{net} = 55\ \mathrm{N} - 20\ \mathrm{N} = \boxed{35\ \mathrm{N\,left}}$
+**Answer:** $\boxed{F_k = 35\ \mathrm{N\,left}}$
 
 </v-click>
 

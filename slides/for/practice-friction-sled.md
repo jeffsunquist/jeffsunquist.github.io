@@ -5,7 +5,7 @@ LO:
 
 ## Practice: Using $F_k = \mu_k F_N$
 
-A sled with $\mu_k = 0.2$ feels a kinetic friction force of $F_k = 8\ \mathrm{N}$.
+A sled with $\mu_k = 0.2$ feels a kinetic friction force of $F_k = 8\ \mathrm{N}$. Calculate the normal force on the sled.
 
 <v-click>
 
