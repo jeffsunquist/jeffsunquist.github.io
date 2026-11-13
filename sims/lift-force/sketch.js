@@ -105,8 +105,8 @@ export default function sketch(p) {
       answer: 1
     },
     {
-      q: 'What is the weight of a 2 kg object on Earth? (Use g = 10 m/s².)',
-      options: ['2 N', '5 N', '20 N', '200 N'],
+      q: 'What is the weight of a 2 kg object on Earth? (Use g = 9.8 m/s².)',
+      options: ['2 N', '9.8 N', '19.6 N', '196 N'],
       answer: 2
     },
     {
@@ -842,7 +842,7 @@ export default function sketch(p) {
     recordBest()
   }
 
-  // ------------------------------------------------------------- Elon rescue
+  // ------------------------------------------------------------- Rescue event
   // Running out of health calls the Cybertruck instead of ending the run
   // outright. Answer the physics question correctly to be carried off, or
   // watch him leave and take the normal "owari da" ending.
@@ -873,6 +873,15 @@ export default function sketch(p) {
     burst(player.x, player.y - 16, 18, C.danger, 220)
     player.aim = -Math.PI / 2
 
+    // The cutscene is safe: clear live fire and stop any pending bursts.
+    bullets.length = 0
+    bombs.length = 0
+    for (const h of helis) {
+      h.burst = 0
+      h.charge = 0
+      h.attackT = 0
+    }
+
     const question = pickRescueQuestion()
     const hx = clamp(player.x + 40, 260, W - 260)
     const hy = Math.max(180, player.y - 190)
@@ -885,6 +894,7 @@ export default function sketch(p) {
       panelT: 0,
       jetOn: [0, 0], jetOff: [p.random(0.05, 0.25), p.random(0.05, 0.25)], jetEmitT: 0,
       ani: 0, pull: 0, pullHold: 0, hidden: false,
+      aniFireT: p.random(0.3, 0.7), aniFlash: 0, aniAim: -0.6, aniShots: [],
       pullFrom: { x: player.x, y: player.y }
     }
   }
@@ -947,6 +957,8 @@ export default function sketch(p) {
     updateParticles(dt)
     updateTruckPuffs(dt)
     updateTruckJets(r, dt)
+    updateHelis(dt, false)
+    updateAniGunner(r, dt)
     shake = Math.max(0, shake - shake * 9 * dt)
     updateRescueCamera(dt)
 
@@ -1268,7 +1280,7 @@ export default function sketch(p) {
     })
   }
 
-  function updateGunship(h, dt) {
+  function updateGunship(h, dt, shoot = true) {
     h.rotor += dt * 20
     h.tailRotor = (h.tailRotor || 0) + dt * 46
     h.hit = Math.max(0, h.hit - dt)
@@ -1293,6 +1305,7 @@ export default function sketch(p) {
     }
 
     if (!h.armed && h.x < W - 120) h.armed = true
+    if (!shoot) return
     if (!h.armed) return
 
     if (h.charge > 0) {
@@ -1362,7 +1375,7 @@ export default function sketch(p) {
     })
   }
 
-  function updateHelis(dt) {
+  function updateHelis(dt, shoot = true) {
     const d = difficulty()
     const maxShooters = player.hp < player.maxHp * 0.35 ? 1 : (waveIndex >= 5 ? 3 : 2)
     let active = 0
@@ -1373,7 +1386,7 @@ export default function sketch(p) {
     for (let i = helis.length - 1; i >= 0; i--) {
       const h = helis[i]
       if (h.type === 'gunship') {
-        updateGunship(h, dt)
+        updateGunship(h, dt, shoot)
         continue
       }
       h.rotor += dt * 26
@@ -1421,7 +1434,7 @@ export default function sketch(p) {
       }
       h.tilt += (clamp(h.ax * 0.0012, -0.35, 0.35) - h.tilt) * Math.min(1, dt * 10)
 
-      if (h.armed) {
+      if (h.armed && shoot) {
         if (h.burst > 0) {
           h.attackT = Math.max(h.attackT, 0.25)
           h.burstT -= dt
@@ -2010,6 +2023,7 @@ export default function sketch(p) {
       p.push()
       applyCamera()
       drawTruckPuffs()
+      drawAniShots()
       drawRescueTruck()
       p.pop()
     }
@@ -2904,7 +2918,7 @@ export default function sketch(p) {
     p.text(label, cx, cy + 1)
   }
 
-  // ------------------------------------------------------- Elon and the truck
+  // ------------------------------------------------------- The rescue truck
   // The Cybertruck is lifted only by short, fast bursts of white air.
   const PUFF_SHADES = [
     [255, 255, 255],
@@ -2973,6 +2987,65 @@ export default function sketch(p) {
     }
   }
 
+  function nearestAniTarget(x, y) {
+    let best = null
+    let bd = Infinity
+    for (const h of helis) {
+      if (h.type === 'gunship') continue
+      if (h.x < -20 || h.x > W + 20 || h.y < -20 || h.y > GROUND_Y) continue
+      const d = dist(x, y, h.x, h.y)
+      if (d < bd) {
+        bd = d
+        best = h
+      }
+    }
+    return best
+  }
+
+  function cutsceneKill(h) {
+    const idx = helis.indexOf(h)
+    if (idx === -1) return
+    helis.splice(idx, 1)
+    shake = Math.max(shake, h.r >= 38 ? 9 : 5)
+    burst(h.x, h.y, h.r >= 38 ? 24 : 14, C.ink, 300)
+    burst(h.x, h.y, 10, C.cyan, 240)
+  }
+
+  function updateAniGunner(r, dt) {
+    r.aniFlash = Math.max(0, r.aniFlash - dt)
+    for (let i = r.aniShots.length - 1; i >= 0; i--) {
+      r.aniShots[i].life -= dt
+      if (r.aniShots[i].life <= 0) r.aniShots.splice(i, 1)
+    }
+
+    const target = nearestAniTarget(r.x, r.y)
+    const want = target
+      ? Math.atan2(target.y - (r.y - 12), target.x - (r.x + 40))
+      : -0.6
+    let diff = want - r.aniAim
+    while (diff > Math.PI) diff -= Math.PI * 2
+    while (diff < -Math.PI) diff += Math.PI * 2
+    r.aniAim += diff * Math.min(1, dt * 9)
+
+    const canShoot = (r.phase === 'greet' || r.phase === 'ask') && target
+    if (!canShoot) return
+
+    r.aniFireT -= dt
+    if (r.aniFireT > 0) return
+    r.aniFireT = p.random(0.25, 0.5)
+
+    const mx = r.x + 40 + Math.cos(r.aniAim) * 16
+    const my = r.y - 12 + Math.sin(r.aniAim) * 16
+    r.aniShots.push({
+      x1: mx, y1: my,
+      x2: target.x, y2: target.y,
+      life: 0.14, max: 0.14
+    })
+    r.aniFlash = 0.06
+    cutsceneKill(target)
+    shake = Math.max(shake, 1.8)
+  }
+
   function updateTruckPuffs(dt) {
     for (let i = truckPuffs.length - 1; i >= 0; i--) {
       const q = truckPuffs[i]
@@ -2997,8 +3070,8 @@ export default function sketch(p) {
     }
   }
 
-  // A cartoon Elon leaning out of the driver's window.
-  function drawElonInCab(t, passenger) {
+  // A cartoon driver leaning out of the driver's window.
+  function drawDriverInCab(t, showAni, showPlayer) {
     p.push()
 
     // Jacket and shoulders.
@@ -3031,8 +3104,8 @@ export default function sketch(p) {
     roughLine(13, -10, 26, -15 + Math.sin(t * 5) * 2, 1200, 0.3)
     p.noStroke()
 
-    // Grok Ani tucked into the passenger side once everyone is aboard.
-    if (passenger) {
+    // Grok Ani tucked into the passenger side.
+    if (showAni) {
       p.fill(245, 205, 186)
       p.circle(22, -18, 15)
       p.fill(235, 198, 105)
@@ -3049,8 +3122,10 @@ export default function sketch(p) {
       p.fill(31, 41, 55)
       p.circle(19, -18, 1.8)
       p.circle(25, -18, 1.8)
+    }
 
-      // The rescued player, tucked in the back.
+    // The rescued player, tucked in the back.
+    if (showPlayer) {
       p.fill(31, 41, 55)
       p.circle(44, -13, 13)
       p.fill(...C.accent)
@@ -3060,7 +3135,7 @@ export default function sketch(p) {
     p.pop()
   }
 
-  function drawCybertruck(x, y, t, tilt = 0, boost = 0, passenger = false) {
+  function drawCybertruck(x, y, t, tilt = 0, boost = 0, showAni = false, showPlayer = false) {
     p.push()
     p.translate(x, y)
     p.rotate(tilt + Math.sin(t * 2.4) * 0.01)
@@ -3083,7 +3158,7 @@ export default function sketch(p) {
     p.stroke(...C.faint)
     p.strokeWeight(1.4)
     roughLine(-52, 4, 54, -1, 980, 0.4)
-    drawElonInCab(t, passenger)
+    drawDriverInCab(t, showAni, showPlayer)
 
     // Wheels.
     p.noStroke()
@@ -3209,14 +3284,125 @@ export default function sketch(p) {
     p.pop()
   }
 
+  function drawAniGunner(r) {
+    const head = { x: r.x + 42, y: r.y - 14 }
+    const sway = Math.sin(r.t * 7) * 1.2
+    const blond = [235, 198, 105]
+
+    p.push()
+
+    // Torso leaning out of the rear window.
+    p.stroke(52, 44, 70)
+    p.strokeWeight(10)
+    roughLine(r.x + 30, r.y + 2, head.x - 2, head.y + 9, 1300, 0.4)
+    p.stroke(6, 182, 212)
+    p.strokeWeight(2)
+    roughLine(r.x + 28, r.y - 3, head.x - 3, head.y + 6, 1310, 0.3)
+
+    // Blond pigtails.
+    p.noStroke()
+    fillBlob(head.x - 13, head.y + 8 + sway, 15, 27, blond, 1320, 0.7)
+    fillBlob(head.x + 13, head.y + 8 - sway, 15, 27, blond, 1325, 0.7)
+
+    // Face and fringe.
+    p.fill(245, 205, 186)
+    p.circle(head.x, head.y, 17)
+    p.fill(...blond)
+    p.arc(head.x, head.y - 4, 20, 15, Math.PI, p.TWO_PI)
+    p.rect(head.x - 9, head.y - 5, 2.5, 6, 1)
+    p.rect(head.x + 6.5, head.y - 5, 2.5, 6, 1)
+    p.fill(250, 224, 150)
+    p.circle(head.x - 3, head.y - 8, 4)
+
+    // Eyes and smile.
+    p.fill(31, 41, 55)
+    p.circle(head.x - 3.5, head.y, 1.9)
+    p.circle(head.x + 3.5, head.y, 1.9)
+    p.noFill()
+    p.stroke(120, 70, 80)
+    p.strokeWeight(1)
+    p.arc(head.x, head.y + 4, 5, 3, 0.2, Math.PI - 0.2)
+
+    // Black ribbon bows.
+    p.noStroke()
+    p.fill(24, 24, 28)
+    p.circle(head.x - 13, head.y - 3, 4.5)
+    p.circle(head.x + 13, head.y - 3, 4.5)
+    p.triangle(head.x - 15, head.y - 6.5, head.x - 15, head.y + 0.5, head.x - 19, head.y - 3)
+    p.triangle(head.x - 11, head.y - 6.5, head.x - 11, head.y + 0.5, head.x - 7, head.y - 3)
+    p.triangle(head.x + 15, head.y - 6.5, head.x + 15, head.y + 0.5, head.x + 19, head.y - 3)
+    p.triangle(head.x + 11, head.y - 6.5, head.x + 11, head.y + 0.5, head.x + 7, head.y - 3)
+
+    // Arm and blaster, trained on the nearest chopper.
+    const aim = r.aniAim
+    const sx = r.x + 34
+    const sy = r.y - 6
+    const handX = sx + Math.cos(aim) * 20
+    const handY = sy + Math.sin(aim) * 20
+    const muzzleX = handX + Math.cos(aim) * 15
+    const muzzleY = handY + Math.sin(aim) * 15
+
+    p.stroke(245, 205, 186)
+    p.strokeWeight(4.5)
+    roughLine(sx, sy, handX, handY, 1330, 0.35)
+    p.stroke(31, 41, 55)
+    p.strokeWeight(5)
+    p.line(handX, handY, muzzleX, muzzleY)
+    p.fill(6, 182, 212)
+    p.noStroke()
+    p.circle(muzzleX, muzzleY, 4)
+
+    if (r.aniFlash > 0) {
+      const a = clamp(r.aniFlash / 0.06, 0, 1)
+      p.fill(250, 204, 21, 230 * a)
+      p.circle(muzzleX, muzzleY, 10 + 8 * a)
+      p.fill(255, 255, 255, 220 * a)
+      p.circle(muzzleX, muzzleY, 5)
+    }
+
+    p.pop()
+  }
+
+  function drawAniShots() {
+    if (!rescue) return
+    p.noStroke()
+    for (const s of rescue.aniShots) {
+      const k = clamp(1 - s.life / s.max, 0, 1)
+      const e = 1 - Math.pow(1 - k, 3)
+      const hx = s.x1 + (s.x2 - s.x1) * e
+      const hy = s.y1 + (s.y2 - s.y1) * e
+      const a = clamp(s.life / s.max, 0, 1)
+
+      p.stroke(6, 182, 212, 220 * a)
+      p.strokeWeight(2)
+      p.line(s.x1, s.y1, hx, hy)
+      p.noStroke()
+      p.fill(255, 255, 255, 230 * a)
+      p.circle(hx, hy, 4)
+
+      if (k > 0.7) {
+        p.noFill()
+        p.stroke(6, 182, 212, 190 * a)
+        p.strokeWeight(2)
+        p.circle(s.x2, s.y2, 10 + 10 * k)
+        p.noStroke()
+      }
+    }
+  }
+
   function drawRescueTruck() {
     const r = rescue
     if (!r) return
     const moving = r.phase === 'fly' || (r.phase === 'wrong' && r.t > 1.8)
     const bob = moving ? 0 : Math.sin(r.t * 2.6) * 3
     const boost = moving ? 1 : 0
-    drawCybertruck(r.x, r.y + bob, r.t, r.tilt, boost, r.phase === 'fly')
+    const inside = r.phase === 'swoop' || r.phase === 'fly' || (r.phase === 'wrong' && r.t > 1.8)
+    const showPlayer = r.phase === 'fly'
+    drawCybertruck(r.x, r.y + bob, r.t, r.tilt, boost, inside, showPlayer)
     if (r.phase === 'grab') drawGrokAni(r)
+    else if (r.phase === 'greet' || r.phase === 'ask' || r.phase === 'correct' || r.phase === 'wrong') {
+      if (!inside) drawAniGunner(r)
+    }
   }
 
   function worldToScreen(x, y) {
@@ -3282,7 +3468,7 @@ export default function sketch(p) {
     p.textSize(18)
     const lines = wrapLines(text, 270)
     const w = 310
-    const h = 46 + lines.length * 23
+    const h = 30 + lines.length * 23
     const truck = worldToScreen(r.x, r.y)
     const cx = clamp(truck.x + 280, 210, W - 170)
     const cy = clamp(truck.y + 14, 105, 265)
@@ -3295,15 +3481,10 @@ export default function sketch(p) {
     panel(cx, cy, w, h)
 
     p.noStroke()
-    p.textStyle(p.BOLD)
-    p.textSize(11)
-    p.fill(...C.accent)
     p.textAlign(p.CENTER, p.CENTER)
-    p.text('ELON MUSK', cx, cy - h / 2 + 17)
-    p.textStyle(p.NORMAL)
     p.textSize(18)
     p.fill(...C.ink)
-    lines.forEach((line, i) => p.text(line, cx, cy - h / 2 + 40 + i * 23))
+    lines.forEach((line, i) => p.text(line, cx, cy - h / 2 + 15 + i * 23))
   }
 
   function drawRescuePanel(e) {
@@ -3436,7 +3617,7 @@ export default function sketch(p) {
 
         p.fill(...C.muted)
         p.textSize(16)
-        p.text('Elon and Ani got you out.', W / 2, 238)
+        p.text('You have been rescued.', W / 2, 238)
 
         p.textSize(12)
         p.text('SCORE', W / 2, 272)
@@ -3615,7 +3796,8 @@ export default function sketch(p) {
             x: rescue.x, y: rescue.y,
             ani: rescue.ani, pull: rescue.pull,
             panelT: rescue.panelT, hidden: rescue.hidden,
-            jets: { on: rescue.jetOn.slice(), off: rescue.jetOff.slice() }
+            jets: { on: rescue.jetOn.slice(), off: rescue.jetOff.slice() },
+            aniFireT: rescue.aniFireT, aniShots: rescue.aniShots.length
           },
           camera: { zoom: camera.zoom, x: camera.x, y: camera.y },
           px: player.x, py: player.y, onGround: player.onGround,
