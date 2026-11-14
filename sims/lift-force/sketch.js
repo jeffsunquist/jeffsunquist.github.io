@@ -43,6 +43,7 @@ export default function sketch(p) {
   const WAVE_BREATHER = 6
   const WAVE_COUNTDOWN = 2.2
   const BOSS_EVERY = 4
+  const DRONE_CAP = 8
   const COMBO_TIME = 3
   const COMBO_MAX = 5
   const SHIELD_TIME = 20
@@ -72,6 +73,7 @@ export default function sketch(p) {
     heavy: { hp: 300, r: 40, points: 400, speed: 0.85, alt: [140, 280], hover: [140, 300], travel: 280, anchor: [1.4, 2.6] },
     bomber: { hp: 220, r: 38, points: 350, speed: 0.55, alt: [80, 140], hover: [80, 140], travel: 220, anchor: [1.8, 3.0] },
     nighthawk: { hp: 180, r: 30, points: 500, speed: 2.0, alt: [140, 280], hover: [140, 300], travel: 560, anchor: [2.2, 3.4] },
+    drone: { hp: 30, r: 12, points: 60, speed: 2.7, alt: [100, 240], hover: [100, 260], travel: 420, anchor: [0.7, 1.4] },
     gunship: { hp: 2200, r: 62, points: 2500, speed: 0.5, alt: [140, 220], hover: [150, 220], travel: 300, anchor: [9, 12] }
   }
 
@@ -79,7 +81,7 @@ export default function sketch(p) {
   // `cd` is seconds between trigger pulls, `counts` feeds the accuracy stat.
   const WEAPONS = {
     pistol: { label: 'Pistol', short: 'Pistol', max: Infinity, dmg: 10, cd: 0.13, spread: 0.018, speed: 950, pellets: 1, size: 3, life: 1.1, color: C.ink, counts: true },
-    shotgun: { label: 'Shotgun', short: 'Shotgun', max: 28, cap: 999, dmg: 9, cd: 0.52, spread: 0.17, speed: 820, pellets: 8, size: 2.6, life: 0.62, color: C.ink, counts: true, recoil: 275 },
+    shotgun: { label: 'Shotgun', short: 'Shotgun', max: 28, cap: 999, dmg: 9, cd: 0.52, spread: 0.17, speed: 820, pellets: 8, size: 2.6, life: 1.3, color: C.ink, counts: true, recoil: 275 },
     rocket: { label: 'Rocket', short: 'Rocket', max: 2, cap: 999, dmg: 280, cd: 0.85, spread: 0.012, speed: 45, pellets: 1, size: 4, life: 2.6, color: C.accent, counts: true, splash: 80, splashR: 85, kick: 150, homing: true },
     flame: { label: 'Flamethrower', short: 'Flame', max: 8, cap: 999, dmg: 7, speed: 520, size: 6, life: 0.85, color: C.flame }
   }
@@ -880,6 +882,7 @@ export default function sketch(p) {
       h.burst = 0
       h.charge = 0
       h.attackT = 0
+      h.bombRun = null
     }
 
     const question = pickRescueQuestion()
@@ -1230,15 +1233,16 @@ export default function sketch(p) {
     return 'scout'
   }
 
-  function spawnHeli(forcedType) {
+  function spawnHeli(forcedType, origin) {
     const type = forcedType || pickEnemyType()
     const def = ENEMIES[type]
-    const fromLeft = p.random() < 0.5
+    const fromLeft = origin ? (origin.vx >= 0) : p.random() < 0.5
     helis.push({
       type,
-      x: fromLeft ? -90 : W + 90,
-      y: p.random(def.alt[0], def.alt[1]),
-      vx: 0, vy: 0,
+      x: origin ? origin.x : (fromLeft ? -90 : W + 90),
+      y: origin ? origin.y : p.random(def.alt[0], def.alt[1]),
+      vx: origin ? origin.vx : 0,
+      vy: origin ? origin.vy : 0,
       dir: fromLeft ? 1 : -1,
       r: def.r,
       heavy: type === 'heavy',
@@ -1276,8 +1280,97 @@ export default function sketch(p) {
       ax: 0, ay: 0, tilt: 0,
       seed: p.random(1000), tailRotor: p.random(10),
       armed: false, seen: true, armT: 0, hit: 0,
-      charge: 0, pattern: -1, enraged: false
+      charge: 0, pattern: -1, enraged: false,
+      bombRun: null, drones66: false, drones33: false,
+      droneT: droneInterval()
     })
+  }
+
+  function bossCycle(h) {
+    const base = Math.max(2.2, 3.8 - (bossNumber - 1) * 0.35)
+    return h.enraged ? base * 0.72 : base
+  }
+
+  function droneInterval() {
+    return Math.max(5, 11 - (bossNumber - 1) * 1.2)
+  }
+
+  function droneSquad() {
+    return Math.min(5, 1 + bossNumber)
+  }
+
+  function beginBombRun(h) {
+    const count = 7 + Math.min(6, bossNumber - 1)
+    h.bombRun = {
+      left: count,
+      dir: h.x < W / 2 ? 1 : -1,
+      dropT: 0.4,
+      speed: 150
+    }
+    shake = Math.max(shake, 3)
+  }
+
+  function updateBombRun(h, dt, shoot) {
+    const r = h.bombRun
+    const pvx = h.vx
+    const pvy = h.vy
+    const targetY = 170
+
+    h.vx = r.dir * r.speed
+    h.vy = (targetY - h.y) * 1.4
+    h.x += h.vx * dt
+    h.y += h.vy * dt
+    if (h.x < 90) {
+      h.x = 90
+      r.dir = 1
+    } else if (h.x > W - 90) {
+      h.x = W - 90
+      r.dir = -1
+    }
+    h.dir = r.dir
+    h.tilt += (r.dir * 0.12 - h.tilt) * Math.min(1, dt * 8)
+
+    if (dt > 0) {
+      const k = Math.min(1, dt * 8)
+      h.ax += ((h.vx - pvx) / dt - h.ax) * k
+      h.ay += ((h.vy - pvy) / dt - h.ay) * k
+    }
+
+    if (!shoot) return
+
+    r.dropT -= dt
+    if (r.dropT <= 0 && r.left > 0) {
+      dropBomb(h)
+      r.left--
+      r.dropT = 0.5
+    }
+    if (r.left <= 0) {
+      h.bombRun = null
+      h.fireT = bossCycle(h)
+    }
+  }
+
+  function deployDrones(h, count) {
+    const n = Math.min(5, count)
+    for (let i = 0; i < n; i++) {
+      const a = Math.PI / 2 + (i - (n - 1) / 2) * 0.28
+      const sp = 150
+      spawnHeli('drone', {
+        x: h.x + p.random(-18, 18),
+        y: h.y + h.r * 0.45,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp * 0.45
+      })
+    }
+    burst(h.x, h.y + h.r * 0.6, 14, C.cyan, 200)
+    shake = Math.max(shake, 3)
+  }
+
+  function bossDeploy(h) {
+    const active = helis.filter(x => x.type === 'drone').length
+    if (active >= DRONE_CAP) return false
+    deployDrones(h, Math.min(droneSquad(), DRONE_CAP - active))
+    return true
   }
 
   function updateGunship(h, dt, shoot = true) {
@@ -1286,6 +1379,11 @@ export default function sketch(p) {
     h.hit = Math.max(0, h.hit - dt)
     h.phase += dt
     if (!h.enraged && h.hp <= h.maxHp * 0.35) h.enraged = true
+
+    if (h.bombRun) {
+      updateBombRun(h, dt, shoot)
+      return
+    }
 
     const pvx = h.vx
     const pvy = h.vy
@@ -1304,6 +1402,22 @@ export default function sketch(p) {
       h.ay += ((h.vy - pvy) / dt - h.ay) * k
     }
 
+    if (shoot) {
+      h.droneT -= dt
+      if (h.droneT <= 0) {
+        h.droneT = bossDeploy(h) ? droneInterval() : 2
+      }
+
+      if (!h.drones66 && h.hp <= h.maxHp * 0.66) {
+        h.drones66 = true
+        bossDeploy(h)
+      }
+      if (!h.drones33 && h.hp <= h.maxHp * 0.33) {
+        h.drones33 = true
+        bossDeploy(h)
+      }
+    }
+
     if (!h.armed && h.x < W - 120) h.armed = true
     if (!shoot) return
     if (!h.armed) return
@@ -1316,7 +1430,7 @@ export default function sketch(p) {
       if (h.fireT <= 0) {
         h.pattern = (h.pattern + 1) % 3
         h.charge = h.enraged ? 0.65 : 0.95
-        h.fireT = (h.enraged ? 2.6 : 3.8) + h.charge
+        h.fireT = bossCycle(h)
       }
     }
   }
@@ -1325,9 +1439,10 @@ export default function sketch(p) {
     const base = Math.atan2(player.y - 18 - h.y, player.x - h.x)
 
     if (h.pattern === 0) {
-      // Missile salvo.
-      for (let i = -1; i <= 1; i++) {
-        const a = base + i * 0.16
+      // Missile salvo, wider with each boss.
+      const n = 3 + Math.min(2, bossNumber - 1)
+      for (let i = 0; i < n; i++) {
+        const a = base + (i - (n - 1) / 2) * 0.16
         bullets.push({
           x: h.x, y: h.y + 22,
           vx: Math.cos(a) * 330, vy: Math.sin(a) * 330,
@@ -1336,16 +1451,11 @@ export default function sketch(p) {
         })
       }
     } else if (h.pattern === 1) {
-      // Bomb carpet with telegraphed impact rings.
-      for (const off of [-1.5, -0.5, 0.5, 1.5]) {
-        bombs.push({
-          x: clamp(player.x + off * 55, 50, W - 50),
-          y: h.y + 26, vx: 0, vy: 70, r: 8, life: 6
-        })
-      }
+      // Horizontal bomb run: bombs fall from the ship, one per second.
+      beginBombRun(h)
     } else {
       // Minigun fan.
-      const n = h.enraged ? 7 : 5
+      const n = (h.enraged ? 7 : 5) + Math.min(4, bossNumber - 1)
       for (let i = 0; i < n; i++) {
         const a = base + (i - (n - 1) / 2) * 0.075 + p.random(-0.02, 0.02)
         bullets.push({
@@ -1361,6 +1471,15 @@ export default function sketch(p) {
   }
 
   function onBossKilled(h) {
+    // Any escorts go down with the gunship.
+    for (let i = helis.length - 1; i >= 0; i--) {
+      const d = helis[i]
+      if (d.type !== 'drone') continue
+      burst(d.x, d.y, 10, C.ink, 180)
+      burst(d.x, d.y, 6, C.cyan, 140)
+      helis.splice(i, 1)
+    }
+
     score += 2500
     addPopup('GUNSHIP DOWN +2500', h.x, h.y - 20, C.force, 20)
     const x = clamp(h.x, 90, W - 90)
@@ -1458,11 +1577,13 @@ export default function sketch(p) {
               h.burstT = 0
             } else if (h.type === 'bomber') {
               dropBomb(h)
+            } else if (h.type === 'drone') {
+              fireHeli(h, d, 3, 2.4)
             } else {
               fireHeli(h, d)
             }
             const gap = clamp(2.5 - d * 0.25, 0.9, 2.5) + p.random(0, 0.6)
-            h.fireT = h.type === 'nighthawk' ? gap * 2 : gap
+            h.fireT = h.type === 'nighthawk' ? gap * 2 : h.type === 'drone' ? gap * 0.7 : gap
           } else {
             h.fireT = p.random(0.35, 0.8)
           }
@@ -1471,7 +1592,7 @@ export default function sketch(p) {
     }
   }
 
-  function fireHeli(h, d, dmg = 12) {    const err = clamp(0.19 - d * 0.032, 0.032, 0.19)
+  function fireHeli(h, d, dmg = 12, rad = 3.5) {    const err = clamp(0.19 - d * 0.032, 0.032, 0.19)
     const lead = clamp((d - 1) / 3, 0, 0.8)
     const tx = player.x + player.vx * lead * 0.22
     const ty = player.y - 18 + player.vy * lead * 0.12
@@ -1484,7 +1605,7 @@ export default function sketch(p) {
       vy: Math.sin(a) * sp,
       life: 4,
       dmg,
-      r: 3.5,
+      r: rad,
       color: C.danger,
       splash: 0,
       splashR: 0,
@@ -2334,6 +2455,19 @@ export default function sketch(p) {
     roughLine(-r * 0.62, r * 0.56, -r * 0.62, r * 0.82, seed + 60, 0.4)
     roughLine(r * 0.62, r * 0.56, r * 0.62, r * 0.82, seed + 61, 0.4)
 
+    // Open bomb bay while the gunship is making a bombing pass.
+    if (h.bombRun) {
+      p.noStroke()
+      p.fill(185, 28, 28, 120 + 90 * (0.5 + 0.5 * Math.sin(animT * 12)))
+      p.rect(0, r * 0.62, r * 1.0, r * 0.2, 3)
+      p.fill(250, 204, 21, 200)
+      p.circle(0, r * 0.62, r * 0.12)
+      p.stroke(...C.ink)
+      p.strokeWeight(1.5)
+      roughLine(-r * 0.5, r * 0.5, -r * 0.5, r * 0.74, seed + 62, 0.3)
+      roughLine(r * 0.5, r * 0.5, r * 0.5, r * 0.74, seed + 63, 0.3)
+    }
+
     // Red core, brighter while a pattern is charging.
     const pulse = h.charge > 0 ? 0.55 + 0.45 * Math.sin(animT * 21) : 0.6
     p.noStroke()
@@ -2352,9 +2486,50 @@ export default function sketch(p) {
     drawHeliForces(h)
   }
 
+  function drawDrone(h) {
+    const r = h.r
+    const dir = h.dir || 1
+    const seed = h.seed || 17
+    p.push()
+    p.translate(h.x, h.y)
+    p.rotate(h.tilt)
+
+    p.stroke(...C.ink)
+    p.strokeWeight(2)
+    roughLine(0, -r * 0.5, 0, -r * 0.85, seed + 1, 0.4)
+    const wob = Math.sin(h.rotor) * 2
+    p.strokeWeight(2.5)
+    roughLine(-r * 0.9, -r * 0.9 + wob, r * 0.9, -r * 0.9 - wob, seed + 2, 0.4)
+    p.strokeWeight(1.5)
+    roughLine(-r * 0.8, 0, -r * 1.4, -r * 0.2, seed + 3, 0.4)
+
+    const body = [
+      [-r * 0.9, 0], [-r * 0.2, -r * 0.55], [r * 0.8, 0], [r * 0.2, r * 0.6]
+    ].map(([x, y], i) => [x + jit(seed + 10 + i, 0.4), y + jit(seed + 20 + i, 0.4)])
+    fillPoly(body, h.hit > 0 ? C.danger : C.charcoal)
+    p.stroke(...C.ink)
+    p.strokeWeight(1.5)
+    for (let i = 0; i < body.length; i++) {
+      const a = body[i]
+      const b = body[(i + 1) % body.length]
+      roughLine(a[0], a[1], b[0], b[1], seed + 30 + i, 0.3)
+    }
+
+    p.noStroke()
+    p.fill(220, 38, 38)
+    p.circle(dir * r * 0.35, 0, r * 0.24)
+
+    p.pop()
+    drawHeliForces(h)
+  }
+
   function drawHeli(h) {
     if (h.type === 'gunship') {
       drawGunship(h)
+      return
+    }
+    if (h.type === 'drone') {
+      drawDrone(h)
       return
     }
     const r = h.r
@@ -3779,6 +3954,7 @@ export default function sketch(p) {
           invincible: player.invincible,
           permanent: player.invincible === Infinity,
           bombs: bombs.length,
+          bombList: bombs.map(b => ({ x: b.x, y: b.y, vx: b.vx, vy: b.vy })),
           wave: waveIndex, wavePhase, waveT, bossNumber,
           animT,
           waveBanner: waveBanner && { text: waveBanner.text, sub: waveBanner.sub, life: waveBanner.life },
@@ -3812,6 +3988,8 @@ export default function sketch(p) {
               x: h.x, y: h.y, vx: h.vx, vy: h.vy, hp: h.hp, maxHp: h.maxHp, heavy: h.heavy, type: h.type, burst: h.burst,
               ax: h.ax, ay: h.ay, tilt: h.tilt, armed: h.armed,
               charge: h.charge, pattern: h.pattern, enraged: h.enraged,
+              bombRun: h.bombRun ? { left: h.bombRun.left, dir: h.bombRun.dir } : null,
+              drones66: h.drones66, drones33: h.drones33, droneT: h.droneT,
               lift: f.lift, weight: f.weight, thrust: f.thrust
             }
           }),
@@ -3837,7 +4015,22 @@ export default function sketch(p) {
         supply: () => { planeCooldown = 0; planes.length = 0; callSupply() },
         setScore: (v) => { score = v },
         spawn: (type) => { if (ENEMIES[type] && type !== 'gunship') spawnHeli(type) },
+        spawnAt: (type, x, y) => {
+          if (ENEMIES[type] && type !== 'gunship') spawnHeli(type, { x, y, vx: 0, vy: 0 })
+        },
         spawnBoss: () => { spawnBoss() },
+        damageBoss: (dmg) => {
+          const b = helis.find(h => h.type === 'gunship')
+          if (b) damageHeli(b, dmg)
+        },
+        bombRunNow: () => {
+          const b = helis.find(h => h.type === 'gunship')
+          if (b) beginBombRun(b)
+        },
+        droneNow: () => {
+          const b = helis.find(h => h.type === 'gunship')
+          if (b) bossDeploy(b)
+        },
         setWave: (n) => { helis.length = 0; bullets.length = 0; bombs.length = 0; beginWave(n) },
         setWaveTime: (t) => { waveT = t },
         clear: () => { helis.length = 0 },
