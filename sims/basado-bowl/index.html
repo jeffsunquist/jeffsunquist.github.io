@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#58c3ff" />
+  <link rel="icon" href="/icons/game.svg" type="image/svg+xml" />
+  <title>Basado Bowl — Physics Trivia Battle</title>
+  <meta name="description" content="A three-team, teacher-run physics trivia game with spell sigils and sabotage." />
+  <link rel="preload" href="./fonts/lilita-one-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="./fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="sun"></div>
+    <div class="cloud c1">
+      <svg viewBox="0 0 80 32" shape-rendering="crispEdges">
+        <g fill="#ffffff">
+          <rect x="8" y="10" width="58" height="12" />
+          <rect x="16" y="4" width="16" height="8" />
+          <rect x="32" y="0" width="16" height="12" />
+          <rect x="48" y="6" width="16" height="14" />
+          <rect x="0" y="18" width="74" height="8" />
+        </g>
+      </svg>
+    </div>
+    <div class="cloud c2">
+      <svg viewBox="0 0 80 32" shape-rendering="crispEdges">
+        <g fill="#ffffff">
+          <rect x="10" y="12" width="52" height="10" />
+          <rect x="18" y="6" width="16" height="8" />
+          <rect x="34" y="2" width="14" height="12" />
+          <rect x="48" y="8" width="16" height="12" />
+          <rect x="4" y="20" width="64" height="6" />
+        </g>
+      </svg>
+    </div>
+    <div class="floor"></div>
+    <div class="scanlines"></div>
+  </div>
+
+  <div id="app"></div>
+  <div id="fx-layer"></div>
+  <noscript>Basado Bowl needs JavaScript enabled.</noscript>
+  <script type="module" src="./game.js"></script>
+</body>
+</html>

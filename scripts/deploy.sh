@@ -22,8 +22,15 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-rm -rf dist
-mkdir -p dist
+# `SKIP_DECKS=1` keeps existing deck folders in dist/ and only refreshes the
+# landing page, sims, games, tutorials, and utility pages — the fast loop for
+# iterating on those. A normal build starts from a clean dist/.
+if [ "${SKIP_DECKS:-0}" = "1" ]; then
+  mkdir -p dist
+else
+  rm -rf dist
+  mkdir -p dist
+fi
 
 # Carry the custom domain into the published artifact.
 if [ -f CNAME ]; then
@@ -47,16 +54,19 @@ fi
 # self-contained page (p5 is vendored at sims/vendor/p5.min.js) linked from the
 # landing page's "Sims (WIP)" section. Not copied into the decks.
 if [ -d sims ]; then
-  cp -r sims dist/sims
+  mkdir -p dist/sims
+  cp -r sims/. dist/sims/
 fi
 
 # Interactive tutorials: page + shared player, plus the KaTeX runtime they use.
 # Sources live in tutorials/ and are copied verbatim (like sims/).
 if [ -d tutorials ]; then
-  cp -r tutorials dist/tutorials
+  mkdir -p dist/tutorials
+  cp -r tutorials/. dist/tutorials/
 fi
 if [ -d node_modules/katex/dist ]; then
-  cp -r node_modules/katex/dist dist/katex
+  mkdir -p dist/katex
+  cp -r node_modules/katex/dist/. dist/katex/
 fi
 
 # Lesson decks follow the handout naming scheme {TOPIC}-{KIND}{NN}_{Title}
@@ -65,12 +75,20 @@ fi
 # reach the site as stray lesson cards.
 DECK_RE='^[A-Z]{2,5}-L?[0-9]{2}_.*\.md$'
 
-for f in *.md; do
-  printf '%s' "$f" | grep -Eq "$DECK_RE" || continue
-  slug="${f%.md}"
-  echo "Building $f -> /$slug/"
-  npx slidev build "$f" --base "/$slug/" --router-mode hash --out "dist/$slug"
-done
+# `SKIP_DECKS=1` is a fast local path for iterating on the landing page, sims,
+# and games: it rebuilds everything else and leaves any existing dist/ decks in
+# place (a clean checkout has none, so lesson links will be dead until a full
+# build).
+if [ "${SKIP_DECKS:-0}" = "1" ]; then
+  echo "SKIP_DECKS=1 -> skipping Slidev deck builds"
+else
+  for f in *.md; do
+    printf '%s' "$f" | grep -Eq "$DECK_RE" || continue
+    slug="${f%.md}"
+    echo "Building $f -> /$slug/"
+    npx slidev build "$f" --base "/$slug/" --router-mode hash --out "dist/$slug"
+  done
+fi
 
 # Legacy URL compatibility: decks renamed to the {TOPIC}-L{NN} scheme answer at
 # their old {TOPIC}-{NN} path via a meta-refresh stub, so links already handed
@@ -329,18 +347,22 @@ if [ -f data/sims.csv ]; then
   sims_json="[$sim_items]"
 fi
 
-# Demos from data/demos.csv (`slug,title,grade,description`; same shape as
-# sims.csv, but the cards are labelled "Demo"). Files live in sims/<slug>/ so
-# they share the vendored p5 build; keep descriptions comma-free.
+# Demos and games from data/demos.csv (`slug,title,grade,description[,kind]`;
+# same shape as sims.csv, with an optional 5th column for the card label and
+# icon — "Demo" by default, "Game" for Basado Bowl). Files live in
+# sims/<slug>/ so they share the vendored p5 build; keep descriptions
+# comma-free.
 demos_json='[]'
 if [ -f data/demos.csv ]; then
   demo_items=''
   gf=1
-  while IFS=, read -r slug title grade description; do
+  while IFS=, read -r slug title grade description kind; do
     slug="$(clean "${slug:-}")"
     title="$(clean "${title:-}")"
     grade="$(clean "${grade:-}")"
     description="$(clean "${description:-}")"
+    kind="$(clean "${kind:-}")"
+    [ -z "$kind" ] && kind="Demo"
     [ -z "$slug" ] && continue
     [ "$slug" = "slug" ] && continue
 
@@ -350,9 +372,14 @@ if [ -f data/demos.csv ]; then
       *)       g_g6=true; g_g7=true ;;
     esac
 
+    case "$kind" in
+      Game) icon="/icons/game.svg" ;;
+      *)    icon="/icons/demo.svg" ;;
+    esac
+
     [ "$gf" -eq 1 ] || demo_items+=','
     gf=0
-    demo_items+="{\"slug\":$(json_str "$slug"),\"url\":$(json_str "/sims/$slug/"),\"kind\":$(json_str "Demo"),\"title\":$(json_str "$title"),\"description\":$(json_str "$description"),\"icon\":$(json_str "/icons/demo.svg"),\"g6\":$g_g6,\"g7\":$g_g7}"
+    demo_items+="{\"slug\":$(json_str "$slug"),\"url\":$(json_str "/sims/$slug/"),\"kind\":$(json_str "$kind"),\"title\":$(json_str "$title"),\"description\":$(json_str "$description"),\"icon\":$(json_str "$icon"),\"g6\":$g_g6,\"g7\":$g_g7}"
   done < data/demos.csv
   demos_json="[$demo_items]"
 fi
