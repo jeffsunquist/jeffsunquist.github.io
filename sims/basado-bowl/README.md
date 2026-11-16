@@ -64,21 +64,23 @@ or shop currency.
 
 ## Question bank and grades
 
-The game ships with **412 questions**:
+The game ships with **632 questions**:
 
 - 82 curated questions in `questions/{sci,kin,for,ene}.js`.
-- 330 authored questions in `questions/bank/{sci,kin,for,ene,ele,wav}.js`.
+- 550 authored questions in `questions/bank/{sci,kin,for,ene,ele,wav}.js`.
+- 220 of the authored questions are quantitative hard problems; every
+  unit/grade now has 10 easy, 10 medium, and 30 hard questions.
 
 Setup offers **Grade 6** and **Grade 7** only. There is no mixed mode.
 
 | Unit | Grade 6 | Grade 7 |
 |---|---|---|
-| Scientific Inquiry (`SCI`) | 50 | 50 |
-| Kinematics (`KIN`) | 48 | 52 |
-| Forces (`FOR`) | 50 | 54 |
-| Simple Machines / Energy (`ENE`) | 46 | 30 |
-| Electricity (`ELE`) | 30 | 30 |
-| Waves (`WAV`) | 0 | 30 |
+| Scientific Inquiry (`SCI`) | 70 | 70 |
+| Kinematics (`KIN`) | 68 | 72 |
+| Forces (`FOR`) | 70 | 74 |
+| Simple Machines / Energy (`ENE`) | 66 | 50 |
+| Electricity (`ELE`) | 50 | 50 |
+| Waves (`WAV`) | 0 | 50 |
 
 A Grade 6 game draws only questions tagged `grade: '6'` plus shared
 `grade: 'both'` questions. A Grade 7 game draws only `'7'` plus `'both'`.
@@ -102,6 +104,33 @@ Authored questions use a tiny markup for real subscripts and superscripts:
 Unicode symbols stay as-is: `×`, `÷`, `≈`, `≤`, `≥`, `√`, `Ω`, `μ`, `Δ`, `θ`,
 `λ`, `°`, and `→`. `mathText()` escapes the text first, then turns `_{...}`
 into `<sub>` and `^{...}` into `<sup>`. The validator rejects unbalanced markup.
+
+## Formula symbols
+
+Questions use the same symbols as the formula sheets and lesson slides:
+
+| Quantity | Symbol form |
+|---|---|
+| Weight | `F_{g} = mg` |
+| Newton’s second law | `F_{net} = ma`, `a = F_{net}/m` |
+| Friction | `F_{f} = μF_{N}` |
+| Average velocity | `Δx/t` |
+| Displacement | `Δx = x - x_{0}` |
+| Acceleration | `a = (v - v_{0})/t` |
+| Motion equations | `v = v_{0} + at`, `Δx = v_{0}t + 1/2 at^{2}`, `v^{2} = v_{0}^{2} + 2aΔx` |
+| Work | `W = Fd` in Grade 6, `W = FΔx` in Grade 7 |
+| Power | `P = W/t` |
+| Potential energy | `U = mgh` in Grade 6, `U_{g} = mgh` in Grade 7 |
+| Kinetic energy | `K = 1/2 mv^{2}` |
+| Mechanical energy | `E = K + U` |
+| Gravitation | `F_{G} = G m_{1}m_{2}/r^{2}` |
+| Coulomb’s law | `F_{e} = k|q_{1}||q_{2}|/r^{2}` |
+| Charge | `q = ne` |
+| Ohm’s law | `I = V/R` |
+| Waves | `f = 1/T`, `v = λf` |
+| Moments | `τ = Fd`, `F_{1}d_{1} = F_{2}d_{2}` |
+
+The validator rejects `W = mg`, `F = ma`, `F = μN`, `v_i`, and `sqrt(...)`.
 
 ## Where to change things
 

@@ -27,6 +27,23 @@ function fail(q, message) {
   errors.push(`${q.id || '(no id)'}: ${message}`);
 }
 
+const bannedSymbols = [
+  [/\bW\s*=\s*mg(?![a-zA-Z])/, 'use F_{g} = mg for weight, not W = mg'],
+  [/\bF\s*=\s*ma\b/, 'use F_{net} = ma for Newton’s second law'],
+  [/\bF\s*=\s*μ\s*N\b/, 'use F_{f} = μF_{N} for friction'],
+  [/\bv_i\b/, 'use v_{0} for initial velocity'],
+  [/sqrt\(/, 'use √(...) instead of sqrt(...)'],
+];
+
+function checkSymbols(q) {
+  const fields = [q.q, q.why, ...(Array.isArray(q.a) ? q.a : [])];
+  for (const text of fields) {
+    for (const [re, message] of bannedSymbols) {
+      if (re.test(String(text ?? ''))) fail(q, message);
+    }
+  }
+}
+
 function checkMath(q, value, field) {
   const text = String(value ?? '');
   let i = 0;
@@ -80,6 +97,7 @@ for (const q of QUESTIONS) {
     fail(q, 'authored question is missing an LO tag');
   }
 
+  checkSymbols(q);
   ['q', 'why'].forEach((field) => checkMath(q, q[field], field));
   if (Array.isArray(q.a)) q.a.forEach((a, i) => checkMath(q, a, `choice ${'ABCD'[i]}`));
 
@@ -102,6 +120,7 @@ for (const [key, value] of Object.entries(counts).sort()) {
 }
 console.log('Correct-index spread A/B/C/D:', indexCounts.join(' / '));
 console.log('Authored bank questions:', QUESTIONS.filter((q) => newId.test(q.id)).length);
+console.log('Authored hard questions:', QUESTIONS.filter((q) => newId.test(q.id) && q.level === 3).length);
 
 if (errors.length) {
   console.error(`\n${errors.length} problem(s):`);
