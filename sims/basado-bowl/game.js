@@ -2,8 +2,8 @@ import { CONFIG, SPELL_BY_ID, CATEGORY_BY_ID } from './config.js';
 import { QUESTIONS } from './questions.js';
 import { CHARACTERS, characterSVG } from './characters.js';
 
-const VERSION = 7;
-const SAVE_KEY = 'basado-bowl:v7';
+const VERSION = 8;
+const SAVE_KEY = 'basado-bowl:v8';
 const params = new URLSearchParams(location.search);
 const app = document.getElementById('app');
 
@@ -40,7 +40,7 @@ const ICON_PATHS = {
   clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.2 2"/>',
   fifty: '<circle cx="6" cy="7" r="2.4"/><circle cx="6" cy="17" r="2.4"/><path d="M8 8.4 20 19M8 15.6 20 5"/>',
   reroll: '<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v6h-6"/>',
-  jinx: '<path d="M5 11a7 7 0 0 1 14 0v3a2 2 0 0 1-2 2h-1v2H8v-2H7a2 2 0 0 1-2-2v-3z"/><circle cx="9.5" cy="11" r="1"/><circle cx="14.5" cy="11" r="1"/><path d="M10 16h4"/>',
+  missile: '<path d="M14 3l7 7-8 8-4-4 5-11z"/><path d="M9 15l-4 4"/><path d="M15 9l1.5 1.5"/>',
   jammer: '<circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/>',
   heist: '<path d="M9 8V6.5a3 3 0 0 1 6 0V8"/><path d="M6 8h12l-1 12H7L6 8z"/><path d="M12 12v4M10 14h4"/>',
   sci: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
@@ -94,15 +94,6 @@ function teamStyle(meta) {
 
 function currentTeam() {
   return state.teams[state.turn];
-}
-
-function hasEffect(team, kind) {
-  return (team.effects || []).some((e) => e.kind === kind);
-}
-
-function addEffect(team, kind, from) {
-  team.effects = team.effects.filter((e) => e.kind !== kind);
-  team.effects.push({ kind, from });
 }
 
 function removeSpell(team, id) {
@@ -328,8 +319,6 @@ function unitCount(unit, level = null) {
 }
 
 function drawRandomQuestion() {
-  const team = currentTeam();
-  const jinxed = hasEffect(team, 'jinx');
   const selected = QUESTIONS.filter(
     (q) => gradeOk(q) && state.settings.units.includes(q.unit)
   );
@@ -346,21 +335,16 @@ function drawRandomQuestion() {
     toast('Question bank reshuffled.');
   }
 
-  let candidates = jinxed ? pool.filter((q) => q.level === 3) : pool;
-  if (!candidates.length) candidates = pool;
-
-  const q = candidates[Math.floor(Math.random() * candidates.length)];
+  const q = pool[Math.floor(Math.random() * pool.length)];
   state.used.push(q.id);
-  if (jinxed) team.effects = team.effects.filter((e) => e.kind !== 'jinx');
 
   const points = CONFIG.questionPoints;
-  const seconds = jinxed ? CONFIG.jinxSeconds : CONFIG.questionSeconds;
+  const seconds = CONFIG.questionSeconds;
 
   state.current = {
     q,
     unit: q.unit,
     level: q.level,
-    jinxed,
     points,
     removed: [],
     chosen: null,
@@ -448,7 +432,7 @@ function nextTurn() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Spell draft                                                         */
+/* Item draft                                                          */
 /* ------------------------------------------------------------------ */
 
 function draftReady() {
@@ -489,7 +473,7 @@ function draftPick(teamId, spellId) {
 
 function seedSpells() {
   if (state.teams.some((t) => t.learned.length)) return;
-  const starters = ['shield', 'double', 'jinx'];
+  const starters = ['shield', 'double', 'missile'];
   state.teams.forEach((t, i) => {
     t.learned = [starters[i % starters.length]];
     t.spells = [starters[i % starters.length]];
@@ -500,7 +484,7 @@ function seedSpells() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Spells                                                              */
+/* Items                                                               */
 /* ------------------------------------------------------------------ */
 
 function spellStatus(team, spellId) {
@@ -509,7 +493,7 @@ function spellStatus(team, spellId) {
   }
   if (spellId === 'shield') return { ok: false, label: 'PASSIVE' };
   if (spellId === 'double' && team.buffs.double) return { ok: false, label: 'ARMED' };
-  if (spellId === 'jinx' && state.phase !== 'prep') {
+  if (spellId === 'missile' && state.phase !== 'prep') {
     return { ok: false, label: 'PREP ONLY' };
   }
   if (!team.spells.includes(spellId)) return { ok: false, label: 'USED' };
@@ -526,7 +510,7 @@ function useSpell(spellId) {
     return;
   }
 
-  if (spellId === 'jinx') {
+  if (spellId === 'missile') {
     ui.pendingSpell = spellId;
     ui.modal = 'target';
     render();
@@ -603,20 +587,26 @@ function castSpell(spellId, targetId) {
 
   pushUndo();
   const blocked = target.spells.includes('shield');
+  const damage = blocked ? 0 : Math.min(100, target.score);
   ui.modal = null;
   ui.pendingSpell = null;
   ui.animating = true;
   ui.fx = null;
   render();
 
-  playCast(actor.id, target.id, spellId, blocked).then(() => {
+  playCast(actor.id, target.id, spellId, blocked, damage).then(() => {
     removeSpell(actor, spellId);
     if (blocked) {
       removeSpell(target, 'shield');
       toast(`${target.name}'s Shield blocked ${spell.name}!`, 'bad');
     } else {
-      addEffect(target, spellId, actor.id);
-      toast(`${spell.name} cast on ${target.name}.`, 'bad');
+      target.score = Math.max(0, target.score - 100);
+      toast(
+        damage > 0
+          ? `${spell.name} hits ${target.name} for ${damage} points!`
+          : `${spell.name} hits ${target.name}, but they have 0 points.`,
+        'bad'
+      );
     }
     ui.animating = false;
     save();
@@ -624,7 +614,7 @@ function castSpell(spellId, targetId) {
   });
 }
 
-function playCast(actorId, targetId, spellId, blocked) {
+function playCast(actorId, targetId, spellId, blocked, damage = 0) {
   return new Promise((resolve) => {
     const item = SPELL_BY_ID[spellId];
     const ring = ringCenter(actorId);
@@ -669,10 +659,10 @@ function playCast(actorId, targetId, spellId, blocked) {
       pixelBurst(end.x, end.y, item.color, blocked ? 8 : 18);
       if (blocked) shieldBurst(end.x, end.y);
       floatText(
-        blocked ? 'BLOCKED!' : item.name.toUpperCase(),
+        blocked ? 'BLOCKED!' : damage > 0 ? `-${damage}` : 'NO DAMAGE',
         end.x,
         end.y - 48,
-        blocked ? '#41e0ff' : item.color,
+        blocked ? '#41e0ff' : damage > 0 ? '#ff3b5c' : item.color,
         'big'
       );
       targetEl?.classList.add('hit');
@@ -1077,11 +1067,6 @@ function effectChips(team) {
       `<span class="effect-chip" style="--c:#ffd23f" title="Double Down">${svgIcon('bolt')}</span>`
     );
   }
-  if (hasEffect(team, 'jinx')) {
-    chips.push(
-      `<span class="effect-chip" style="--c:#a855f7" title="Jinxed">${svgIcon('jinx')}</span>`
-    );
-  }
   return chips.join('');
 }
 
@@ -1147,7 +1132,7 @@ function renderSetup() {
   return `
     <section class="setup">
       <div class="setup-hero">
-        <span class="hero-kicker">MIKU · TETO · AKITA</span>
+        <span class="hero-kicker">BLUE · RED · YELLOW</span>
         <h1>BASADO BOWL</h1>
         <p class="tagline">THREE TEAMS · ONE BOWL · ANSWER · EARN · SABOTAGE</p>
       </div>
@@ -1218,16 +1203,14 @@ function renderSetup() {
           <h2>TEAMS</h2>
           <div class="team-name-list">
             ${state.teams
-              .map((t) => {
+              .map((t, i) => {
                 const meta = teamMeta(t.id);
-                const character = CHARACTERS[t.character] || CHARACTERS.miku;
                 return `
                   <div class="team-name-row" style="${teamStyle(meta)}">
                     <div class="setup-char">${characterSVG(t.character)}</div>
                     <div class="team-input-wrap">
-                      <span class="team-char-name">${character.name}</span>
-                      <input data-team-name="${t.id}" value="${esc(t.name)}" maxlength="14"
-                        aria-label="${character.name} team name" />
+                      <span class="team-char-name">TEAM ${i + 1}</span>
+                      <strong class="team-fixed-name">${esc(t.name)}</strong>
                     </div>
                   </div>`;
               })
@@ -1236,8 +1219,8 @@ function renderSetup() {
           <h2>HOW IT WORKS</h2>
           <ul class="rules">
             <li>Each team answers a question drawn at random from the units you choose. Every question is worth <strong>100 points</strong> on a 30-second timer.</li>
-            <li>Before round 1, each team drafts one <strong>spell</strong>.</li>
-            <li>Draft one new spell after every 5 rounds. A team holds only one spell at a time.</li>
+            <li>Before round 1, each team drafts one <strong>item</strong>.</li>
+            <li>Draft one new item after every 5 rounds. A team holds only one item at a time.</li>
             <li>Highest score after the set rounds wins.</li>
           </ul>
         </section>
@@ -1247,7 +1230,7 @@ function renderSetup() {
         ${state.teams
           .map((t) => {
             const meta = teamMeta(t.id);
-            const character = CHARACTERS[t.character] || CHARACTERS.miku;
+            const character = CHARACTERS[t.character] || CHARACTERS.blue;
             return `
               <div class="lineup-slot" style="${teamStyle(meta)}">
                 <div class="lineup-char">${characterSVG(t.character)}</div>
@@ -1275,7 +1258,7 @@ function turnRibbon(team, meta) {
         <span class="ribbon-kicker">ROUND ${state.round} / ${state.roundLimit}</span>
         <h2>${esc(team.name).toUpperCase()}'S TURN</h2>
       </div>
-      <div class="ribbon-spells">SPELL: ${
+      <div class="ribbon-spells">ITEM: ${
         team.spells[0] ? SPELL_BY_ID[team.spells[0]].short.toUpperCase() : 'NONE'
       }</div>
     </div>`;
@@ -1283,7 +1266,7 @@ function turnRibbon(team, meta) {
 
 function spellTray(team) {
   const id = team.spells[0];
-  if (!id) return '<div class="tray-slot empty" title="No spell held">+</div>';
+  if (!id) return '<div class="tray-slot empty" title="No item held">+</div>';
   const spell = SPELL_BY_ID[id];
   const st = spellStatus(team, id);
   return `
@@ -1320,17 +1303,17 @@ function spellLoadout(team) {
         <span class="spell-orb-big">${svgIcon(last ? last.icon : 'slot')}</span>
         <span class="spell-state">${last ? 'USED' : 'EMPTY'}</span>
       </div>
-      <h3>${last ? last.name : 'No spell held'}</h3>
-      <p>${last ? 'That spell has been used. Draft one after the next 5-round block.' : 'Draft a spell after the next 5-round block.'}</p>
+      <h3>${last ? last.name : 'No item held'}</h3>
+      <p>${last ? 'That item has been used. Draft one after the next 5-round block.' : 'Draft an item after the next 5-round block.'}</p>
       <button type="button" class="btn" disabled>${last ? 'USED' : 'EMPTY SLOT'}</button>
     </article>`;
 }
 
 function nextDraftHint(team) {
   const next = nextDraftRound();
-  if (!next) return 'NO MORE SPELL DRAFTS.';
+  if (!next) return 'NO MORE ITEM DRAFTS.';
   const held = SPELL_BY_ID[team.spells[0]];
-  return `${held ? `HOLDING ${held.short.toUpperCase()} · ` : ''}NEXT SPELL DRAFT: ROUND ${next}.`;
+  return `${held ? `HOLDING ${held.short.toUpperCase()} · ` : ''}NEXT ITEM DRAFT: ROUND ${next}.`;
 }
 
 function renderPrep() {
@@ -1342,9 +1325,9 @@ function renderPrep() {
       <div class="prep-main">
         <div class="prep-body">
           <div class="prep-head">
-            <span class="kick">YOUR SPELL</span>
+            <span class="kick">YOUR ITEM</span>
             <h2>READY UP</h2>
-            <p>One spell in hand. Use it before the next draft.</p>
+            <p>One item in hand. Use it before the next draft.</p>
           </div>
           <div class="loadout one">${spellLoadout(team)}</div>
           <button type="button" class="btn draw-btn" data-action="draw">DRAW A QUESTION →</button>
@@ -1363,8 +1346,8 @@ function renderDraft() {
     <section class="phase draft">
       <div class="draft-head">
         <span class="kick">ROUND ${state.round} / ${state.roundLimit}</span>
-        <h2>SPELL DRAFT</h2>
-        <p>Each team picks one spell. It replaces the spell they are holding.</p>
+        <h2>ITEM DRAFT</h2>
+        <p>Each team picks one item. It replaces the item they are holding.</p>
       </div>
       <div class="draft-grid">
         ${state.teams
@@ -1376,7 +1359,7 @@ function renderDraft() {
                 <div class="draft-team-head">
                   <span class="draft-mini">${characterSVG(t.character)}</span>
                   <strong>${esc(t.name)}</strong>
-                  <em>${held ? held.short.toUpperCase() : 'NO SPELL'}</em>
+                  <em>${held ? held.short.toUpperCase() : 'NO ITEM'}</em>
                 </div>
                 <div class="draft-spells">
                   ${CONFIG.spells
@@ -1440,7 +1423,6 @@ function renderQuestion() {
       <div class="q-top">
         <div class="q-badges">
           <span class="badge" style="--c:${cat.color}">${svgIcon(cat.icon)} ${cat.short}</span>
-          ${cur.jinxed ? `<span class="badge jinxed">${svgIcon('jinx')} JINXED</span>` : ''}
           <span class="badge pts">${cur.points} PTS</span>
         </div>
         ${state.settings.timer ? timerHTML(cur) : '<span class="timer-off">NO TIMER</span>'}
@@ -1598,15 +1580,15 @@ function renderModal() {
       <div class="how-grid">
         <div>
           <h3>TURN</h3>
-          <p>Draft one spell, draw a random question from the selected units, then answer as a class. The teacher taps the answer the team commits to.</p>
+          <p>Draft one item, draw a random question from the selected units, then answer as a class. The teacher taps the answer the team commits to.</p>
         </div>
         <div>
           <h3>SCORE</h3>
-          <p>Every question is worth 100 points on a 30-second timer. Each team drafts one spell before round 1, then one new spell after every 5 rounds.</p>
+          <p>Every question is worth 100 points on a 30-second timer. Each team drafts one item before round 1, then one new item after every 5 rounds.</p>
         </div>
         <div>
-          <h3>SPELLS</h3>
-          <p>Each team holds one spell at a time, shown as a single orb over the open palm. Using it frees the slot. Picking the same spell at a later draft keeps it; picking another replaces it. Jinx forces a hard question, still worth 100 points, with 15 seconds.</p>
+          <h3>ITEMS</h3>
+          <p>Each team holds one item at a time, shown as a single orb over the open palm. Using it frees the slot. Picking the same item at a later draft keeps it; picking another replaces it. Magic Missile deals 100 points of damage unless the target has a Shield.</p>
         </div>
         <div>
           <h3>WIN</h3>
@@ -1621,7 +1603,7 @@ function renderModal() {
   if (ui.modal === 'confirm-restart') {
     return overlay(`
       <h2>RESTART MATCH?</h2>
-      <p class="modal-sub">Scores, spells, and the current turn will be reset.</p>
+      <p class="modal-sub">Scores, items, and the current turn will be reset.</p>
       <div class="modal-actions">
         <button type="button" class="btn primary" data-action="confirm-restart">YES, RESTART</button>
         <button type="button" class="btn ghost" data-action="close-modal">CANCEL</button>
@@ -1643,7 +1625,7 @@ function renderModal() {
     const actor = currentTeam();
     return overlay(`
       <h2>${svgIcon(spell.icon, 'lg')} ${spell.name.toUpperCase()}</h2>
-      <p class="modal-sub">Who do you want to cast it on?</p>
+      <p class="modal-sub">Who do you want to hit?</p>
       <div class="target-grid">
         ${state.teams
           .filter((t) => t.id !== actor.id)
@@ -1944,16 +1926,6 @@ app.addEventListener('click', (e) => {
   const el = e.target.closest('[data-action]');
   if (!el) return;
   handleAction(el.dataset.action, el);
-});
-
-app.addEventListener('input', (e) => {
-  const input = e.target.closest('[data-team-name]');
-  if (!input) return;
-  const team = state.teams.find((t) => t.id === input.dataset.teamName);
-  if (team) {
-    team.name = input.value;
-    save();
-  }
 });
 
 app.addEventListener('contextmenu', (e) => {

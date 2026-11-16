@@ -1,8 +1,7 @@
 // Original chibi pixel-art characters for Basado Bowl.
 //
 // These are hand-built SVG pixel sprites (a 40x48 grid), not official artwork.
-// Miku, Teto, and Akita are used as fan characters; the sprites are original
-// interpretations based on their colour palettes and silhouettes.
+// The three teams are Blue, Red, and Yellow.
 
 const OUT = '#1b1b3a';
 const SKIN = '#ffd9c0';
@@ -80,7 +79,7 @@ function openArm(outfit) {
   `;
 }
 
-function mikuSprite() {
+function blueSprite() {
   return wrap(`
     <!-- twin-tails behind the body -->
     <rect x="4" y="7" width="6" height="14" fill="${OUT}"/>
@@ -125,7 +124,7 @@ function mikuSprite() {
   `);
 }
 
-function tetoSprite() {
+function redSprite() {
   return wrap(`
     <!-- drill twin-tails behind the body -->
     <rect x="3" y="7" width="7" height="7" fill="${OUT}"/>
@@ -170,7 +169,7 @@ function tetoSprite() {
   `);
 }
 
-function akitaSprite() {
+function yellowSprite() {
   return wrap(`
     ${baseBody({
       outfit: '#2b3a6b',
@@ -222,32 +221,32 @@ function akitaSprite() {
 }
 
 export const CHARACTERS = {
-  miku: {
-    id: 'miku',
-    name: 'Miku',
-    fullName: 'Miku',
+  blue: {
+    id: 'blue',
+    name: 'Blue',
+    fullName: 'Blue',
     hair: '#39c5bb',
     accent: '#39c5bb',
-    sprite: mikuSprite(),
+    sprite: blueSprite(),
   },
-  teto: {
-    id: 'teto',
-    name: 'Teto',
-    fullName: 'Teto',
+  red: {
+    id: 'red',
+    name: 'Red',
+    fullName: 'Red',
     hair: '#e23b4e',
     accent: '#e23b4e',
-    sprite: tetoSprite(),
+    sprite: redSprite(),
   },
-  akita: {
-    id: 'akita',
-    name: 'Akita',
-    fullName: 'Akita',
+  yellow: {
+    id: 'yellow',
+    name: 'Yellow',
+    fullName: 'Yellow',
     hair: '#ffd447',
     accent: '#ffd23f',
-    sprite: akitaSprite(),
+    sprite: yellowSprite(),
   },
 };
 
 export function characterSVG(id) {
-  return (CHARACTERS[id] || CHARACTERS.miku).sprite;
+  return (CHARACTERS[id] || CHARACTERS.blue).sprite;
 }

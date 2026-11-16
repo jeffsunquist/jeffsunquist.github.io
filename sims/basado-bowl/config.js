@@ -1,7 +1,7 @@
 // Basado Bowl — tuning knobs.
 //
 // Everything here is data. To rebalance the game, change a number. To add a
-// spell, add one object to `spells` and handle it in game.js.
+// item, add one object to `spells` and handle it in game.js.
 
 export const CONFIG = {
   maxSpells: 1,
@@ -11,30 +11,29 @@ export const CONFIG = {
   // Every question is worth the same, regardless of its internal level.
   questionPoints: 100,
   questionSeconds: 30,
-  jinxSeconds: 15,
 
-  // Turn order is the array order: Miku -> Teto -> Akita.
+  // Turn order is the array order: Blue -> Red -> Yellow.
   teams: [
     {
-      id: 'miku',
-      name: 'Miku',
-      character: 'miku',
+      id: 'blue',
+      name: 'Blue',
+      character: 'blue',
       color: '#1e6bff',
       soft: '#dcecff',
       ink: '#0b3a9e',
     },
     {
-      id: 'teto',
-      name: 'Teto',
-      character: 'teto',
+      id: 'red',
+      name: 'Red',
+      character: 'red',
       color: '#ff3b5c',
       soft: '#ffe1e7',
       ink: '#9e0b2b',
     },
     {
-      id: 'akita',
-      name: 'Akita',
-      character: 'akita',
+      id: 'yellow',
+      name: 'Yellow',
+      character: 'yellow',
       color: '#ffd23f',
       soft: '#fff6c9',
       ink: '#713f12',
@@ -92,7 +91,7 @@ export const CONFIG = {
     },
   ],
 
-  // The three spells. Each team holds one at a time and drafts again every 5 rounds.
+  // The three items. Each team holds one at a time and drafts again every 5 rounds.
   spells: [
     {
       id: 'shield',
@@ -115,14 +114,14 @@ export const CONFIG = {
       draftDesc: 'Double your next correct answer.',
     },
     {
-      id: 'jinx',
-      name: 'Jinx',
-      short: 'Jinx',
-      icon: 'jinx',
+      id: 'missile',
+      name: 'Magic Missile',
+      short: 'Missile',
+      icon: 'missile',
       color: '#a855f7',
       type: 'attack',
-      desc: 'Cast at a team: their next question is Hard, worth 100 points, with 15 seconds.',
-      draftDesc: "Target's next question is Hard.",
+      desc: 'Deals 100 points of damage to a team without a Shield. Shield blocks it and breaks.',
+      draftDesc: '100 damage unless shielded.',
     },
   ],
 };

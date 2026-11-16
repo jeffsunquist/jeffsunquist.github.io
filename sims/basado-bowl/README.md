@@ -1,10 +1,11 @@
 # Basado Bowl
 
-Teacher-run, three-team physics trivia with original chibi pixel characters.
-Miku, Teto, and Akita stand on floating candy platforms. Each team drafts
-**spells**, answers questions, and casts at rivals across the arena. The teacher
-chooses the units once at setup; every turn draws a random question from those
-units. Every question is worth 100 points and runs on a 30-second timer.
+Teacher-run, three-team physics trivia with original chibi pixel art.
+The Blue, Red, and Yellow teams stand on floating candy platforms. Each team
+drafts **items**, answers questions, and uses them against rivals across the
+arena. The teacher chooses the units once at setup; every turn draws a random
+question from those units. Every question is worth 100 points and runs on a
+30-second timer.
 
 Published at **`/sims/basado-bowl/`** and listed as a **Game** card in the
 landing page's Sims & Demos section.
@@ -20,44 +21,46 @@ python3 -m http.server 8000
 
 No build step, no npm packages. Edit a file, refresh.
 
-## Characters and order
+## Teams and order
 
-| Turn | Character | Team colour | Look |
+| Turn | Team | Colour | Look |
 |---|---|---|---|
-| 1 | **Miku** | Blue | Teal twin-tails |
-| 2 | **Teto** | Red | Red drill twin-tails |
-| 3 | **Akita** | Yellow | Blonde side ponytail, yellow ribbon, school uniform |
+| 1 | **Blue** | Blue | Teal twin-tails |
+| 2 | **Red** | Red | Red drill twin-tails |
+| 3 | **Yellow** | Yellow | Blonde side ponytail, yellow ribbon, school uniform |
 
-The sprites in `characters.js` are original pixel-art interpretations drawn as
-SVG pixel grids. They are not official artwork or assets.
+The sprites in `characters.js` are original pixel art drawn as SVG pixel grids.
+They are not official artwork or assets.
 
-## The three spells
+## The three items
 
-| Spell | Type | Effect |
+| Item | Type | Effect |
 |---|---|---|
-| **Shield** | Passive | Blocks the next attack cast at the team. Breaks when it blocks. |
+| **Shield** | Passive | Blocks the next Magic Missile. Breaks when it blocks. |
 | **Double Down** | Self | Double the points from the next correct answer. |
-| **Jinx** | Attack | Cast at a team: their next question is Hard, 100 pts, 15 s. |
+| **Magic Missile** | Attack | Deals 100 points of damage to another team unless they have a Shield. |
 
-## One spell at a time
+## One item at a time
 
-- Before round 1, every team drafts **one spell**.
-- After every 5 completed rounds, every team drafts **one new spell**:
+- Before round 1, every team drafts **one item**.
+- After every 5 completed rounds, every team drafts **one new item**:
   after round 5 (before round 6) and after round 10 (before round 11).
   A 5-round game has only the opening draft.
-- A team holds **one spell at a time**, shown as a single orb over the open palm.
-- Picking the same spell again keeps it. Picking a different spell replaces the
-  held spell; an unused replaced spell is discarded.
-- Spells are not locked for the whole game, so they can be drafted again later.
-- Using a spell empties the slot. Shield stays held until it blocks an attack.
-- The prep screen and question tray show the single held spell, or an empty slot
+- A team holds **one item at a time**, shown as a single orb over the open palm.
+- Picking the same item again keeps it. Picking a different item replaces the
+  held item; an unused replaced item is discarded.
+- Items are not locked for the whole game, so they can be drafted again later.
+- Using an item empties the slot. Shield stays held until it blocks a Magic
+  Missile.
+- The prep screen and question tray show the single held item, or an empty slot
   after it has been used.
 
 ## Scoring
 
 Points only. Every question is worth **100 points**, regardless of its internal
-difficulty. Double Down doubles that to 200. Jinx still cuts the target to 15
-seconds. There are no stars or shop currency.
+difficulty. Double Down doubles that to 200. Magic Missile removes 100 points
+from the target, stopping at 0. Shield blocks it and breaks. There are no stars
+or shop currency.
 
 ## Question bank and grades
 
@@ -106,7 +109,7 @@ into `<sub>` and `^{...}` into `<sup>`. The validator rejects unbalanced markup.
 |---|---|
 | Question points, timer, round default, draft interval | `config.js` |
 | Team colours, names, characters | `config.js` → `teams` |
-| Spells and descriptions | `config.js` → `spells` |
+| Items and descriptions | `config.js` → `spells` |
 | Characters and pixel sprites | `characters.js` |
 | Curated questions | `questions/{sci,kin,for,ene}.js` |
 | Authored bank | `questions/bank/{sci,kin,for,ene,ele,wav}.js` |
@@ -137,7 +140,7 @@ Use `_{...}` for subscripts and `^{...}` for superscripts, for example
 `v_{0}` and `m/s^{2}`. Run `node tools/validate-questions.mjs` from this
 folder after editing.
 
-### Change the spells
+### Change the items
 
 Add or edit an object in `CONFIG.spells`:
 
@@ -163,13 +166,13 @@ Then handle the effect in `useSpell()` / `castSpell()` in `game.js`.
 | `?dev=1` | Floating dev bar: scores, draft, question, reveal, end, reset. |
 | `?fresh=1` | Clear the saved match and start at setup. |
 | `?phase=draft` | Seed a match and open the first draft. |
-| `?phase=question` | Seed a match with starter spells and jump to a question. |
+| `?phase=question` | Seed a match with starter items and jump to a question. |
 | `?fast=1` | Skip cast flights and disable CSS animation. |
 
-Console helpers: `BB.state`, `BB.addScore('miku', 100)`, `BB.phase('draft')`,
+Console helpers: `BB.state`, `BB.addScore('blue', 100)`, `BB.phase('draft')`,
 `BB.question()`, `BB.reset()`.
 
-The match autosaves to `localStorage` under `basado-bowl:v7`. Bump `VERSION` in
+The match autosaves to `localStorage` under `basado-bowl:v8`. Bump `VERSION` in
 `game.js` when the state shape changes so an old save is ignored.
 
 ## Fonts
@@ -187,7 +190,7 @@ They were downloaded from Google Fonts. See `fonts/README.md` for source links.
 `data/demos.csv` carries an optional fifth column:
 
 ```csv
-basado-bowl,Basado Bowl,both,Three teams answer physics trivia and cast spells to help or sabotage.,Game
+basado-bowl,Basado Bowl,both,Three teams answer physics trivia and use items to help or sabotage.,Game
 ```
 
 `Game` selects the amber card accent and `public/icons/game.svg`. For a fast
