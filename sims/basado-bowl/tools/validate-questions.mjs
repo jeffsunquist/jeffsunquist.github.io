@@ -44,6 +44,24 @@ function checkSymbols(q) {
   }
 }
 
+function checkLatex(q, value, field) {
+  const text = String(value ?? '');
+  let dollars = 0;
+  let escaped = false;
+  for (const char of text) {
+    if (char === '\\') {
+      escaped = !escaped;
+      continue;
+    }
+    if (char === '$' && !escaped) dollars += 1;
+    escaped = false;
+  }
+  if (dollars % 2 !== 0) fail(q, `unbalanced $ delimiters in ${field}`);
+  const open = (text.match(/\\\(/g) || []).length;
+  const close = (text.match(/\\\)/g) || []).length;
+  if (open !== close) fail(q, `unbalanced \\( \\) delimiters in ${field}`);
+}
+
 function checkMath(q, value, field) {
   const text = String(value ?? '');
   let i = 0;
@@ -98,8 +116,15 @@ for (const q of QUESTIONS) {
   }
 
   checkSymbols(q);
-  ['q', 'why'].forEach((field) => checkMath(q, q[field], field));
-  if (Array.isArray(q.a)) q.a.forEach((a, i) => checkMath(q, a, `choice ${'ABCD'[i]}`));
+  ['q', 'why'].forEach((field) => {
+    checkMath(q, q[field], field);
+    checkLatex(q, q[field], field);
+  });
+  if (Array.isArray(q.a)) q.a.forEach((a, i) => {
+    const field = `choice ${'ABCD'[i]}`;
+    checkMath(q, a, field);
+    checkLatex(q, a, field);
+  });
 
   const norm = String(q.q).toLowerCase().replace(/[^a-z0-9]/g, '');
   if (seenText.has(norm)) fail(q, `duplicate wording of ${seenText.get(norm)}`);

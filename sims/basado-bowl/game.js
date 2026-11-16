@@ -1,9 +1,12 @@
 import { CONFIG, SPELL_BY_ID, CATEGORY_BY_ID } from './config.js';
 import { QUESTIONS } from './questions.js';
 import { CHARACTERS, characterSVG } from './characters.js';
+import { loadKatex } from './katex-loader.js';
 
-const VERSION = 8;
-const SAVE_KEY = 'basado-bowl:v8';
+await loadKatex();
+
+const VERSION = 11;
+const SAVE_KEY = 'basado-bowl:v11';
 const params = new URLSearchParams(location.search);
 const app = document.getElementById('app');
 
@@ -41,6 +44,7 @@ const ICON_PATHS = {
   fifty: '<circle cx="6" cy="7" r="2.4"/><circle cx="6" cy="17" r="2.4"/><path d="M8 8.4 20 19M8 15.6 20 5"/>',
   reroll: '<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v6h-6"/>',
   missile: '<path d="M14 3l7 7-8 8-4-4 5-11z"/><path d="M9 15l-4 4"/><path d="M15 9l1.5 1.5"/>',
+  jinx: '<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/>',
   jammer: '<circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/>',
   heist: '<path d="M9 8V6.5a3 3 0 0 1 6 0V8"/><path d="M6 8h12l-1 12H7L6 8z"/><path d="M12 12v4M10 14h4"/>',
   sci: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
@@ -78,10 +82,212 @@ function esc(value) {
   }[c]));
 }
 
-function mathText(value) {
+function mathMarkup(value) {
   return esc(value)
     .replace(/_\{([^{}]*)\}/g, '<sub>$1</sub>')
     .replace(/\^\{([^{}]*)\}/g, '<sup>$1</sup>');
+}
+
+function renderTex(tex, display = false) {
+  if (!window.katex) return mathMarkup(tex);
+  try {
+    return window.katex.renderToString(tex, {
+      displayMode: display,
+      throwOnError: true,
+      trust: false,
+      strict: 'ignore',
+    });
+  } catch {
+    return mathMarkup(tex);
+  }
+}
+
+const FORMULA_TEX = [
+  ['F_{f} = μF_{N}', 'F_{f} = \\mu F_{N}'],
+  ['F_{G} = G m_{1}m_{2}/r^{2}', 'F_{G} = G m_{1}m_{2}/r^{2}'],
+  ['F_{e} = k|q_{1}||q_{2}|/r^{2}', 'F_{e} = k|q_{1}||q_{2}|/r^{2}'],
+  ['v^{2} = v_{0}^{2} + 2aΔx', 'v^{2} = v_{0}^{2} + 2a\\Delta x'],
+  ['Δx = v_{0}t + 1/2 at^{2}', '\\Delta x = v_{0}t + \\frac{1}{2}at^{2}'],
+  ['F_{1}d_{1} = F_{2}d_{2}', 'F_{1}d_{1} = F_{2}d_{2}'],
+  ['K = 1/2 mv^{2}', 'K = \\frac{1}{2}mv^{2}'],
+  ['1/2 mv^{2}', '\\frac{1}{2}mv^{2}'],
+  ['1/2 mv²', '\\frac{1}{2}mv^{2}'],
+  ['1/2 at^{2}', '\\frac{1}{2}at^{2}'],
+  ['1/2 gt^{2}', '\\frac{1}{2}gt^{2}'],
+  ['F_{g} = mg', 'F_{g} = mg'],
+  ['F_{net} = ma', 'F_{net} = ma'],
+  ['U_{g} = mgh', 'U_{g} = mgh'],
+  ['U = mgh', 'U = mgh'],
+  ['a = change in velocity / change in time', 'a = \\frac{\\Delta v}{\\Delta t}'],
+  ['h = U_{g}/(mg)', 'h = U_{g}/(mg)'],
+  ['h = U_{g}/m', 'h = U_{g}/m'],
+  ['h = U_{g}mg', 'h = U_{g}mg'],
+  ['h = mg/U_{g}', 'h = mg/U_{g}'],
+  ['m = U_{g}/(gh)', 'm = U_{g}/(gh)'],
+  ['m = U_{g}/g', 'm = U_{g}/g'],
+  ['m = U_{g}gh', 'm = U_{g}gh'],
+  ['m = gh/U_{g}', 'm = gh/U_{g}'],
+  ['E = K + U', 'E = K + U'],
+  ['E = K - U', 'E = K - U'],
+  ['E = K × U', 'E = K \\times U'],
+  ['E = U - K', 'E = U - K'],
+  ['E = mc²', 'E = mc^{2}'],
+  ['U = E + K', 'U = E + K'],
+  ['U = E - K', 'U = E - K'],
+  ['U = E / K', 'U = E / K'],
+  ['U = K - E', 'U = K - E'],
+  ['I = VR', 'I = VR'],
+  ['R = VI', 'R = VI'],
+  ['V = I/R', 'V = I/R'],
+  ['a = F/m', 'a = F/m'],
+  ['a = m/F', 'a = m/F'],
+  ['a = v/t', 'a = v/t'],
+  ['p = mv', 'p = mv'],
+  ['W = FΔx', 'W = F\\Delta x'],
+  ['W = Fd', 'W = Fd'],
+  ['W = mgh', 'W = mgh'],
+  ['P = W/t', 'P = W/t'],
+  ['I = V/R', 'I = V/R'],
+  ['V = IR', 'V = IR'],
+  ['f = 1/T', 'f = 1/T'],
+  ['v = λf', 'v = \\lambda f'],
+  ['τ = Fd', '\\tau = Fd'],
+  ['q = ne', 'q = ne'],
+  ['v = v_{0} + at', 'v = v_{0} + at'],
+  ['v = Δx/t', 'v = \\Delta x/t'],
+  ['a = (v - v_{0})/t', 'a = (v - v_{0})/t'],
+  ['a = F_{net}/m', 'a = F_{net}/m'],
+  ['Δx = x - x_{0}', '\\Delta x = x - x_{0}'],
+  ['v = √(2gh)', 'v = \\sqrt{2gh}'],
+  ['v = √(2aΔx)', 'v = \\sqrt{2a\\Delta x}'],
+  ['v = √(2K/m)', 'v = \\sqrt{2K/m}'],
+  ['W = F_{g}d = mgh', 'W = F_{g}d = mgh'],
+  ['W = F_{g}Δx = mgh', 'W = F_{g}\\Delta x = mgh'],
+].sort((a, b) => b[0].length - a[0].length);
+
+const TOKEN_TEX = {
+  'kg·m/s²': '\\mathrm{kg\\cdot m/s^{2}}',
+  'm/s^{2}': '\\mathrm{m/s^{2}}',
+  'm/s²': '\\mathrm{m/s^{2}}',
+  'm/s': '\\mathrm{m/s}',
+  'km/h': '\\mathrm{km/h}',
+  'g/cm^{3}': '\\mathrm{g/cm^{3}}',
+  'cm^{3}': '\\mathrm{cm^{3}}',
+  'kg/m³': '\\mathrm{kg/m^{3}}',
+  'N/m²': '\\mathrm{N/m^{2}}',
+  'J/s': '\\mathrm{J/s}',
+  'N·m': '\\mathrm{N\\cdot m}',
+  '°C': '^\\circ\\mathrm{C}',
+  'Δx': '\\Delta x',
+  'Δv': '\\Delta v',
+  'Δt': '\\Delta t',
+  'Δp': '\\Delta p',
+  'Δ': '\\Delta',
+  'μ': '\\mu',
+  'λ': '\\lambda',
+  'τ': '\\tau',
+  'Ω': '\\Omega',
+  'θ': '\\theta',
+  'π': '\\pi',
+  '×': '\\times',
+  '÷': '\\div',
+  '≈': '\\approx',
+  '≤': '\\le',
+  '≥': '\\ge',
+  '→': '\\to',
+  '°': '^\\circ',
+  '²': '^{2}',
+  '³': '^{3}',
+};
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+const TOKEN_RE = new RegExp(
+  Object.keys(TOKEN_TEX)
+    .sort((a, b) => b.length - a.length)
+    .map(escapeRegExp)
+    .join('|'),
+  'g'
+);
+
+function toTex(text) {
+  return String(text)
+    .replace(/×/g, '\\times ')
+    .replace(/Δx/g, '\\Delta x')
+    .replace(/Δ/g, '\\Delta ')
+    .replace(/μ/g, '\\mu ')
+    .replace(/λ/g, '\\lambda ')
+    .replace(/τ/g, '\\tau ')
+    .replace(/Ω/g, '\\Omega ')
+    .replace(/θ/g, '\\theta ')
+    .replace(/√/g, '\\sqrt ')
+    .replace(/²/g, '^{2}')
+    .replace(/³/g, '^{3}');
+}
+
+const SENTINEL = '\u0001';
+
+function autoMath(value) {
+  const maths = [];
+  const stash = (tex) => `${SENTINEL}${maths.push(tex) - 1}${SENTINEL}`;
+  let out = String(value ?? '');
+
+  for (const [needle, tex] of FORMULA_TEX) {
+    out = out.split(needle).join(stash(tex));
+  }
+
+  out = out.replace(/√\(([^)]+)\)/g, (match, inner) =>
+    stash(`\\sqrt{${toTex(inner)}}`)
+  );
+  out = out.replace(/10\^\{?([-+]?\d+)\}?/g, (match, exp) => stash(`10^{${exp}}`));
+  out = out.replace(/([A-Za-zΔμλτΩθ])_\{([^{}]+)\}/g, (match, base, sub) =>
+    stash(`${base}_{${sub}}`)
+  );
+  out = out.replace(TOKEN_RE, (match) => stash(TOKEN_TEX[match]));
+  out = out.replace(/([A-Za-z0-9)])\^\{([^{}]+)\}/g, (match, base, exp) =>
+    stash(`${base}^{${exp}}`)
+  );
+  out = out.replace(/([A-Za-z0-9)])([²³])/g, (match, base, sup) =>
+    stash(`${base}^{${sup === '²' ? 2 : 3}}`)
+  );
+
+  out = esc(out)
+    .replace(/_\{([^{}]*)\}/g, '<sub>$1</sub>')
+    .replace(/\^\{([^{}]*)\}/g, '<sup>$1</sup>');
+
+  return out.replace(/\u0001(\d+)\u0001/g, (match, index) =>
+    renderTex(maths[Number(index)])
+  );
+}
+
+const EXPLICIT_MATH = /(\$\$[\s\S]+?\$\$|\$[^$\n]+\$|\\\([\s\S]+?\\\))/g;
+
+function richText(value) {
+  const text = String(value ?? '');
+  if (!window.katex) return mathMarkup(text);
+
+  let out = '';
+  let last = 0;
+  let match;
+  EXPLICIT_MATH.lastIndex = 0;
+
+  while ((match = EXPLICIT_MATH.exec(text))) {
+    out += autoMath(text.slice(last, match.index));
+    const token = match[0];
+    const display = token.startsWith('$$');
+    const tex = display
+      ? token.slice(2, -2)
+      : token.startsWith('\\(')
+      ? token.slice(2, -2)
+      : token.slice(1, -1);
+    out += renderTex(tex, display);
+    last = EXPLICIT_MATH.lastIndex;
+  }
+
+  out += autoMath(text.slice(last));
+  return out;
 }
 
 function teamMeta(id) {
@@ -92,8 +298,17 @@ function teamStyle(meta) {
   return `--team:${meta.color};--team-soft:${meta.soft};--team-ink:${meta.ink}`;
 }
 
+function isSuddenDeath() {
+  return Array.isArray(state.contenders) && state.contenders.length > 0;
+}
+
+function activeTeams() {
+  if (!isSuddenDeath()) return state.teams;
+  return state.teams.filter((t) => state.contenders.includes(t.id));
+}
+
 function currentTeam() {
-  return state.teams[state.turn];
+  return activeTeams()[state.turn] || state.teams[0];
 }
 
 function removeSpell(team, id) {
@@ -117,6 +332,45 @@ function toast(message, kind = '') {
   toastTimer = setTimeout(() => {
     toastEl.className = '';
   }, 2400);
+}
+
+const SEED_COUNTER_KEY = 'basado-bowl:seedCounter';
+
+function hashSeed(value) {
+  let hash = 2166136261;
+  for (const char of String(value)) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function makeMatchSeed() {
+  let counter = 0;
+  try {
+    counter = (Number(localStorage.getItem(SEED_COUNTER_KEY)) || 0) + 1;
+    localStorage.setItem(SEED_COUNTER_KEY, String(counter));
+  } catch {
+    counter = 0;
+  }
+  let random = 0;
+  try {
+    const values = new Uint32Array(1);
+    crypto.getRandomValues(values);
+    random = values[0];
+  } catch {
+    random = Math.floor(Math.random() * 0xffffffff);
+  }
+  return hashSeed(`${Date.now()}:${counter}:${random}`) || 1;
+}
+
+function nextRandom() {
+  const current = Number.isFinite(state.rngState) ? state.rngState : state.seed || 1;
+  state.rngState = (current + 0x6d2b79f5) >>> 0;
+  let t = state.rngState;
+  t = Math.imul(t ^ (t >>> 15), 1 | t);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 
 function spellOrb(spell, cls = '') {
@@ -149,6 +403,7 @@ function defaultState() {
       effects: [],
       correct: 0,
       total: 0,
+      jinxTurns: 0,
     })),
     turn: 0,
     round: 1,
@@ -156,6 +411,10 @@ function defaultState() {
     used: [],
     current: null,
     draft: {},
+    contenders: null,
+    seed: null,
+    rngState: 0,
+    lastQuestionId: null,
   };
 }
 
@@ -198,10 +457,15 @@ function load() {
       t.effects = Array.isArray(t.effects) ? t.effects : [];
       t.correct = t.correct || 0;
       t.total = t.total || 0;
+      t.jinxTurns = Number.isFinite(t.jinxTurns) ? Math.max(0, Math.floor(t.jinxTurns)) : 0;
       t.character = t.character || teamMeta(t.id).character;
     });
     s.used = Array.isArray(s.used) ? s.used : [];
     s.draft = s.draft && typeof s.draft === 'object' ? s.draft : {};
+    s.contenders = Array.isArray(s.contenders) && s.contenders.length ? s.contenders : null;
+    s.seed = Number.isFinite(s.seed) ? s.seed >>> 0 : makeMatchSeed();
+    s.rngState = Number.isFinite(s.rngState) ? s.rngState >>> 0 : s.seed;
+    s.lastQuestionId = typeof s.lastQuestionId === 'string' ? s.lastQuestionId : null;
     if (!s.roundLimit) s.roundLimit = s.settings.rounds;
     return s;
   } catch {
@@ -249,6 +513,7 @@ function resetTeams() {
     t.effects = [];
     t.correct = 0;
     t.total = 0;
+    t.jinxTurns = 0;
   });
 }
 
@@ -261,12 +526,16 @@ function startMatch() {
     t.name = String(t.name || '').trim() || CONFIG.teams[i].name;
   });
   resetTeams();
+  state.seed = makeMatchSeed();
+  state.rngState = state.seed;
+  state.lastQuestionId = null;
   state.turn = 0;
   state.round = 1;
   state.roundLimit = state.settings.rounds;
   state.used = [];
   state.current = null;
   state.draft = {};
+  state.contenders = null;
   state.phase = 'draft';
   undoStack = [];
   ui = { modal: null, pendingSpell: null, animating: false, fx: null };
@@ -284,6 +553,7 @@ function newSetup() {
   state.current = null;
   state.used = [];
   state.draft = {};
+  state.contenders = null;
   undoStack = [];
   ui = { modal: null, pendingSpell: null, animating: false, fx: null };
   save();
@@ -291,7 +561,15 @@ function newSetup() {
 }
 
 function suddenDeath() {
+  const max = Math.max(...state.teams.map((t) => t.score));
+  const tied = state.teams.filter((t) => t.score === max);
+  if (tied.length < 2) return;
   pushUndo();
+  state.contenders = tied.map((t) => t.id);
+  state.teams.forEach((t) => {
+    t.buffs = {};
+    t.jinxTurns = 0;
+  });
   state.roundLimit = Math.max(state.roundLimit, state.round);
   state.round = state.roundLimit;
   state.turn = 0;
@@ -327,24 +605,42 @@ function drawRandomQuestion() {
     return;
   }
 
-  pushUndo();
-  let pool = selected.filter((q) => !state.used.includes(q.id));
-  if (!pool.length) {
-    state.used = state.used.filter((id) => !selected.some((q) => q.id === id));
-    pool = selected.slice();
-    toast('Question bank reshuffled.');
+  const sudden = isSuddenDeath();
+  const bank = sudden ? selected.filter((q) => q.level === 3) : selected;
+  if (!bank.length) {
+    toast('No hard questions are available for the selected units.');
+    return;
   }
 
-  const q = pool[Math.floor(Math.random() * pool.length)];
+  pushUndo();
+  let pool = bank.filter((q) => !state.used.includes(q.id));
+  if (!pool.length) {
+    state.used = state.used.filter((id) => !bank.some((q) => q.id === id));
+    pool = bank.slice();
+    toast(sudden ? 'Sudden-death hard questions reshuffled.' : 'Question bank reshuffled.');
+  }
+
+  if (pool.length > 1 && state.lastQuestionId) {
+    const withoutLast = pool.filter((q) => q.id !== state.lastQuestionId);
+    if (withoutLast.length) pool = withoutLast;
+  }
+  const q = pool[Math.floor(nextRandom() * pool.length)];
+  state.lastQuestionId = q.id;
   state.used.push(q.id);
 
+  const team = currentTeam();
+  const jinxed = !sudden && (team.jinxTurns || 0) > 0;
   const points = CONFIG.questionPoints;
-  const seconds = CONFIG.questionSeconds;
+  const seconds = sudden
+    ? CONFIG.suddenDeathSeconds
+    : CONFIG.questionSeconds - (jinxed ? CONFIG.jinxPenaltySeconds : 0);
 
   state.current = {
     q,
     unit: q.unit,
     level: q.level,
+    suddenDeath: sudden,
+    jinxed,
     points,
     removed: [],
     chosen: null,
@@ -382,11 +678,12 @@ function answer(index) {
 
   if (correct) {
     points = cur.points;
-    if (team.buffs.double) points *= 2;
+    if (team.buffs.double && !isSuddenDeath()) points *= 2;
     team.score += points;
     team.correct += 1;
   }
   if (team.buffs.double) delete team.buffs.double;
+  if (cur.jinxed) team.jinxTurns = Math.max(0, (team.jinxTurns || 1) - 1);
 
   cur.earned = { points, correct };
   state.phase = 'reveal';
@@ -403,7 +700,7 @@ function nextTurn() {
   state.current = null;
   state.turn += 1;
   let roundAdvanced = false;
-  if (state.turn >= state.teams.length) {
+  if (state.turn >= activeTeams().length) {
     state.turn = 0;
     state.round += 1;
     roundAdvanced = true;
@@ -488,12 +785,16 @@ function seedSpells() {
 /* ------------------------------------------------------------------ */
 
 function spellStatus(team, spellId) {
+  if (isSuddenDeath()) return { ok: false, label: 'SUDDEN DEATH' };
   if (state.phase !== 'prep' && state.phase !== 'question') {
     return { ok: false, label: 'NOT NOW' };
   }
+  if (spellId === 'jinx' && !state.settings.timer) {
+    return { ok: false, label: 'TIMER OFF' };
+  }
   if (spellId === 'shield') return { ok: false, label: 'PASSIVE' };
   if (spellId === 'double' && team.buffs.double) return { ok: false, label: 'ARMED' };
-  if (spellId === 'missile' && state.phase !== 'prep') {
+  if ((spellId === 'missile' || spellId === 'jinx') && state.phase !== 'prep') {
     return { ok: false, label: 'PREP ONLY' };
   }
   if (!team.spells.includes(spellId)) return { ok: false, label: 'USED' };
@@ -510,7 +811,7 @@ function useSpell(spellId) {
     return;
   }
 
-  if (spellId === 'missile') {
+  if (spellId === 'missile' || spellId === 'jinx') {
     ui.pendingSpell = spellId;
     ui.modal = 'target';
     render();
@@ -582,12 +883,12 @@ function castSpell(spellId, targetId) {
   const actor = currentTeam();
   const target = state.teams.find((t) => t.id === targetId);
   const spell = SPELL_BY_ID[spellId];
-  if (!actor || !target || !spell || actor.id === target.id) return;
+  if (!actor || !target || !spell || actor.id === target.id || isSuddenDeath()) return;
   if (!actor.spells.includes(spellId) || state.phase !== 'prep' || ui.animating) return;
 
   pushUndo();
   const blocked = target.spells.includes('shield');
-  const damage = blocked ? 0 : Math.min(100, target.score);
+  const damage = blocked || spellId !== 'missile' ? 0 : Math.min(100, target.score);
   ui.modal = null;
   ui.pendingSpell = null;
   ui.animating = true;
@@ -599,6 +900,9 @@ function castSpell(spellId, targetId) {
     if (blocked) {
       removeSpell(target, 'shield');
       toast(`${target.name}'s Shield blocked ${spell.name}!`, 'bad');
+    } else if (spellId === 'jinx') {
+      target.jinxTurns = CONFIG.jinxTurns;
+      toast(`${target.name} loses ${CONFIG.jinxPenaltySeconds} s for ${CONFIG.jinxTurns} turns.`, 'bad');
     } else {
       target.score = Math.max(0, target.score - 100);
       toast(
@@ -659,10 +963,16 @@ function playCast(actorId, targetId, spellId, blocked, damage = 0) {
       pixelBurst(end.x, end.y, item.color, blocked ? 8 : 18);
       if (blocked) shieldBurst(end.x, end.y);
       floatText(
-        blocked ? 'BLOCKED!' : damage > 0 ? `-${damage}` : 'NO DAMAGE',
+        blocked
+          ? 'BLOCKED!'
+          : spellId === 'jinx'
+          ? 'JINXED!'
+          : damage > 0
+          ? `-${damage}`
+          : 'NO DAMAGE',
         end.x,
         end.y - 48,
-        blocked ? '#41e0ff' : damage > 0 ? '#ff3b5c' : item.color,
+        blocked ? '#41e0ff' : spellId === 'jinx' ? item.color : damage > 0 ? '#ff3b5c' : item.color,
         'big'
       );
       targetEl?.classList.add('hit');
@@ -1011,6 +1321,7 @@ function sfx(name) {
 
 function roundText() {
   if (state.phase === 'gameover') return 'FINAL';
+  if (isSuddenDeath()) return 'SUDDEN DEATH';
   return `ROUND ${Math.min(state.round, state.roundLimit)} / ${state.roundLimit}`;
 }
 
@@ -1050,14 +1361,19 @@ function ringHTML(team) {
   const id = team.spells[0];
   if (!id) return '<span class="ring-halo"></span><span class="ring-slot empty"></span>';
   const spell = SPELL_BY_ID[id];
+  const out = isSuddenDeath() && !state.contenders.includes(team.id);
+  const disabled = isSuddenDeath() || out;
   return `<span class="ring-halo"></span><button type="button" class="ring-slot filled"
-    data-action="use" data-spell="${id}" data-team="${team.id}" title="${esc(spell.name)}"
-    style="--spell:${spell.color}">${svgIcon(spell.icon)}</button>`;
+    data-action="use" data-spell="${id}" data-team="${team.id}" title="${
+      disabled ? 'Items are disabled in sudden death' : esc(spell.name)
+    }" style="--spell:${spell.color}" ${disabled ? 'disabled' : ''}>${svgIcon(
+      spell.icon
+    )}</button>`;
 }
 
 function effectChips(team) {
   const chips = [];
-  if (team.spells.includes('shield')) {
+  if (!isSuddenDeath() && team.spells.includes('shield')) {
     chips.push(
       `<span class="effect-chip" style="--c:#41e0ff" title="Shield">${svgIcon('shield')}</span>`
     );
@@ -1067,24 +1383,37 @@ function effectChips(team) {
       `<span class="effect-chip" style="--c:#ffd23f" title="Double Down">${svgIcon('bolt')}</span>`
     );
   }
+  if (!isSuddenDeath() && (team.jinxTurns || 0) > 0) {
+    chips.push(
+      `<span class="effect-chip jinx-chip" style="--c:#a855f7" title="Jinxed: ${
+        team.jinxTurns
+      } turns left">${svgIcon('jinx')}<b>${team.jinxTurns}</b></span>`
+    );
+  }
   return chips.join('');
 }
 
 function renderArena() {
   const max = Math.max(...state.teams.map((t) => t.score));
   const tie = state.teams.filter((t) => t.score === max).length > 1;
+  const activeTeam = currentTeam();
   return `
     <section class="arena">
       ${state.teams
-        .map((t, i) => {
+        .map((t) => {
           const meta = teamMeta(t.id);
           const active =
-            ['prep', 'question', 'reveal'].includes(state.phase) && i === state.turn;
+            ['prep', 'question', 'reveal'].includes(state.phase) &&
+            activeTeam &&
+            t.id === activeTeam.id;
+          const out = isSuddenDeath() && !state.contenders.includes(t.id);
           const winner = state.phase === 'gameover' && !tie && t.score === max;
           const fx = ui.fx && ui.fx.teamId === t.id ? ui.fx : null;
           const reaction = fx?.kind === 'answer' ? (fx.correct ? 'celebrate' : 'sad') : '';
           return `
-            <div class="platform ${active ? 'active' : ''} ${winner ? 'winner' : ''}"
+            <div class="platform ${active ? 'active' : ''} ${winner ? 'winner' : ''} ${
+              out ? 'out' : ''
+            }"
               data-team="${t.id}" style="${teamStyle(meta)}">
               ${active ? '<span class="turn-arrow" aria-hidden="true"></span>' : ''}
               ${winner ? `<span class="crown">${svgIcon('crown')}</span>` : ''}
@@ -1255,7 +1584,9 @@ function turnRibbon(team, meta) {
   return `
     <div class="turn-ribbon" style="${teamStyle(meta)}">
       <div>
-        <span class="ribbon-kicker">ROUND ${state.round} / ${state.roundLimit}</span>
+        <span class="ribbon-kicker">${
+          isSuddenDeath() ? 'SUDDEN DEATH · HARD' : `ROUND ${state.round} / ${state.roundLimit}`
+        }</span>
         <h2>${esc(team.name).toUpperCase()}'S TURN</h2>
       </div>
       <div class="ribbon-spells">ITEM: ${
@@ -1419,18 +1750,34 @@ function renderQuestion() {
   const cat = CATEGORY_BY_ID[cur.unit];
 
   return `
-    <section class="phase question team-${team.id}" style="${teamStyle(meta)}">
+    <section class="phase question team-${team.id} ${
+      cur.jinxed ? 'question-jinxed' : ''
+    }" style="${teamStyle(meta)}">
       <div class="q-top">
         <div class="q-badges">
           <span class="badge" style="--c:${cat.color}">${svgIcon(cat.icon)} ${cat.short}</span>
+          ${
+            cur.suddenDeath
+              ? `<span class="badge sudden">${svgIcon('bolt')} SUDDEN DEATH${
+                  state.settings.timer ? ` · ${CONFIG.suddenDeathSeconds}s` : ''
+                }</span>`
+              : ''
+          }
+          ${
+            cur.jinxed
+              ? `<span class="badge jinxed">${svgIcon('jinx')} JINX −${CONFIG.jinxPenaltySeconds}s</span>`
+              : ''
+          }
           <span class="badge pts">${cur.points} PTS</span>
         </div>
         ${state.settings.timer ? timerHTML(cur) : '<span class="timer-off">NO TIMER</span>'}
       </div>
       <div class="question-body">
         <div class="question-card">
-          <p class="q-team">${esc(team.name).toUpperCase()} · ROUND ${state.round} / ${state.roundLimit}</p>
-          <h2 class="question-text">${mathText(cur.q.q)}</h2>
+          <p class="q-team">${esc(team.name).toUpperCase()} · ${
+            cur.suddenDeath ? 'SUDDEN DEATH' : `ROUND ${state.round} / ${state.roundLimit}`
+          }</p>
+          <h2 class="question-text">${richText(cur.q.q)}</h2>
         </div>
         <div class="answers">
           ${cur.q.a
@@ -1440,7 +1787,9 @@ function renderQuestion() {
               return `
                 <button type="button" class="answer ${removed ? 'removed' : ''}" data-action="answer"
                   data-index="${i}" style="--ans:${ansColor}" ${removed ? 'disabled' : ''}>
-                  <span class="letter">${'ABCD'[i]}</span><span>${mathText(ans)}</span>
+                  <span class="letter">${'ABCD'[i]}</span><span class="answer-text">${richText(
+                    ans
+                  )}</span>
                 </button>`;
             })
             .join('')}
@@ -1478,13 +1827,13 @@ function renderReveal() {
           <span class="kick">${esc(team.name).toUpperCase()}</span>
           <div class="score-gain">+${cur.earned.points}<small>PTS</small></div>
           <span class="your-answer">YOUR ANSWER</span>
-          <strong class="${correct ? 'good-text' : 'bad-text'}">${mathText(chosenText)}</strong>
+          <strong class="${correct ? 'good-text' : 'bad-text'}">${richText(chosenText)}</strong>
         </div>
         <div class="reveal-card">
           <span class="kick">CORRECT ANSWER</span>
-          <strong class="good-text">${mathText(correctText)}</strong>
+          <strong class="good-text">${richText(correctText)}</strong>
           <span class="kick why-kick">WHY</span>
-          <p>${mathText(cur.q.why)}</p>
+          <p>${richText(cur.q.why)}</p>
         </div>
       </div>
       <div class="reveal-actions">
@@ -1499,7 +1848,9 @@ function renderReveal() {
 
 function renderGameover() {
   const ranked = [...state.teams].sort((a, b) => b.score - a.score || b.correct - a.correct);
-  const tie = ranked[0].score === ranked[1].score;
+  const leaders = ranked.filter((t) => t.score === ranked[0].score);
+  const tie = leaders.length > 1;
+  const tieLabel = leaders.map((t) => esc(t.name).toUpperCase()).join(' VS ');
 
   return `
     <section class="phase gameover">
@@ -1525,7 +1876,7 @@ function renderGameover() {
       <div class="gameover-actions">
         ${
           tie
-            ? '<button type="button" class="btn primary xl" data-action="sudden-death">SUDDEN DEATH ROUND →</button>'
+            ? `<button type="button" class="btn primary xl" data-action="sudden-death">SUDDEN DEATH: ${tieLabel} →</button>`
             : ''
         }
         <button type="button" class="btn ${tie ? '' : 'primary'} xl" data-action="play-again">PLAY AGAIN</button>
@@ -1628,7 +1979,7 @@ function renderModal() {
       <p class="modal-sub">Who do you want to hit?</p>
       <div class="target-grid">
         ${state.teams
-          .filter((t) => t.id !== actor.id)
+          .filter((t) => t.id !== actor.id && (!isSuddenDeath() || state.contenders.includes(t.id)))
           .map((t) => {
             const meta = teamMeta(t.id);
             return `

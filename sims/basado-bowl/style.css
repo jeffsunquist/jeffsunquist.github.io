@@ -331,6 +331,15 @@ button {
   transform: translateY(-3px);
 }
 
+.platform.out {
+  opacity: 0.5;
+  filter: grayscale(0.65);
+}
+
+.platform.out .ring-slot {
+  pointer-events: none;
+}
+
 .platform.active::before {
   content: '';
   position: absolute;
@@ -498,6 +507,22 @@ button {
   height: 13px;
 }
 
+.effect-chip.jinx-chip {
+  grid-auto-flow: column;
+  gap: 2px;
+  width: auto;
+  min-width: 22px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-family: var(--body);
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.effect-chip.jinx-chip b {
+  font-weight: 700;
+}
+
 .turn-arrow {
   position: absolute;
   top: 2px;
@@ -579,6 +604,17 @@ button {
 
 .ring-slot.filled:hover {
   transform: translate(-50%, -50%) scale(1.16);
+}
+
+.ring-slot:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  animation: none;
+  box-shadow: none;
+}
+
+.ring-slot:disabled:hover {
+  transform: translate(-50%, -50%);
 }
 
 .ring-slot.empty {
@@ -1931,6 +1967,16 @@ sup {
   color: var(--team-ink);
 }
 
+.badge.sudden {
+  background: #ffe1e7;
+  color: #9e0b2b;
+}
+
+.badge.jinxed {
+  background: #e9d5ff;
+  color: #5b21b6;
+}
+
 .badge.pts {
   background: #fff0b8;
   color: #7c4a03;
@@ -2009,6 +2055,49 @@ sup {
   font-weight: 700;
   line-height: 1.16;
   letter-spacing: -0.01em;
+}
+
+.answer-text {
+  min-width: 0;
+}
+
+@keyframes jinxWiggle {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  20% {
+    transform: translate(-2px, 0) rotate(-0.35deg);
+  }
+  40% {
+    transform: translate(2px, 0) rotate(0.35deg);
+  }
+  60% {
+    transform: translate(-1px, 0) rotate(-0.2deg);
+  }
+  80% {
+    transform: translate(1px, 0) rotate(0.2deg);
+  }
+}
+
+.question-jinxed .question-text {
+  animation: jinxWiggle 0.48s ease-in-out infinite;
+}
+
+.question-jinxed .answer-text {
+  animation: jinxWiggle 0.36s ease-in-out infinite;
+}
+
+.question-jinxed .answer:nth-child(2) .answer-text {
+  animation-delay: -0.09s;
+}
+
+.question-jinxed .answer:nth-child(3) .answer-text {
+  animation-delay: -0.18s;
+}
+
+.question-jinxed .answer:nth-child(4) .answer-text {
+  animation-delay: -0.27s;
 }
 
 .answers {
@@ -3269,6 +3358,11 @@ sup {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .question-jinxed .question-text,
+  .question-jinxed .answer-text {
+    animation: none;
+  }
+
   *,
   *::before,
   *::after {

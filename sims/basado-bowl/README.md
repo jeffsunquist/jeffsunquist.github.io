@@ -32,13 +32,14 @@ No build step, no npm packages. Edit a file, refresh.
 The sprites in `characters.js` are original pixel art drawn as SVG pixel grids.
 They are not official artwork or assets.
 
-## The three items
+## The four items
 
 | Item | Type | Effect |
 |---|---|---|
-| **Shield** | Passive | Blocks the next Magic Missile. Breaks when it blocks. |
+| **Shield** | Passive | Block one spell. |
 | **Double Down** | Self | Double the points from the next correct answer. |
-| **Magic Missile** | Attack | Deals 100 points of damage to another team unless they have a Shield. |
+| **Magic Missile** | Attack | Target loses 100 points. |
+| **Jinx** | Attack | Target loses 5 s for 5 turns. |
 
 ## One item at a time
 
@@ -50,8 +51,9 @@ They are not official artwork or assets.
 - Picking the same item again keeps it. Picking a different item replaces the
   held item; an unused replaced item is discarded.
 - Items are not locked for the whole game, so they can be drafted again later.
-- Using an item empties the slot. Shield stays held until it blocks a Magic
-  Missile.
+- Using an item empties the slot. Shield stays held until it blocks an attack.
+- Jinx reduces the target’s timer from 30 s to 25 s for five normal turns.
+  Recasting refreshes it to five turns.
 - The prep screen and question tray show the single held item, or an empty slot
   after it has been used.
 
@@ -59,8 +61,15 @@ They are not official artwork or assets.
 
 Points only. Every question is worth **100 points**, regardless of its internal
 difficulty. Double Down doubles that to 200. Magic Missile removes 100 points
-from the target, stopping at 0. Shield blocks it and breaks. There are no stars
-or shop currency.
+from the target, stopping at 0. Jinx cuts the target’s next five normal
+questions to **25 seconds**. Shield blocks either attack and breaks. There are
+no stars or shop currency.
+
+If the top score is tied, **Sudden Death** includes only the teams tied for the
+lead. Those rounds draw **hard questions only** and use a **15-second** timer.
+**No items can be used during sudden death**, and any active Double Down or Jinx
+effect is cleared. Non-contenders stay visible but are dimmed and cannot be
+targeted.
 
 ## Question bank and grades
 
@@ -84,7 +93,13 @@ Setup offers **Grade 6** and **Grade 7** only. There is no mixed mode.
 
 A Grade 6 game draws only questions tagged `grade: '6'` plus shared
 `grade: 'both'` questions. A Grade 7 game draws only `'7'` plus `'both'`.
-Grade-specific questions never cross over. **Waves is Grade 7 only** because
+Grade-specific questions never cross over.
+
+Each match generates a fresh random seed from the current time, browser
+randomness, and a persistent match counter. Questions do not repeat until the
+selected unit/grade pool is exhausted; after a reshuffle the last question is
+excluded from the first new draw. Reloading a saved match keeps the same seed
+and sequence. **Waves is Grade 7 only** because
 every WAV learning objective in `shared/lo_master.csv` is Grade 7. In Grade 6
 the Waves tile shows 0 and is disabled; switching to Grade 7 enables it and
 adds it to the default selection.
@@ -95,15 +110,24 @@ a Grade 7-only objective, or the reverse.
 
 ## Math markup
 
-Authored questions use a tiny markup for real subscripts and superscripts:
+Questions, choices, and explanations render math with self-hosted **KaTeX**.
+Published builds load it from `/katex/`; the source server falls back to
+`node_modules/katex/dist/`.
 
-- `v_{0}` renders as v with a subscript 0.
-- `m/s^{2}` renders as m/s with a superscript 2.
-- `F_{net}`, `m_{1}`, `10^{-3}`, and `x^{2}` all work.
+Use inline LaTeX with `$...$`:
 
-Unicode symbols stay as-is: `×`, `÷`, `≈`, `≤`, `≥`, `√`, `Ω`, `μ`, `Δ`, `θ`,
-`λ`, `°`, and `→`. `mathText()` escapes the text first, then turns `_{...}`
-into `<sub>` and `^{...}` into `<sup>`. The validator rejects unbalanced markup.
+- `$F_{g} = mg$`
+- `$\Delta x$`
+- `$v_{0}$`
+- `$\frac{1}{2}mv^{2}$`
+- `$F_{f} = \mu F_{N}$`
+
+Display math with `$$...$$` is also supported.
+
+For compatibility, existing `_{...}` / `^{...}` markup and common units such as
+`m/s^{2}` are also detected and rendered through KaTeX automatically. If KaTeX
+cannot load, the game falls back to the original subscript/superscript renderer.
+The validator rejects unbalanced `$...$` and `\(...\)` delimiters.
 
 ## Formula symbols
 
@@ -201,7 +225,7 @@ Then handle the effect in `useSpell()` / `castSpell()` in `game.js`.
 Console helpers: `BB.state`, `BB.addScore('blue', 100)`, `BB.phase('draft')`,
 `BB.question()`, `BB.reset()`.
 
-The match autosaves to `localStorage` under `basado-bowl:v8`. Bump `VERSION` in
+The match autosaves to `localStorage` under `basado-bowl:v11`. Bump `VERSION` in
 `game.js` when the state shape changes so an old save is ignored.
 
 ## Fonts

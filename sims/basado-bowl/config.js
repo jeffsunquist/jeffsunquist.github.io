@@ -11,6 +11,9 @@ export const CONFIG = {
   // Every question is worth the same, regardless of its internal level.
   questionPoints: 100,
   questionSeconds: 30,
+  suddenDeathSeconds: 15,
+  jinxPenaltySeconds: 5,
+  jinxTurns: 5,
 
   // Turn order is the array order: Blue -> Red -> Yellow.
   teams: [
@@ -91,7 +94,7 @@ export const CONFIG = {
     },
   ],
 
-  // The three items. Each team holds one at a time and drafts again every 5 rounds.
+  // The four items. Each team holds one at a time and drafts again every 5 rounds.
   spells: [
     {
       id: 'shield',
@@ -100,8 +103,8 @@ export const CONFIG = {
       icon: 'shield',
       color: '#41e0ff',
       type: 'passive',
-      desc: 'Blocks the next attack cast at your team. Breaks when it blocks.',
-      draftDesc: 'Blocks the next attack.',
+      desc: 'Block one spell.',
+      draftDesc: 'Block one spell.',
     },
     {
       id: 'double',
@@ -118,10 +121,20 @@ export const CONFIG = {
       name: 'Magic Missile',
       short: 'Missile',
       icon: 'missile',
+      color: '#f97316',
+      type: 'attack',
+      desc: 'Target loses 100 points.',
+      draftDesc: 'Target loses 100 points.',
+    },
+    {
+      id: 'jinx',
+      name: 'Jinx',
+      short: 'Jinx',
+      icon: 'jinx',
       color: '#a855f7',
       type: 'attack',
-      desc: 'Deals 100 points of damage to a team without a Shield. Shield blocks it and breaks.',
-      draftDesc: '100 damage unless shielded.',
+      desc: 'Target loses 5 s for 5 turns.',
+      draftDesc: 'Target loses 5 s for 5 turns.',
     },
   ],
 };
