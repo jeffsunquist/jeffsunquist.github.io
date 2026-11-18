@@ -104,6 +104,16 @@ body.demo #stage canvas { touch-action: none; }
   font-variant-numeric: tabular-nums;
 }
 
+/* A label + a row of related buttons (e.g. Ropes 1 2 3). */
+.sim-controls .cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.sim-controls .cluster > span { color: var(--muted); }
+
 .sim-controls input[type='range'] {
   width: 150px;
   accent-color: var(--accent);
@@ -135,9 +145,11 @@ body.demo #stage canvas { touch-action: none; }
 }
 
 .sim-controls.big label,
-.sim-controls.big .readout { font-size: 1.5rem; }
+.sim-controls.big .readout,
+.sim-controls.big .cluster { font-size: 1.5rem; }
 
-.sim-controls.big label { gap: 0.6rem; }
+.sim-controls.big label,
+.sim-controls.big .cluster { gap: 0.6rem; }
 
 .sim-controls.big button {
   font-size: 1.5rem;
@@ -171,6 +183,12 @@ body.demo #stage canvas { touch-action: none; }
   background: var(--ink);
   color: #fff;
   border-color: var(--ink);
+}
+
+.sim-controls button:disabled,
+.sim-controls input:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .sim-controls .readout {
