@@ -12,7 +12,7 @@ export const CONFIG = {
   questionPoints: 100,
   questionSeconds: 30,
   suddenDeathSeconds: 15,
-  jinxPenaltySeconds: 5,
+  jinxPenaltySeconds: 10,
   jinxTurns: 5,
 
   // Turn order is the array order: Blue -> Red -> Yellow.
@@ -92,6 +92,14 @@ export const CONFIG = {
       color: '#06b6d4',
       blurb: 'Wave properties, sound, light, interference',
     },
+    {
+      id: 'MOM',
+      name: 'Momentum',
+      short: 'MOM',
+      icon: 'mom',
+      color: '#ec4899',
+      blurb: 'Momentum, impulse, collisions, conservation',
+    },
   ],
 
   // The four items. Each team holds one at a time and drafts again every 5 rounds.
@@ -133,8 +141,8 @@ export const CONFIG = {
       icon: 'jinx',
       color: '#a855f7',
       type: 'attack',
-      desc: 'Target loses 5 s for 5 turns.',
-      draftDesc: 'Target loses 5 s for 5 turns.',
+      desc: 'Target loses 10 s for 5 turns.',
+      draftDesc: 'Target loses 10 s for 5 turns.',
     },
   ],
 };

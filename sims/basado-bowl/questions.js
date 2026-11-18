@@ -11,6 +11,7 @@ import bankFor from './questions/bank/for.js';
 import bankEne from './questions/bank/ene.js';
 import bankEle from './questions/bank/ele.js';
 import bankWav from './questions/bank/wav.js';
+import bankMom from './questions/bank/mom.js';
 
 export const QUESTIONS = [
   ...sci,
@@ -23,4 +24,5 @@ export const QUESTIONS = [
   ...bankEne,
   ...bankEle,
   ...bankWav,
+  ...bankMom,
 ];

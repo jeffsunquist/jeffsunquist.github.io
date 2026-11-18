@@ -39,7 +39,7 @@ They are not official artwork or assets.
 | **Shield** | Passive | Block one spell. |
 | **Double Down** | Self | Double the points from the next correct answer. |
 | **Magic Missile** | Attack | Target loses 100 points. |
-| **Jinx** | Attack | Target loses 5 s for 5 turns. |
+| **Jinx** | Attack | Target loses 10 s for 5 turns. |
 
 ## One item at a time
 
@@ -52,7 +52,7 @@ They are not official artwork or assets.
   held item; an unused replaced item is discarded.
 - Items are not locked for the whole game, so they can be drafted again later.
 - Using an item empties the slot. Shield stays held until it blocks an attack.
-- Jinx reduces the target’s timer from 30 s to 25 s for five normal turns.
+- Jinx reduces the target’s timer from 30 s to 20 s for five normal turns.
   Recasting refreshes it to five turns.
 - The prep screen and question tray show the single held item, or an empty slot
   after it has been used.
@@ -62,7 +62,7 @@ They are not official artwork or assets.
 Points only. Every question is worth **100 points**, regardless of its internal
 difficulty. Double Down doubles that to 200. Magic Missile removes 100 points
 from the target, stopping at 0. Jinx cuts the target’s next five normal
-questions to **25 seconds**. Shield blocks either attack and breaks. There are
+questions to **20 seconds**. Shield blocks either attack and breaks. There are
 no stars or shop currency.
 
 If the top score is tied, **Sudden Death** includes only the teams tied for the
@@ -73,12 +73,12 @@ targeted.
 
 ## Question bank and grades
 
-The game ships with **632 questions**:
+The game ships with **682 questions**:
 
 - 82 curated questions in `questions/{sci,kin,for,ene}.js`.
-- 550 authored questions in `questions/bank/{sci,kin,for,ene,ele,wav}.js`.
-- 220 of the authored questions are quantitative hard problems; every
-  unit/grade now has 10 easy, 10 medium, and 30 hard questions.
+- 600 authored questions in `questions/bank/{sci,kin,for,ene,ele,wav,mom}.js`.
+- 250 of the authored questions are new quantitative hard problems; every
+  unit/grade has 10 easy, 10 medium, and 30 hard questions.
 
 Setup offers **Grade 6** and **Grade 7** only. There is no mixed mode.
 
@@ -90,6 +90,7 @@ Setup offers **Grade 6** and **Grade 7** only. There is no mixed mode.
 | Simple Machines / Energy (`ENE`) | 66 | 50 |
 | Electricity (`ELE`) | 50 | 50 |
 | Waves (`WAV`) | 0 | 50 |
+| Momentum (`MOM`) | 0 | 50 |
 
 A Grade 6 game draws only questions tagged `grade: '6'` plus shared
 `grade: 'both'` questions. A Grade 7 game draws only `'7'` plus `'both'`.
@@ -150,6 +151,10 @@ Questions use the same symbols as the formula sheets and lesson slides:
 | Gravitation | `F_{G} = G m_{1}m_{2}/r^{2}` |
 | Coulomb’s law | `F_{e} = k|q_{1}||q_{2}|/r^{2}` |
 | Charge | `q = ne` |
+| Momentum | `p = mv` |
+| Change in momentum | `Δp = mv - mv_{0}` |
+| Impulse | `J = FΔt = Δp` |
+| Momentum units | `kg·m/s`, `N·s` |
 | Ohm’s law | `I = V/R` |
 | Waves | `f = 1/T`, `v = λf` |
 | Moments | `τ = Fd`, `F_{1}d_{1} = F_{2}d_{2}` |

@@ -17,7 +17,7 @@ for (const row of rows) {
 
 const unitIds = new Set(CONFIG.categories.map((c) => c.id));
 const errors = [];
-const newId = /^(SCI|KIN|FOR|ENE|ELE|WAV)[67]-/;
+const newId = /^(SCI|KIN|FOR|ENE|ELE|WAV|MOM)[67]-/;
 const seenIds = new Set();
 const seenText = new Map();
 const counts = {};

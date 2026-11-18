@@ -50,6 +50,7 @@ const ICON_PATHS = {
   sci: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
   ele: '<circle cx="12" cy="12" r="9"/><path d="M13 6l-5 7h3l-1 5 5-7h-3l1-5z"/>',
   wav: '<path d="M2 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0"/><path d="M2 17c2-5 4-5 6 0s4 5 6 0 4-5 6 0"/>',
+  mom: '<path d="M3 12h7M7 8l4 4-4 4"/><path d="M21 12h-7M17 8l-4 4 4 4"/>',
   kin: '<path d="M3 18l5-6 4 3 6-8"/><path d="M18 7h3v3"/>',
   for: '<path d="M4 12h14"/><path d="M14 7l5 5-5 5"/>',
   ene: '<circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/>',
@@ -142,6 +143,10 @@ const FORMULA_TEX = [
   ['a = F/m', 'a = F/m'],
   ['a = m/F', 'a = m/F'],
   ['a = v/t', 'a = v/t'],
+  ['Δp = mv - mv_{0}', '\\Delta p = mv - mv_{0}'],
+  ['J = Δp = FΔt', 'J = \\Delta p = F\\Delta t'],
+  ['J = FΔt', 'J = F\\Delta t'],
+  ['p_{before} = p_{after}', 'p_{before} = p_{after}'],
   ['p = mv', 'p = mv'],
   ['W = FΔx', 'W = F\\Delta x'],
   ['W = Fd', 'W = Fd'],
@@ -167,6 +172,8 @@ const FORMULA_TEX = [
 
 const TOKEN_TEX = {
   'kg·m/s²': '\\mathrm{kg\\cdot m/s^{2}}',
+  'kg·m/s': '\\mathrm{kg\\cdot m/s}',
+  'N·s': '\\mathrm{N\\cdot s}',
   'm/s^{2}': '\\mathrm{m/s^{2}}',
   'm/s²': '\\mathrm{m/s^{2}}',
   'm/s': '\\mathrm{m/s}',
