@@ -109,6 +109,51 @@ body.demo #stage canvas { touch-action: none; }
   accent-color: var(--accent);
 }
 
+/* Typed-value widgets (number fields and selects) used by some sims. */
+.sim-controls input[type='number'],
+.sim-controls select {
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 0.28rem 0.5rem;
+}
+
+.sim-controls input[type='number'] {
+  width: 4.8rem;
+  text-align: right;
+}
+
+.sim-controls select { max-width: 16rem; }
+
+/* Opt-in larger controls for classroom / projector use. */
+.sim-controls.big {
+  gap: 1.1rem;
+  padding: 0.75rem 1.2rem;
+}
+
+.sim-controls.big label,
+.sim-controls.big .readout { font-size: 1.5rem; }
+
+.sim-controls.big label { gap: 0.6rem; }
+
+.sim-controls.big button {
+  font-size: 1.5rem;
+  padding: 0.6rem 1.35rem;
+}
+
+.sim-controls.big input[type='number'],
+.sim-controls.big select {
+  font-size: 1.5rem;
+  padding: 0.45rem 0.75rem;
+}
+
+.sim-controls.big input[type='number'] { width: 5.4rem; }
+
+.sim-controls.big select { max-width: 24rem; }
+
 .sim-controls button {
   font: inherit;
   font-size: 0.85rem;

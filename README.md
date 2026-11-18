@@ -44,9 +44,11 @@ the browser on that device.
 
 There is also a **Tutorials** section of animated worked examples (a problem,
 then the solution steps on a draggable timeline) and a **Sims & Demos**
-section listing standalone p5.js simulations and browser demos. Each one lives in `sims/<slug>/` (a
-self-contained page plus a `sketch.js` ES module) and is described by
-`data/sims.csv` or `data/demos.csv` (`slug,title,grade,description`). The whole
+section listing standalone p5.js simulations, browser demos, and a classroom
+game. Each one lives in `sims/<slug>/` (a self-contained page plus, for sims, a
+`sketch.js` ES module) and is described by `data/sims.csv` or
+`data/demos.csv` (`slug,title,grade,description`; demos take an optional fifth
+`kind` column, set to `Game` for Basado Bowl). The whole
 `sims/` tree is copied to `dist/sims/` at build time; p5 is vendored at
 `sims/vendor/p5.min.js`. `sims/lift-force/` is the arena shooter: A/D move, W
 jumps (twice for a double), the mouse aims and fires, `1`–`4` swap weapons.
@@ -54,6 +56,31 @@ jumps (twice for a double), the mouse aims and fires, `1`–`4` swap weapons.
 drag, match the target car's speed and position, then press Space to make the
 jump before the 60-second heat catches up. `sims/momentum-rescue/` is the
 gravity-and-collisions rescue game.
+
+`sims/basado-bowl/` is **Basado Bowl**, the teacher-run three-team trivia game:
+The Blue, Red, and Yellow teams stand on floating candy platforms, each with a single item
+orb hovering over an open palm. Teams draft Shield, Double Down, Magic Missile,
+and Jinx — one item before round 1, then a new item after every 5 rounds — and
+use them to help themselves or sabotage another team across the arena. A team
+holds only one item at a time.
+The teacher chooses Grade 6 or Grade 7 and any of seven units at setup:
+Scientific Inquiry, Kinematics, Forces, Simple Machines / Energy, Electricity,
+Waves, and Momentum.
+Every turn draws a random question from those units, and every question is worth
+100 points on a 30-second timer. Grade 6-only questions never appear in a Grade 7
+game, and Grade 7-only questions never appear in a Grade 6 game; shared
+questions appear in both. Waves and Momentum are Grade 7 only. The bank holds
+682 questions, including 250 new quantitative hard problems. Formula rendering uses self-hosted
+KaTeX in questions, choices, and explanations. Each new match uses a fresh
+random seed, so question selection changes between games. Tied leaders go to sudden death,
+which uses only tied teams, hard questions, and a 15-second timer; no items can
+be used there. There is no
+shop and no star currency. Questions live in
+`sims/basado-bowl/questions/` and `sims/basado-bowl/questions/bank/`, the
+characters and pixel sprites in `sims/basado-bowl/characters.js`, and all
+balance values (points, timers, round default) in `sims/basado-bowl/config.js`. Add `?dev=1` for the debug bar,
+`?fresh=1` to clear the saved match, `?phase=draft` to open the first draft, and
+`?phase=question` to jump straight into a question while editing.
 
 The decks are built and published automatically by the Pages workflow in
 `.github/workflows/deploy.yml` — just commit and push to `main`.
