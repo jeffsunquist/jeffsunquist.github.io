@@ -260,6 +260,150 @@ button {
   white-space: nowrap;
 }
 
+.noise-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.18rem 0.35rem;
+  border: 2px solid #4b4b7a;
+  border-radius: 5px;
+  background: #2b2b52;
+  color: #fff;
+  font-family: var(--body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.noise-pill:hover {
+  border-color: var(--gold);
+}
+
+.noise-pill.over {
+  border-color: #ff3b5c;
+  box-shadow: 0 0 0 2px rgba(255, 59, 92, 0.25);
+}
+
+.noise-toggle {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border: 2px solid #4b4b7a;
+  border-radius: 50%;
+  background: #11112a;
+  color: #7b7ba0;
+}
+
+.noise-toggle .i {
+  width: 16px;
+  height: 16px;
+}
+
+.noise-toggle:hover:not(:disabled) {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.noise-toggle.on {
+  border-color: #18a96b;
+  background: #0b2a1e;
+  color: #6dffb0;
+}
+
+.noise-toggle:disabled {
+  opacity: 0.5;
+}
+
+.noise-meter {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: ew-resize;
+  touch-action: none;
+  user-select: none;
+  outline: none;
+}
+
+.noise-meter:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.noise-label {
+  color: var(--gold);
+  letter-spacing: 0.08em;
+}
+
+.noise-track {
+  position: relative;
+  width: 74px;
+  height: 10px;
+  border: 1px solid #0b0b1e;
+  background: #11112a;
+}
+
+.noise-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: #18a96b;
+  transition: width 0.08s linear, background 0.1s linear;
+}
+
+.noise-fill.over {
+  background: #ff3b5c;
+}
+
+.noise-marker {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 16px;
+  border: 2px solid #0b0b1e;
+  border-radius: 2px;
+  background: var(--gold);
+  cursor: ew-resize;
+  transform: translate(-50%, -50%);
+}
+
+.noise-readout {
+  min-width: 1.6em;
+  text-align: right;
+}
+
+.noise-threshold-value {
+  color: var(--gold);
+  font-size: 0.68rem;
+  opacity: 0.85;
+}
+
+.noise-state {
+  color: #bcdcff;
+  font-size: 0.68rem;
+}
+
+.noise-pill.over .noise-state {
+  color: #ffb3c0;
+}
+
+.noise-pill:not(.live) .noise-fill {
+  background: #4b4b7a;
+}
+
+.noise-pill.off {
+  opacity: 0.72;
+}
+
+.noise-gate-hint {
+  margin-right: auto;
+  color: #9e0b2b;
+  font-family: var(--body);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 .header-actions {
   display: flex;
   align-items: center;
@@ -2057,6 +2201,30 @@ sup {
   letter-spacing: -0.01em;
 }
 
+.question-card.has-figure .question-text {
+  font-size: clamp(1.45rem, 2vw, 2.3rem);
+}
+
+.question-figure {
+  display: flex;
+  justify-content: center;
+  margin: 0.55rem auto 0;
+}
+
+.question-figure img {
+  display: block;
+  width: auto;
+  height: clamp(100px, 14vh, 150px);
+  max-width: min(100%, 520px);
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+.phase.question.has-figure .answer {
+  min-height: 72px;
+  font-size: clamp(1.05rem, 1.35vw, 1.3rem);
+}
+
 .answer-text {
   min-width: 0;
 }
@@ -2286,7 +2454,10 @@ sup {
 
 .reveal-actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   margin-top: 0.6rem;
 }
 
@@ -2977,6 +3148,34 @@ sup {
     font-size: 1.7rem;
   }
 
+  .noise-pill {
+    gap: 0.25rem;
+    padding: 0.2rem 0.3rem;
+  }
+
+  .noise-label,
+  .noise-state,
+  .noise-threshold-value {
+    display: none;
+  }
+
+  .noise-toggle {
+    width: 30px;
+    height: 30px;
+  }
+
+  .noise-track {
+    width: 52px;
+  }
+
+  .question-card.has-figure .question-text {
+    font-size: 1.35rem;
+  }
+
+  .question-figure img {
+    height: clamp(80px, 12vh, 120px);
+  }
+
   .answers {
     grid-template-columns: 1fr;
   }
@@ -3370,6 +3569,26 @@ sup {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .brand h1 {
+    display: none;
+  }
+
+  .app-header {
+    gap: 0.4rem;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .header-actions {
+    gap: 0.25rem;
+  }
+
+  .header-actions .icon-btn {
+    width: 40px;
+    height: 40px;
   }
 }
 

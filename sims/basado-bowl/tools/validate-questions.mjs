@@ -1,6 +1,6 @@
 // Validate the Basado Bowl question bank.
 // Run: node tools/validate-questions.mjs
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { QUESTIONS } from '../questions.js';
@@ -132,6 +132,19 @@ for (const q of QUESTIONS) {
     fail(q, `invalid correct index ${q.correct}`);
   }
   if (typeof q.why !== 'string' || !q.why.trim()) fail(q, 'empty why');
+
+  if (q.image != null) {
+    if (typeof q.image !== 'string' || !q.image.trim()) {
+      fail(q, 'invalid image path');
+    } else if (!q.image.startsWith('questions/images/') || q.image.includes('..')) {
+      fail(q, 'image must live under questions/images/');
+    } else if (!existsSync(resolve(here, '..', q.image))) {
+      fail(q, `missing image file ${q.image}`);
+    }
+    if (typeof q.imageAlt !== 'string' || !q.imageAlt.trim()) {
+      fail(q, 'image is missing imageAlt text');
+    }
+  }
 
   if (q.lo) {
     const gradeInfo = lo.get(q.lo);

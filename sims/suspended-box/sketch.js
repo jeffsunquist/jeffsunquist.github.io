@@ -38,8 +38,8 @@ export default function sketch(p) {
 
   const MASS_MIN = 1
   const MASS_MAX = 10
-  const ACCEL_UP_MAX = 10
-  const ACCEL_DOWN_MAX = 9  // keep the ropes taut (a > -g)
+  const ACCEL_MAX = 10
+  const ACCEL_MIN = -G      // at -g the ropes go slack
 
   const CARD1 = { x: 480, y: 14, w: 460, h: 250 }
   const CARD2 = { x: 520, y: 280, w: 380, h: 130 }
@@ -112,8 +112,7 @@ export default function sketch(p) {
   let mass = 10
   let nRopes = 1
   let mode = 'rest'        // rest | accel
-  let accelMag = 2
-  let accelDir = 1         // +1 up, -1 down
+  let accel = 2            // signed m/s², up positive
 
   let v = 0                // m/s, up positive
   let y = 0                // m, altitude from the start (cloud scroll)
@@ -292,7 +291,7 @@ export default function sketch(p) {
 
   // ------------------------------------------------------------- physics
   function accelSigned() {
-    return mode === 'rest' ? 0 : accelMag * accelDir
+    return mode === 'rest' ? 0 : accel
   }
 
   function computeForces() {
@@ -415,6 +414,7 @@ export default function sketch(p) {
     const offs = fbdOffsets()
     const d = DOT1
     const R = 14
+    const slack = f.eachT < 0.05
     const lenT = arrowLen(f.eachT)
     const lenG = arrowLen(f.Fg)
     const gTail = d.y + R - 1
@@ -422,35 +422,44 @@ export default function sketch(p) {
     // Every rope's tension starts on the dot's upper edge, directly on the
     // body. The big dot hides the tails so they read as one junction.
     const tips = []
-    for (let i = 0; i < offs.length; i++) {
-      const off = offs[i]
-      const tail = d.y - Math.sqrt(Math.max(0, R * R - off * off)) + 1
-      const tip = tail - lenT
-      tips.push(tip)
-      arrow(d.x + off, tail, d.x + off, tip, C.normal, 860 + i * 13)
+    if (!slack) {
+      for (let i = 0; i < offs.length; i++) {
+        const off = offs[i]
+        const tail = d.y - Math.sqrt(Math.max(0, R * R - off * off)) + 1
+        const tip = tail - lenT
+        tips.push(tip)
+        arrow(d.x + off, tail, d.x + off, tip, C.normal, 860 + i * 13)
+      }
     }
     arrow(d.x, gTail, d.x, gTail + lenG, C.gravity, 890)
     dot(d.x, d.y, R, C.ink)
 
-    // Symbols only on the vectors; values live in the corner key.
-    for (let i = 0; i < offs.length; i++) {
-      const parts = [
-        { t: 'F' },
-        { t: 'T', sub: true }
-      ]
-      let align = 'CENTER'
-      let lx = d.x + offs[i]
-      let ly = tips[i] - 6
-      if (nRopes > 1 && i === 0) {
-        align = 'RIGHT'
-        lx = d.x + offs[i] - 6
-        ly = tips[i] + 6
-      } else if (nRopes > 1 && i === offs.length - 1) {
-        align = 'LEFT'
-        lx = d.x + offs[i] + 6
-        ly = tips[i] + 6
+    if (slack) {
+      p.fill(...C.muted)
+      p.textSize(TYPE.foot)
+      p.textAlign(p.LEFT, p.BASELINE)
+      p.text('ropes slack', CARD1.x + 20, CARD1.y + 64)
+    } else {
+      // Symbols only on the vectors; values live in the corner key.
+      for (let i = 0; i < offs.length; i++) {
+        const parts = [
+          { t: 'F' },
+          { t: 'T', sub: true }
+        ]
+        let align = 'CENTER'
+        let lx = d.x + offs[i]
+        let ly = tips[i] - 6
+        if (nRopes > 1 && i === 0) {
+          align = 'RIGHT'
+          lx = d.x + offs[i] - 6
+          ly = tips[i] + 6
+        } else if (nRopes > 1 && i === offs.length - 1) {
+          align = 'LEFT'
+          lx = d.x + offs[i] + 6
+          ly = tips[i] + 6
+        }
+        drawSub(parts, lx, ly, align, TYPE.symbol, C.normal)
       }
-      drawSub(parts, lx, ly, align, TYPE.symbol, C.normal)
     }
 
     drawSub(
@@ -694,7 +703,7 @@ export default function sketch(p) {
 
   // -------------------------------------------------------------- controls
   function syncAccelInput() {
-    if (accelInput) accelInput.value = fmtNum(accelMag)
+    if (accelInput) accelInput.value = fmtNum(accel)
   }
 
   function setRopes(n) {
@@ -706,10 +715,12 @@ export default function sketch(p) {
   }
 
   function updateAccelButtons() {
-    if (upBtn) upBtn.classList.toggle('active', accelDir > 0)
-    if (downBtn) downBtn.classList.toggle('active', accelDir < 0)
-    if (upBtn) upBtn.setAttribute('aria-pressed', accelDir > 0 ? 'true' : 'false')
-    if (downBtn) downBtn.setAttribute('aria-pressed', accelDir < 0 ? 'true' : 'false')
+    const up = accel > 0.001
+    const down = accel < -0.001
+    if (upBtn) upBtn.classList.toggle('active', up)
+    if (downBtn) downBtn.classList.toggle('active', down)
+    if (upBtn) upBtn.setAttribute('aria-pressed', up ? 'true' : 'false')
+    if (downBtn) downBtn.setAttribute('aria-pressed', down ? 'true' : 'false')
   }
 
   function updateModeButtons() {
@@ -720,7 +731,7 @@ export default function sketch(p) {
     const off = mode === 'rest'
     if (accelInput) {
       accelInput.disabled = off
-      accelInput.value = off ? '0' : fmtNum(accelMag)
+      accelInput.value = off ? '0' : fmtNum(accel)
     }
     if (upBtn) upBtn.disabled = off
     if (downBtn) downBtn.disabled = off
@@ -732,14 +743,14 @@ export default function sketch(p) {
     updateModeButtons()
   }
 
-  function setAccelMag(val) {
-    const max = accelDir < 0 ? ACCEL_DOWN_MAX : ACCEL_UP_MAX
-    accelMag = clamp(val, 0, max)
+  function setAccel(val) {
+    accel = clamp(val, ACCEL_MIN, ACCEL_MAX)
+    if (upBtn) updateAccelButtons()
   }
 
   function setAccelDir(d) {
-    accelDir = d
-    if (d < 0 && accelMag > ACCEL_DOWN_MAX) accelMag = ACCEL_DOWN_MAX
+    if (Math.abs(accel) < 0.001) accel = d * 2
+    else accel = Math.abs(accel) * d
     updateAccelButtons()
     syncAccelInput()
   }
@@ -807,12 +818,12 @@ export default function sketch(p) {
     accelLabel.appendChild(el('span', null, 'Acceleration'))
     accelInput = el('input')
     accelInput.type = 'number'
-    accelInput.min = 0
-    accelInput.max = ACCEL_UP_MAX
+    accelInput.min = ACCEL_MIN
+    accelInput.max = ACCEL_MAX
     accelInput.step = 0.5
-    accelInput.value = fmtNum(accelMag)
+    accelInput.value = fmtNum(accel)
     accelInput.inputMode = 'decimal'
-    attachNumber(accelInput, 0, ACCEL_UP_MAX, () => accelMag, setAccelMag)
+    attachNumber(accelInput, ACCEL_MIN, ACCEL_MAX, () => accel, setAccel)
     accelLabel.appendChild(accelInput)
     accelLabel.appendChild(el('span', null, 'm/s²'))
     controls.appendChild(accelLabel)

@@ -67,10 +67,13 @@ The teacher chooses Grade 6 or Grade 7 and any of seven units at setup:
 Scientific Inquiry, Kinematics, Forces, Simple Machines / Energy, Electricity,
 Waves, and Momentum.
 Every turn draws a random question from those units, and every question is worth
-100 points on a 30-second timer. Grade 6-only questions never appear in a Grade 7
+100 points on a 30-second timer. An optional top-bar microphone noise gate can
+hold both drawing the next question and the next turn until the class is below
+an adjustable loudness threshold. Grade 6-only questions never appear in a Grade 7
 game, and Grade 7-only questions never appear in a Grade 6 game; shared
 questions appear in both. Waves and Momentum are Grade 7 only. The bank holds
-682 questions, including 250 new quantitative hard problems. Formula rendering uses self-hosted
+755 questions, including 73 approved FOR handout MCQs and 250 new quantitative
+hard problems. Formula rendering uses self-hosted
 KaTeX in questions, choices, and explanations. Each new match uses a fresh
 random seed, so question selection changes between games. Tied leaders go to sudden death,
 which uses only tied teams, hard questions, and a 15-second timer; no items can

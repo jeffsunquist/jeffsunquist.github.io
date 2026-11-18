@@ -1,0 +1,157 @@
+explanations:
+  FOR-02_si_unit_of_weight_newton: Weight is a force, so its SI unit is the newton (N). The kilogram is
+    a mass unit, m/s is a speed unit, and the joule is an energy unit.
+  FOR-26_Balanced_forces_explain_rest: The book remains at rest because the upward normal force from the
+    table and the downward weight are balanced. Their vector sum is zero, so the net force is zero.
+  FOR-26_balanced_forces_gate: The two pushes have equal size and opposite directions, so they cancel.
+    The net force on the gate is zero.
+  FOR-48_newton_in_base_units: One newton is the force that gives a 1 kg mass an acceleration of 1 m/s².
+    In SI base units, 1 N = 1 kg·m/s².
+  FOR-13_compare_inertia: Inertia increases with mass. Object B has 12 kg compared with 3 kg for object
+    A, so B has 12/3 = 4 times the inertia.
+  FOR-16_law_of_inertia_name: Newton’s first law describes inertia, so it is also called the law of inertia.
+  FOR-21_kinetic_friction_direction: Kinetic friction acts opposite the sliding motion. The box slides
+    right, so kinetic friction acts to the left.
+  FOR-35_balanced_forces_moving_object: Balanced forces produce zero net force and therefore zero acceleration.
+    The object keeps moving at constant velocity.
+  FOR-42_hockey_players_not_cancel_g7: Action and reaction forces act on different objects. The force
+    on one player and the force on the other player do not cancel because they are not acting on the same
+    object.
+  FOR-D06_mcq_rocket_gas: The rocket pushes gas downward, and the gas pushes the rocket upward. These
+    are an action-reaction pair acting on different objects, so the upward force on the rocket is not
+    canceled by the downward force on the gas.
+  FOR-30_force_arrow_magnitude: The length of a force arrow represents the magnitude of the force. The
+    arrow for $F_3$ is the longest, so $F_3$ has the greatest magnitude.
+  FOR-30_force_arrow_magnitude_02: The longest force arrow represents the largest force. The arrow for
+    $F_3$ is longest, so the tugboat exerting $F_3$ pulls hardest.
+  FOR-35_skydiver_constant_velocity: Constant velocity means zero acceleration. The upward air resistance
+    balances the downward weight, so the net force is zero.
+  FOR-36_static_dynamic_boxes: An object at rest is in static equilibrium. An object moving at constant
+    velocity is in dynamic equilibrium because its acceleration and net force are zero.
+  FOR-36_static_dynamic_pair: A parked car is at rest, which is static equilibrium. A train moving at
+    constant speed has zero acceleration, which is dynamic equilibrium.
+  FOR-47_identify_forces: The rope exerts tension, the floor exerts friction and a normal force, and Earth
+    exerts the weight due to gravity.
+  FOR-01_weight_equation_Fg_mg: 'The equation $F_{g} = mg$ gives the weight of an object: its mass m multiplied
+    by the gravitational acceleration g. It does not define mass, acceleration, or density.'
+  FOR-03_free_fall_acceleration_comparison: Near Earth, all objects in free fall have the same acceleration
+    of about 9.8 m/s² when air resistance is negligible. The acceleration does not depend on mass.
+  FOR-03_gravity_on_earth: A freely falling object near Earth accelerates downward at about 9.8 m/s².
+    Acceleration is measured in m/s², not in newtons or m/s.
+  FOR-04_mass_vs_weight: Mass measures the amount of matter in an object. Weight is the gravitational
+    force on the object and depends on the local value of g.
+  FOR-04_mass_weight_moon_location: Mass is the amount of matter and does not change with location. Weight
+    equals mg, and the Moon’s gravitational acceleration is smaller than Earth’s, so the object’s weight
+    decreases.
+  FOR-05_weight_earth_25kg: Weight is $F_{g} = mg$ = 25 kg × 9.8 m/s² = 245 N.
+  FOR-05_weight_of_a_student: The student’s weight is $F_{g} = mg$ = 60 kg × 9.8 m/s² = 588 N.
+  FOR-08_Mass_scalar_quantity_identify: Mass has magnitude but no direction, so it is a scalar. Velocity,
+    acceleration, and force all have direction and are vectors.
+  FOR-08_mass_definition: Mass is the amount of matter in an object. Weight is the gravitational force
+    on the object, and inertia is the resistance to changes in motion.
+  FOR-10_Measure_inertia_quantity: Inertia is measured by mass. The SI unit of mass is the kilogram (kg).
+  FOR-10_Object_in_motion_inertia: An object in motion tends to keep moving because of inertia. No extra
+    force is needed to maintain its motion at constant velocity.
+  FOR-10_Objects_at_rest_inertia: An object at rest tends to stay at rest because of inertia. A net force
+    is needed to change its state of motion.
+  FOR-10_define_inertia_concept: Inertia is an object’s tendency to resist changes in its motion. It depends
+    on mass, not on gravity or speed.
+  FOR-10_inertia_at_rest_application: With zero net force, the book’s motion does not change. Since it
+    is already at rest, it remains at rest.
+  FOR-15_newtons_first_law_statement: Newton’s first law says motion does not change unless a net force
+    acts. Constant velocity therefore means the net force is zero.
+  FOR-18_Define_force_push_pull: A force is a push or a pull on an object. Forces can change an object’s
+    motion.
+  FOR-18_best_definition_of_force: A force is a push or a pull that can cause an object to change its
+    motion. Matter, speed, and energy are different quantities.
+  FOR-18_define_force_in_physics: A force is a push or a pull that can change an object’s motion. Mass,
+    speed, and energy are not forces.
+  FOR-19_contact_force_pair: Friction and the normal force both require the book and ramp to touch, so
+    they are contact forces. Gravity and magnetic forces can act at a distance.
+  FOR-19_non_contact_force: Gravity acts between Earth and the Moon without the two touching, so it is
+    a non-contact force. Friction, tension, and normal force require contact.
+  FOR-19_static_friction_at_rest: A gentle push to the right is balanced by static friction acting to
+    the left. Because the net force is zero, the box does not move.
+  FOR-20_friction_opposes_motion: Friction is caused by the box and floor surfaces rubbing together, and
+    it acts opposite the motion. The normal force and gravity act vertically, not against the push.
+  FOR-20_friction_opposes_sliding_g6: Kinetic friction opposes the sliding between surfaces. Since the
+    box slides right, kinetic friction acts to the left.
+  FOR-20_friction_surface_coefficient: A smoother surface has a smaller coefficient of friction, so less
+    friction force is needed to slide the same box. The box’s weight does not change.
+  FOR-24_Define_net_force_vector: Net force is the vector sum of all forces acting on an object. Directions
+    matter, so the forces are added as vectors rather than as magnitudes only.
+  FOR-25_Book_lifted_constant_velocity: Constant velocity means zero acceleration. By $F_{net} = ma$,
+    the net force must therefore be zero.
+  FOR-25_Box_pushed_left_net_force: 'Take left as positive: $F_{net} = 15 - 8 = 7$ N left. The forces
+    are opposite, so their magnitudes subtract.'
+  FOR-25_Dog_bowl_net_force: 'Take right as positive: $F_{net} = 24 - 10 = 14$ N right. The opposite forces
+    subtract.'
+  FOR-32_equilibrium_condition: Equilibrium means the net force is zero. The object may be at rest or
+    moving at constant velocity; it does not have to be stationary.
+  FOR-32_equilibrium_definition: An object in equilibrium has zero net force and therefore zero acceleration.
+    It can be at rest or moving at constant velocity.
+  FOR-33_car_constant_velocity: Constant velocity means zero acceleration. By $F_{net} = ma$, the net
+    force on the car must be zero.
+  FOR-33_snowflake_zero_acceleration: Zero acceleration means the snowflake’s velocity is not changing.
+    It is falling at constant velocity.
+  FOR-34_bicycle_slowing: Slowing down means the bicycle’s velocity is changing, so it is accelerating.
+    Therefore the forces are unbalanced and it is not in equilibrium.
+  FOR-34_cart_released: Starting from rest and moving to the right means the cart is accelerating. The
+    forces must therefore be unbalanced, producing a net force.
+  FOR-37_cart_accelerates: Newton’s second law is $a = F_{net}/m$. Acceleration is directly proportional
+    to net force and inversely proportional to mass.
+  FOR-39_newtons_third_law_statement: Newton’s third law says that for every action force there is an
+    equal and opposite reaction force. The two forces act on different objects.
+  FOR-40_basketball_floor_reaction: The floor pushes up on the player; the reaction is the player pushing
+    down on the floor with an equal force. Weight and normal force are separate forces acting on the player.
+  FOR-40_soccer_kick_reaction: The foot pushes the ball forward, so the ball pushes back on the foot with
+    an equal force in the opposite direction.
+  FOR-41_action_reaction_properties_g6: Action-reaction forces are equal in size, opposite in direction,
+    act on different objects, and occur at the same time.
+  FOR-41_tennis_racket_ball_forces: By Newton’s third law, the ball pushes back on the racket with the
+    same size force and in the opposite direction.
+  FOR-D06_mcq_book_table_pair: The table pushes up on the book. The reaction is the book pushing down
+    on the table with an equal force.
+  FOR-D06_mcq_hammer_nail: The nail pushes back on the hammer with the same size force in the opposite
+    direction. The hammer’s larger mass does not make its force larger.
+  FOR-D06_mcq_swimmer_n3l: The swimmer pushes water backward, and the water pushes the swimmer forward.
+    This is an action-reaction pair described by Newton’s third law.
+  FOR-D06_mcq_truck_mosquito: Newton’s third law says the forces are equal in size and opposite in direction,
+    regardless of the masses or the resulting accelerations.
+  FOR-D06_mcq_walking_reaction: The foot pushes the ground backward. The ground pushes forward on the
+    person, which is the reaction force that moves the person forward.
+  FOR-06_astronaut_on_moon: Weight on the Moon is $F_{g} = mg$ = 90 kg × 1.6 m/s² = 144 N.
+  FOR-06_weight_moon_60kg: Weight on the Moon is $F_{g} = mg$ = 60 kg × 1.6 m/s² = 96 N.
+  FOR-11_coin_card_inertia: The coin has inertia, so it tends to remain at rest when the card is flicked
+    away. Gravity then pulls the coin down into the cup.
+  FOR-19_static_to_kinetic: Once the box starts sliding, static friction is replaced by kinetic friction.
+    Kinetic friction is smaller than the maximum static friction.
+  FOR-19_static_vs_kinetic: It takes a larger force to overcome maximum static friction than to keep the
+    crate sliding. Therefore maximum static friction is greater than kinetic friction.
+  FOR-25_Net_force_tug_war: 'Take left as positive: $F_{net} = 300 - 250 = 50$ N left. The rope accelerates
+    in the direction of the net force.'
+  FOR-25_friction_at_constant_speed: Constant velocity means zero net force. The 20 N push to the right
+    must be balanced by 20 N of friction to the left.
+  FOR-28_box_on_table_fbd: The free-body diagram shows normal force upward and weight downward. They are
+    equal and opposite, so they balance.
+  FOR-28_fbd_flowerpot: $F_1$ points upward and is the normal force from the windowsill. $F_2$ points
+    downward and is the flowerpot’s weight. They balance because the flowerpot is at rest.
+  FOR-28_fbd_two_dimensions_sled: The normal force and weight are vertical and balance. The tension to
+    the right is larger than friction to the left, so there is a net force to the right.
+  FOR-38_net_force_acceleration_cart: Use $a = F_{net}/m$ = 12 N / 4.0 kg = 3.0 m/s². The acceleration
+    is in the same direction as the net force, to the right.
+  FOR-38_terminal_velocity: As speed increases, air resistance increases and the upward force on the skydiver
+    grows. At terminal velocity, air resistance balances weight, so the net force and acceleration are
+    zero.
+image_alt:
+  FOR-30_force_arrow_magnitude: A box with three rightward force arrows labeled F1, F2, and F3; the arrows
+    get longer from F1 to F3.
+  FOR-30_force_arrow_magnitude_02: A barge with three rightward force arrows labeled F1, F2, and F3; F3
+    is the longest arrow.
+  FOR-03_gravity_on_earth: A ball of mass m falling near Earth, with a downward weight arrow labeled Fg
+    and the ground below.
+  FOR-11_coin_card_inertia: A coin resting on a card over the mouth of a cup.
+  FOR-28_box_on_table_fbd: Free-body diagram of a box with normal force FN upward and weight Fg downward.
+  FOR-28_fbd_flowerpot: Free-body diagram of a flowerpot with F1 upward and F2 downward.
+  FOR-28_fbd_two_dimensions_sled: Free-body diagram of a sled with normal force upward, weight downward,
+    tension to the right, and friction to the left.

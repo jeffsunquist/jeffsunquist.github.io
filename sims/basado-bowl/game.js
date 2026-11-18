@@ -29,6 +29,24 @@ let audioCtx = null;
 let lastSaveAt = 0;
 let lastPhase = null;
 
+const NOISE_HOLD_MS = 1200;
+const noise = {
+  stream: null,
+  ctx: null,
+  analyser: null,
+  data: null,
+  raf: null,
+  lastTick: 0,
+  level: 0,
+  over: false,
+  gateOpen: true,
+  quietSince: 0,
+  enabled: false,
+  micState: 'off',
+  error: '',
+  dragging: false,
+};
+
 const DEV = (() => {
   try {
     return params.get('dev') === '1' || localStorage.getItem('basado-bowl:dev') === '1';
@@ -60,6 +78,7 @@ const ICON_PATHS = {
   expand: '<path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/>',
   menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
   crown: '<path d="M4 8l4 4 4-7 4 7 4-4v9H4V8z"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>',
   slot: '<path d="M12 5v14M5 12h14"/>',
 };
 
@@ -297,6 +316,231 @@ function richText(value) {
   return out;
 }
 
+function questionFigure(q) {
+  if (!q.image) return '';
+  const src = new URL(q.image, import.meta.url).href;
+  return `<figure class="question-figure">
+    <img src="${esc(src)}" alt="${esc(q.imageAlt || 'Question diagram')}" decoding="async" />
+  </figure>`;
+}
+
+/* ------------------------------------------------------------------ */
+/* Noise gate                                                          */
+/* ------------------------------------------------------------------ */
+
+function noiseSupported() {
+  return Boolean(
+    navigator.mediaDevices?.getUserMedia &&
+      (window.AudioContext || window.webkitAudioContext) &&
+      (window.isSecureContext || location.hostname === 'localhost')
+  );
+}
+
+function noiseThreshold() {
+  return Math.max(0, Math.min(100, Number(state?.settings?.noiseThreshold ?? 55)));
+}
+
+function noiseActive() {
+  return Boolean(noise.enabled && noise.micState === 'ready');
+}
+
+function noiseBlocking() {
+  return noiseActive() && (!noise.gateOpen || noise.over);
+}
+
+function noiseStatusText() {
+  if (noise.micState === 'denied') return 'MIC BLOCKED';
+  if (noise.micState === 'unavailable') return 'NO MIC';
+  if (!noise.enabled) return 'OFF';
+  if (noise.micState === 'requesting') return 'MIC…';
+  if (noise.micState === 'ready') {
+    if (noise.over) return 'TOO LOUD';
+    return noise.gateOpen ? 'QUIET' : 'SETTLING';
+  }
+  return 'MIC OFF';
+}
+
+function updateNoiseDOM() {
+  const threshold = noiseThreshold();
+  const level = Math.max(0, Math.min(100, Math.round(noise.level)));
+  const over = noise.over || noise.level >= threshold;
+  document.querySelectorAll('[data-noise-fill]').forEach((el) => {
+    el.style.width = `${level}%`;
+    el.classList.toggle('over', over);
+  });
+  document.querySelectorAll('[data-noise-marker]').forEach((el) => {
+    el.style.left = `${threshold}%`;
+  });
+  document.querySelectorAll('[data-noise-readout]').forEach((el) => {
+    el.textContent = noise.micState === 'ready' ? String(level) : '--';
+  });
+  document.querySelectorAll('[data-noise-status]').forEach((el) => {
+    el.textContent = noiseStatusText();
+  });
+  document.querySelectorAll('[data-noise-threshold-readout]').forEach((el) => {
+    el.textContent = String(threshold);
+  });
+  document.querySelectorAll('[data-noise-threshold-control]').forEach((el) => {
+    el.setAttribute('aria-valuenow', String(threshold));
+  });
+  document.querySelectorAll('[data-noise-pill]').forEach((el) => {
+    el.classList.toggle('over', over);
+    el.classList.toggle('live', noise.micState === 'ready');
+    el.classList.toggle('off', !noise.enabled);
+  });
+  document.querySelectorAll('[data-noise-toggle]').forEach((el) => {
+    el.classList.toggle('on', noiseActive());
+    el.classList.toggle('off', !noise.enabled);
+    el.setAttribute('aria-pressed', String(noise.enabled));
+    el.disabled = noise.micState === 'requesting';
+    el.title = noise.enabled ? 'Turn noise gate off' : 'Turn noise gate on';
+  });
+
+  const blocked = noiseBlocking();
+  const gated = [
+    ['next-turn-btn', 'NEXT TEAM →'],
+    ['draw-question-btn', 'DRAW A QUESTION →'],
+  ];
+  for (const [id, label] of gated) {
+    const button = document.getElementById(id);
+    if (!button) continue;
+    button.disabled = blocked;
+    button.textContent = blocked ? 'WAIT FOR QUIET' : label;
+  }
+  document.querySelectorAll('[data-noise-gate-hint]').forEach((el) => {
+    el.hidden = !blocked;
+    el.textContent = blocked
+      ? `NOISE ${level} · THRESHOLD ${threshold} — WAIT FOR QUIET`
+      : '';
+  });
+}
+
+function stopNoise(micState = 'off') {
+  if (noise.raf) cancelAnimationFrame(noise.raf);
+  noise.raf = null;
+  if (noise.stream) {
+    noise.stream.getTracks().forEach((track) => track.stop());
+  }
+  noise.stream = null;
+  if (noise.ctx) {
+    noise.ctx.close().catch(() => {});
+  }
+  noise.ctx = null;
+  noise.analyser = null;
+  noise.data = null;
+  noise.enabled = false;
+  noise.micState = micState;
+  noise.level = 0;
+  noise.over = false;
+  noise.gateOpen = true;
+  noise.quietSince = 0;
+  if (micState === 'off') noise.error = '';
+  updateNoiseDOM();
+}
+
+async function enableNoise() {
+  if (noise.micState === 'ready' || noise.micState === 'requesting') return;
+  if (!noiseSupported()) {
+    noise.enabled = false;
+    noise.micState = 'unavailable';
+    noise.error = 'This browser cannot access a microphone on this page.';
+    toast(noise.error);
+    updateNoiseDOM();
+    return;
+  }
+  noise.enabled = true;
+  noise.micState = 'requesting';
+  noise.error = '';
+  updateNoiseDOM();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+      },
+    });
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new Ctx();
+    await ctx.resume();
+    const source = ctx.createMediaStreamSource(stream);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 1024;
+    analyser.smoothingTimeConstant = 0;
+    source.connect(analyser);
+    noise.stream = stream;
+    noise.ctx = ctx;
+    noise.analyser = analyser;
+    noise.data = new Float32Array(analyser.fftSize);
+    noise.enabled = true;
+    noise.micState = 'ready';
+    noise.level = 0;
+    noise.over = false;
+    noise.gateOpen = false;
+    noise.quietSince = performance.now();
+    startNoiseLoop();
+  } catch (err) {
+    const state =
+      err?.name === 'NotAllowedError' || err?.name === 'SecurityError'
+        ? 'denied'
+        : 'unavailable';
+    noise.error =
+      state === 'denied'
+        ? 'Microphone permission was denied. The gate is inactive.'
+        : 'No microphone was found. The gate is inactive.';
+    stopNoise(state);
+    toast(noise.error);
+  }
+  updateNoiseDOM();
+}
+
+async function toggleNoise() {
+  if (noise.enabled || noise.micState === 'ready' || noise.micState === 'requesting') {
+    stopNoise();
+    save();
+    return;
+  }
+  await enableNoise();
+  save();
+}
+
+function startNoiseLoop() {
+  if (noise.raf) cancelAnimationFrame(noise.raf);
+  noise.lastTick = 0;
+  noise.raf = requestAnimationFrame(noiseLoop);
+}
+
+function noiseLoop(ts) {
+  if (noise.micState !== 'ready' || !noise.analyser || !noise.data) return;
+  noise.raf = requestAnimationFrame(noiseLoop);
+  if (ts - noise.lastTick < 50) return;
+  noise.lastTick = ts;
+  noise.analyser.getFloatTimeDomainData(noise.data);
+  let sum = 0;
+  for (const value of noise.data) sum += value * value;
+  const rms = Math.sqrt(sum / noise.data.length);
+  const db = 20 * Math.log10(Math.max(rms, 1e-8));
+  const raw = Math.max(0, Math.min(100, ((db + 70) / 70) * 100));
+  noise.level = noise.level * 0.72 + raw * 0.28;
+
+  const threshold = noiseThreshold();
+  if (!noise.over && noise.level >= threshold + 2) {
+    noise.over = true;
+    noise.quietSince = 0;
+  } else if (noise.over && noise.level <= threshold - 2) {
+    noise.over = false;
+    noise.quietSince = ts;
+  }
+  if (noise.over) {
+    noise.gateOpen = false;
+    noise.quietSince = 0;
+  } else {
+    if (!noise.quietSince) noise.quietSince = ts;
+    noise.gateOpen = ts - noise.quietSince >= NOISE_HOLD_MS;
+  }
+  updateNoiseDOM();
+}
+
 function teamMeta(id) {
   return CONFIG.teams.find((t) => t.id === id) || CONFIG.teams[0];
 }
@@ -398,6 +642,7 @@ function defaultState() {
       rounds: CONFIG.defaultRounds,
       timer: true,
       sound: true,
+      noiseThreshold: 55,
     },
     teams: CONFIG.teams.map((t) => ({
       id: t.id,
@@ -604,6 +849,10 @@ function unitCount(unit, level = null) {
 }
 
 function drawRandomQuestion() {
+  if (noiseBlocking()) {
+    toast('Too loud — wait for quiet.');
+    return;
+  }
   const selected = QUESTIONS.filter(
     (q) => gradeOk(q) && state.settings.units.includes(q.unit)
   );
@@ -702,6 +951,10 @@ function answer(index) {
 
 function nextTurn() {
   if (state.phase !== 'reveal') return;
+  if (noiseBlocking()) {
+    toast('Too loud — wait for quiet.');
+    return;
+  }
   pushUndo();
 
   state.current = null;
@@ -1343,6 +1596,23 @@ function renderHeader(inGame) {
         </div>
       </div>
       ${inGame ? `<div class="round-pill">${roundText()}</div>` : ''}
+      <div class="noise-pill" data-noise-pill>
+        <button type="button" class="noise-toggle off" data-action="noise-toggle"
+          data-noise-toggle aria-pressed="false" aria-label="Toggle noise gate"
+          title="Turn noise gate on">${svgIcon('mic')}</button>
+        <div class="noise-meter" data-noise-threshold-control role="slider"
+          tabindex="0" aria-label="Noise gate threshold" aria-valuemin="0"
+          aria-valuemax="100" aria-valuenow="${noiseThreshold()}">
+          <span class="noise-label">NOISE</span>
+          <span class="noise-track">
+            <span class="noise-fill" data-noise-fill></span>
+            <span class="noise-marker" data-noise-marker></span>
+          </span>
+          <span class="noise-readout" data-noise-readout>--</span>
+          <span class="noise-threshold-value" data-noise-threshold-readout>${noiseThreshold()}</span>
+          <span class="noise-state" data-noise-status>${noiseStatusText()}</span>
+        </div>
+      </div>
       <div class="header-actions">
         ${
           inGame
@@ -1668,7 +1938,12 @@ function renderPrep() {
             <p>One item in hand. Use it before the next draft.</p>
           </div>
           <div class="loadout one">${spellLoadout(team)}</div>
-          <button type="button" class="btn draw-btn" data-action="draw">DRAW A QUESTION →</button>
+          <button type="button" class="btn draw-btn" id="draw-question-btn" data-action="draw" ${
+            noiseBlocking() ? 'disabled' : ''
+          }>${noiseBlocking() ? 'WAIT FOR QUIET' : 'DRAW A QUESTION →'}</button>
+          <div class="noise-gate-hint" data-noise-gate-hint ${
+            noiseBlocking() ? '' : 'hidden'
+          }></div>
           <p class="draft-hint">${nextDraftHint(team)}</p>
         </div>
       </div>
@@ -1759,7 +2034,7 @@ function renderQuestion() {
   return `
     <section class="phase question team-${team.id} ${
       cur.jinxed ? 'question-jinxed' : ''
-    }" style="${teamStyle(meta)}">
+    } ${cur.q.image ? 'has-figure' : ''}" style="${teamStyle(meta)}">
       <div class="q-top">
         <div class="q-badges">
           <span class="badge" style="--c:${cat.color}">${svgIcon(cat.icon)} ${cat.short}</span>
@@ -1780,11 +2055,12 @@ function renderQuestion() {
         ${state.settings.timer ? timerHTML(cur) : '<span class="timer-off">NO TIMER</span>'}
       </div>
       <div class="question-body">
-        <div class="question-card">
+        <div class="question-card ${cur.q.image ? 'has-figure' : ''}">
           <p class="q-team">${esc(team.name).toUpperCase()} · ${
             cur.suddenDeath ? 'SUDDEN DEATH' : `ROUND ${state.round} / ${state.roundLimit}`
           }</p>
           <h2 class="question-text">${richText(cur.q.q)}</h2>
+          ${questionFigure(cur.q)}
         </div>
         <div class="answers">
           ${cur.q.a
@@ -1844,7 +2120,10 @@ function renderReveal() {
         </div>
       </div>
       <div class="reveal-actions">
-        <button type="button" class="btn primary next-btn" data-action="next">NEXT TEAM →</button>
+        <div class="noise-gate-hint" data-noise-gate-hint hidden></div>
+        <button type="button" class="btn primary next-btn" id="next-turn-btn" data-action="next" ${
+          noiseBlocking() ? 'disabled' : ''
+        }>${noiseBlocking() ? 'WAIT FOR QUIET' : 'NEXT TEAM →'}</button>
       </div>
     </section>`;
 }
@@ -1938,7 +2217,7 @@ function renderModal() {
       <div class="how-grid">
         <div>
           <h3>TURN</h3>
-          <p>Draft one item, draw a random question from the selected units, then answer as a class. The teacher taps the answer the team commits to.</p>
+          <p>Draft one item, draw a random question from the selected units, then answer as a class. The teacher taps the answer the team commits to. If the noise gate is on, drawing the next question and moving to the next turn both wait until the room is quiet.</p>
         </div>
         <div>
           <h3>SCORE</h3>
@@ -2059,6 +2338,7 @@ function render() {
   `;
   if (state.phase === 'question') updateTimerDOM();
   save();
+  updateNoiseDOM();
   if (phaseChanged && state.phase === 'gameover') {
     requestAnimationFrame(() => arenaConfetti());
   }
@@ -2124,6 +2404,10 @@ function handleAction(action, el) {
       state.settings.timer = el.dataset.value === 'on';
       save();
       render();
+      break;
+
+    case 'noise-toggle':
+      toggleNoise();
       break;
 
     case 'sound':
@@ -2286,6 +2570,62 @@ app.addEventListener('click', (e) => {
   handleAction(el.dataset.action, el);
 });
 
+function setNoiseThresholdFromClientX(clientX) {
+  const control = document.querySelector('[data-noise-threshold-control]');
+  if (!control) return;
+  const track = control.querySelector('.noise-track') || control;
+  const rect = track.getBoundingClientRect();
+  if (!rect.width) return;
+  const value = Math.max(
+    0,
+    Math.min(100, Math.round(((clientX - rect.left) / rect.width) * 100))
+  );
+  if (value === state.settings.noiseThreshold) return;
+  state.settings.noiseThreshold = value;
+  noise.quietSince = performance.now();
+  noise.gateOpen = false;
+  save();
+  updateNoiseDOM();
+}
+
+app.addEventListener('pointerdown', (e) => {
+  const control = e.target.closest('[data-noise-threshold-control]');
+  if (!control) return;
+  e.preventDefault();
+  control.focus({ preventScroll: true });
+  control.setPointerCapture?.(e.pointerId);
+  noise.dragging = true;
+  setNoiseThresholdFromClientX(e.clientX);
+});
+
+app.addEventListener('pointermove', (e) => {
+  if (!noise.dragging) return;
+  setNoiseThresholdFromClientX(e.clientX);
+});
+
+const endNoiseDrag = () => {
+  noise.dragging = false;
+};
+app.addEventListener('pointerup', endNoiseDrag);
+app.addEventListener('pointercancel', endNoiseDrag);
+
+app.addEventListener('keydown', (e) => {
+  const control = e.target.closest('[data-noise-threshold-control]');
+  if (!control) return;
+  let value = state.settings.noiseThreshold;
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') value -= 1;
+  else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') value += 1;
+  else if (e.key === 'Home') value = 0;
+  else if (e.key === 'End') value = 100;
+  else return;
+  e.preventDefault();
+  state.settings.noiseThreshold = Math.max(0, Math.min(100, value));
+  noise.quietSince = performance.now();
+  noise.gateOpen = false;
+  save();
+  updateNoiseDOM();
+});
+
 app.addEventListener('contextmenu', (e) => {
   if (e.target.closest('input')) return;
   e.preventDefault();
@@ -2297,6 +2637,12 @@ document.addEventListener('visibilitychange', () => {
   if (state.phase === 'question' && state.current && state.current.timer.running) {
     state.current.timer.running = false;
     save();
+  }
+});
+
+window.addEventListener('beforeunload', () => {
+  if (noise.stream) {
+    noise.stream.getTracks().forEach((track) => track.stop());
   }
 });
 
@@ -2340,6 +2686,9 @@ if (phaseParam && state.phase === 'setup') {
 window.BB = {
   get state() {
     return state;
+  },
+  get noise() {
+    return noise;
   },
   config: CONFIG,
   questions: QUESTIONS,

@@ -21,6 +21,25 @@ python3 -m http.server 8000
 
 No build step, no npm packages. Edit a file, refresh.
 
+## Noise gate
+
+The top bar has a microphone button and a live **NOISE** meter. Tapping the mic
+button turns the gate on or off at any time; dragging the marker on the meter
+sets the loudness threshold. The threshold is saved, but the gate starts off
+after a reload so the browser microphone permission is always tied to a tap.
+
+When the gate is on, both **DRAW A QUESTION** on the prep screen and **NEXT
+TEAM** on the reveal screen stay locked until the room is below the threshold
+for about 1.2 seconds. Turning the gate off immediately unlocks both buttons.
+
+- If the microphone is denied or unavailable, the gate stays off and the game
+  remains playable.
+- Audio is processed in memory only; it is never recorded, stored, or sent.
+- Microphone access requires HTTPS on the deployed site (or `localhost`).
+- This is a relative classroom loudness meter, not a calibrated SPL meter. The
+  microphone will also hear the teacher and game sound effects, so place the
+  laptop toward the class and tune the threshold in the room.
+
 ## Teams and order
 
 | Turn | Team | Colour | Look |
@@ -73,10 +92,11 @@ targeted.
 
 ## Question bank and grades
 
-The game ships with **682 questions**:
+The game ships with **755 questions**:
 
 - 82 curated questions in `questions/{sci,kin,for,ene}.js`.
 - 600 authored questions in `questions/bank/{sci,kin,for,ene,ele,wav,mom}.js`.
+- 73 approved FOR handout MCQs in `questions/bank/for-approved.js`.
 - 250 of the authored questions are new quantitative hard problems; every
   unit/grade has 10 easy, 10 medium, and 30 hard questions.
 
@@ -86,7 +106,7 @@ Setup offers **Grade 6** and **Grade 7** only. There is no mixed mode.
 |---|---|---|
 | Scientific Inquiry (`SCI`) | 70 | 70 |
 | Kinematics (`KIN`) | 68 | 72 |
-| Forces (`FOR`) | 70 | 74 |
+| Forces (`FOR`) | 131 | 143 |
 | Simple Machines / Energy (`ENE`) | 66 | 50 |
 | Electricity (`ELE`) | 50 | 50 |
 | Waves (`WAV`) | 0 | 50 |
@@ -108,6 +128,25 @@ adds it to the default selection.
 Each authored question carries an `lo` tag. `tools/validate-questions.mjs`
 checks every LO against `shared/lo_master.csv` so a Grade 6 question cannot use
 a Grade 7-only objective, or the reverse.
+
+### Approved FOR handout MCQs
+
+`questions/bank/for-approved.js` is generated from the approved FOR MCQs used in
+the scored `FOR-W01`–`FOR-W06` and `FOR-D01`–`FOR-D06` handouts. It contains 73
+questions (75 approved unique questions minus two exact duplicates already
+covered by the bank).
+
+- Explanations and image alt text live in `questions/for-approved.meta.yaml`.
+- Diagram questions use self-contained SVGs from `questions/images/for/`.
+- Regenerate from `handouts_builder/` with:
+
+```bash
+.venv/bin/python tools/export_basado_bowl.py
+```
+
+The generator drops known duplicate questions, validates that every imported
+question has an explanation, renders TikZ diagrams with `pdflatex` + `mutool`,
+and shuffles choices deterministically so the correct answer is not always A.
 
 ## Math markup
 
@@ -180,6 +219,9 @@ one-dimensional.
 | Characters and pixel sprites | `characters.js` |
 | Curated questions | `questions/{sci,kin,for,ene}.js` |
 | Authored bank | `questions/bank/{sci,kin,for,ene,ele,wav}.js` |
+| Approved FOR handout bank | `questions/bank/for-approved.js` |
+| FOR handout explanations / image alt text | `questions/for-approved.meta.yaml` |
+| FOR handout diagrams | `questions/images/for/*.svg` |
 | Validate the bank | `node tools/validate-questions.mjs` |
 | Layout and animation styling | `style.css` |
 | Flow, draft, casting, effects | `game.js` |
