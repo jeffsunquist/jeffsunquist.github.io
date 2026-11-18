@@ -62,6 +62,36 @@ function checkLatex(q, value, field) {
   if (open !== close) fail(q, `unbalanced \\( \\) delimiters in ${field}`);
 }
 
+function checkOneD(q) {
+  const fields = [q.q, q.why, ...(Array.isArray(q.a) ? q.a : [])].map((v) => String(v ?? ''));
+  if (['KIN', 'FOR', 'MOM'].includes(q.unit)) {
+    for (const text of fields) {
+      const northSouth = /\b(north|south)\b/i.test(text);
+      const eastWest = /\b(east|west)\b/i.test(text);
+      if (northSouth && eastWest) {
+        fail(q, 'uses perpendicular compass axes; keep motion and forces 1-D');
+        break;
+      }
+    }
+  }
+  if (['KIN', 'FOR', 'ENE'].includes(q.unit)) {
+    for (const text of fields) {
+      if (/(?:cos|sin)\s*\(/i.test(text)) {
+        fail(q, 'uses a 2-D trig component; keep force and motion 1-D');
+        break;
+      }
+    }
+  }
+  if (/negative acceleration/i.test(`${q.q} ${q.why}`)) {
+    const statesDirection = /(positive direction|negative direction|velocity is negative|velocity is positive|moves? in the negative|moves? in the positive)/i.test(
+      q.q
+    );
+    if (!statesDirection) {
+      fail(q, 'negative acceleration must state the velocity direction');
+    }
+  }
+}
+
 function checkMath(q, value, field) {
   const text = String(value ?? '');
   let i = 0;
@@ -116,6 +146,7 @@ for (const q of QUESTIONS) {
   }
 
   checkSymbols(q);
+  checkOneD(q);
   ['q', 'why'].forEach((field) => {
     checkMath(q, q[field], field);
     checkLatex(q, q[field], field);

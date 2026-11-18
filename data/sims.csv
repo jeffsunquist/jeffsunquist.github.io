@@ -1,3 +1,4 @@
 slug,title,grade,description
 x-t-graph,Position–Time Graph,both,Adjust velocity and watch the live position vs. time trace; the slope is the velocity.
 v-t-graph,Velocity–Time Graph,both,Adjust acceleration and watch the live velocity vs. time trace; the slope is acceleration and the shaded area is displacement.
+friction-box,Static vs. Kinetic Friction,both,Push a box on a rough floor and watch static friction give way to kinetic friction.

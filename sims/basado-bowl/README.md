@@ -161,6 +161,15 @@ Questions use the same symbols as the formula sheets and lesson slides:
 
 The validator rejects `W = mg`, `F = ma`, `F = μN`, `v_i`, and `sqrt(...)`.
 
+## One-dimensional motion
+
+Translational motion and net-force questions stay on a single axis. Any
+question involving a negative sign states the positive direction or the sign of
+the velocity, so “negative acceleration” is never treated as automatically
+slowing down. Perpendicular-axis wording and angled force components are
+rejected. Moment/rotational questions are separate and intentionally not
+one-dimensional.
+
 ## Where to change things
 
 | What | File |
