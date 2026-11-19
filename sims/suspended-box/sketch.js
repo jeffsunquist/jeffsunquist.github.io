@@ -716,14 +716,19 @@ export default function sketch(p) {
     // Ropes go pale as the sky darkens so they stay visible in space.
     const ropeT = clamp((y - 15000) / 60000, 0, 1)
     const ropeCol = lerp3(C.ink, [228, 236, 248], ropeT)
+    // Negative tension pulls the crate down: the ropes leave the bottom.
+    const down = f.eachT < 0
+    const ropeStart = down ? BOX_TOP + BOX_H - 2 : BOX_TOP - 6
+    const ropeEnd = down ? H + 80 : -60
+    const knotY = down ? BOX_TOP + BOX_H + 2 : BOX_TOP - 2
 
     p.stroke(...ropeCol)
     p.strokeWeight(2)
     for (const off of offs) {
-      roughLine(BOX_X + off, BOX_TOP - 6, BOX_X + off, -60, 710 + off, 0.5)
+      roughLine(BOX_X + off, ropeStart, BOX_X + off, ropeEnd, 710 + off, 0.5)
       p.strokeWeight(1.3)
       p.noFill()
-      p.ellipse(BOX_X + off, BOX_TOP - 2, 9, 6)
+      p.ellipse(BOX_X + off, knotY, 9, 6)
       p.strokeWeight(2)
     }
   }
@@ -757,8 +762,8 @@ export default function sketch(p) {
     p.background(...sky)
     drawStars()
     drawClouds(sky)
-    drawGround()
     drawRig(f)
+    drawGround()
     drawBox()
     drawFBD(f)
     drawNet(f)
