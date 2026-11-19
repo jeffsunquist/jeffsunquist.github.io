@@ -162,7 +162,7 @@ body.demo #stage canvas { touch-action: none; }
   padding: 0.45rem 0.75rem;
 }
 
-.sim-controls.big input[type='number'] { width: 5.4rem; }
+.sim-controls.big input[type='number'] { width: 6.8rem; }
 
 .sim-controls.big select { max-width: 24rem; }
 

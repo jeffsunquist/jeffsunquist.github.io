@@ -5,8 +5,8 @@ import { loadKatex } from './katex-loader.js';
 
 await loadKatex();
 
-const VERSION = 11;
-const SAVE_KEY = 'basado-bowl:v11';
+const VERSION = 12;
+const SAVE_KEY = 'basado-bowl:v12';
 const params = new URLSearchParams(location.search);
 const app = document.getElementById('app');
 
@@ -39,6 +39,7 @@ const noise = {
   lastTick: 0,
   level: 0,
   over: false,
+  overSince: 0,
   gateOpen: true,
   quietSince: 0,
   enabled: false,
@@ -360,6 +361,76 @@ function noiseStatusText() {
   return 'MIC OFF';
 }
 
+function formatClock(ms) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  if (hours) {
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+function matchElapsedMs(now = Date.now()) {
+  if (!state.matchActive) return state.matchElapsedMs || 0;
+  const base = state.matchElapsedMs || 0;
+  return base + (state.matchTickAt ? Math.max(0, now - state.matchTickAt) : 0);
+}
+
+function accrueMatchTime(now = Date.now()) {
+  if (!state.matchActive || state.matchEndedAt || !state.matchTickAt) return;
+  state.matchElapsedMs = (state.matchElapsedMs || 0) + Math.max(0, now - state.matchTickAt);
+  state.matchTickAt = now;
+}
+
+function loudElapsedMs(now = performance.now()) {
+  const base = state.loudMs || 0;
+  if (!state.matchActive || state.matchEndedAt || state.phase === 'setup') return base;
+  return noise.over && noise.overSince ? base + Math.max(0, now - noise.overSince) : base;
+}
+
+function flushLoudTime(now = performance.now()) {
+  if (!state.matchActive || state.matchEndedAt || state.phase === 'setup') {
+    noise.overSince = 0;
+    return;
+  }
+  if (noise.over && noise.overSince) {
+    state.loudMs = (state.loudMs || 0) + Math.max(0, now - noise.overSince);
+  }
+  noise.overSince = noise.over ? now : 0;
+}
+
+function finalizeMatchIfNeeded() {
+  if (state.phase !== 'gameover' || !state.matchActive) return;
+  const max = Math.max(...state.teams.map((t) => t.score));
+  const leaders = state.teams.filter((t) => t.score === max);
+  if (leaders.length !== 1) return;
+  accrueMatchTime();
+  flushLoudTime();
+  noise.overSince = 0;
+  state.matchActive = false;
+  state.matchTickAt = null;
+  state.matchEndedAt = Date.now();
+}
+
+function updateClocks() {
+  const match = formatClock(matchElapsedMs());
+  const loud = state.noiseUsed ? formatClock(loudElapsedMs()) : '--';
+  document.querySelectorAll('[data-match-clock]').forEach((el) => {
+    el.textContent = match;
+  });
+  document.querySelectorAll('[data-loud-clock]').forEach((el) => {
+    el.textContent = loud;
+  });
+  document.querySelectorAll('[data-final-match-clock]').forEach((el) => {
+    el.textContent = match;
+  });
+  document.querySelectorAll('[data-final-loud-clock]').forEach((el) => {
+    el.textContent = state.noiseUsed ? formatClock(loudElapsedMs()) : 'MIC OFF';
+  });
+}
+
 function updateNoiseDOM() {
   const threshold = noiseThreshold();
   const level = Math.max(0, Math.min(100, Math.round(noise.level)));
@@ -416,6 +487,7 @@ function updateNoiseDOM() {
 }
 
 function stopNoise(micState = 'off') {
+  flushLoudTime();
   if (noise.raf) cancelAnimationFrame(noise.raf);
   noise.raf = null;
   if (noise.stream) {
@@ -432,6 +504,7 @@ function stopNoise(micState = 'off') {
   noise.micState = micState;
   noise.level = 0;
   noise.over = false;
+  noise.overSince = 0;
   noise.gateOpen = true;
   noise.quietSince = 0;
   if (micState === 'off') noise.error = '';
@@ -478,6 +551,7 @@ async function enableNoise() {
     noise.over = false;
     noise.gateOpen = false;
     noise.quietSince = performance.now();
+    state.noiseUsed = true;
     startNoiseLoop();
   } catch (err) {
     const state =
@@ -526,9 +600,15 @@ function noiseLoop(ts) {
   const threshold = noiseThreshold();
   if (!noise.over && noise.level >= threshold + 2) {
     noise.over = true;
+    noise.overSince =
+      state.matchActive && !state.matchEndedAt && state.phase !== 'setup' ? ts : 0;
     noise.quietSince = 0;
   } else if (noise.over && noise.level <= threshold - 2) {
+    if (noise.overSince) {
+      state.loudMs = (state.loudMs || 0) + Math.max(0, ts - noise.overSince);
+    }
     noise.over = false;
+    noise.overSince = 0;
     noise.quietSince = ts;
   }
   if (noise.over) {
@@ -667,10 +747,20 @@ function defaultState() {
     seed: null,
     rngState: 0,
     lastQuestionId: null,
+    matchActive: false,
+    matchElapsedMs: 0,
+    matchTickAt: null,
+    matchEndedAt: null,
+    loudMs: 0,
+    noiseUsed: false,
   };
 }
 
 function save() {
+  if (state && state.matchActive && !state.matchEndedAt) {
+    accrueMatchTime();
+    if (noise.over) flushLoudTime();
+  }
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(state));
   } catch {
@@ -718,6 +808,12 @@ function load() {
     s.seed = Number.isFinite(s.seed) ? s.seed >>> 0 : makeMatchSeed();
     s.rngState = Number.isFinite(s.rngState) ? s.rngState >>> 0 : s.seed;
     s.lastQuestionId = typeof s.lastQuestionId === 'string' ? s.lastQuestionId : null;
+    s.matchActive = Boolean(s.matchActive);
+    s.matchElapsedMs = Number.isFinite(s.matchElapsedMs) ? Math.max(0, s.matchElapsedMs) : 0;
+    s.matchTickAt = null;
+    s.matchEndedAt = Number.isFinite(s.matchEndedAt) ? s.matchEndedAt : null;
+    s.loudMs = Number.isFinite(s.loudMs) ? Math.max(0, s.loudMs) : 0;
+    s.noiseUsed = Boolean(s.noiseUsed);
     if (!s.roundLimit) s.roundLimit = s.settings.rounds;
     return s;
   } catch {
@@ -781,6 +877,13 @@ function startMatch() {
   state.seed = makeMatchSeed();
   state.rngState = state.seed;
   state.lastQuestionId = null;
+  state.matchActive = true;
+  state.matchElapsedMs = 0;
+  state.matchTickAt = Date.now();
+  state.matchEndedAt = null;
+  state.loudMs = 0;
+  state.noiseUsed = noise.micState === 'ready';
+  noise.overSince = noise.over ? performance.now() : 0;
   state.turn = 0;
   state.round = 1;
   state.roundLimit = state.settings.rounds;
@@ -806,6 +909,13 @@ function newSetup() {
   state.used = [];
   state.draft = {};
   state.contenders = null;
+  state.matchActive = false;
+  state.matchElapsedMs = 0;
+  state.matchTickAt = null;
+  state.matchEndedAt = null;
+  state.loudMs = 0;
+  state.noiseUsed = false;
+  noise.overSince = 0;
   undoStack = [];
   ui = { modal: null, pendingSpell: null, animating: false, fx: null };
   save();
@@ -817,11 +927,17 @@ function suddenDeath() {
   const tied = state.teams.filter((t) => t.score === max);
   if (tied.length < 2) return;
   pushUndo();
+  accrueMatchTime();
+  flushLoudTime();
   state.contenders = tied.map((t) => t.id);
   state.teams.forEach((t) => {
     t.buffs = {};
     t.jinxTurns = 0;
   });
+  state.matchActive = true;
+  state.matchEndedAt = null;
+  state.matchTickAt = Date.now();
+  noise.overSince = noise.over ? performance.now() : 0;
   state.roundLimit = Math.max(state.roundLimit, state.round);
   state.round = state.roundLimit;
   state.turn = 0;
@@ -1444,9 +1560,15 @@ function toggleTimer() {
 }
 
 function tick() {
+  const now = Date.now();
+  accrueMatchTime(now);
+  updateClocks();
+  if (state.matchActive && now - lastSaveAt > 5000) {
+    lastSaveAt = now;
+    save();
+  }
   if (!state.current || state.phase !== 'question' || !state.current.timer.running) return;
   const t = state.current.timer;
-  const now = Date.now();
   const dt = Math.max(0, (now - t.last) / 1000);
   t.last = now;
   t.remaining -= dt;
@@ -1595,7 +1717,13 @@ function renderHeader(inGame) {
           <span class="sub">PHYSICS TRIVIA BATTLE</span>
         </div>
       </div>
-      ${inGame ? `<div class="round-pill">${roundText()}</div>` : ''}
+      ${
+        inGame
+          ? `<div class="round-pill"><span>${roundText()}</span><span class="match-clock" data-match-clock>${formatClock(
+              matchElapsedMs()
+            )}</span></div>`
+          : ''
+      }
       <div class="noise-pill" data-noise-pill>
         <button type="button" class="noise-toggle off" data-action="noise-toggle"
           data-noise-toggle aria-pressed="false" aria-label="Toggle noise gate"
@@ -1609,6 +1737,9 @@ function renderHeader(inGame) {
             <span class="noise-marker" data-noise-marker></span>
           </span>
           <span class="noise-readout" data-noise-readout>--</span>
+          <span class="loud-clock" title="Time above threshold">LOUD <b data-loud-clock>${
+            state.noiseUsed ? formatClock(loudElapsedMs()) : '--'
+          }</b></span>
           <span class="noise-threshold-value" data-noise-threshold-readout>${noiseThreshold()}</span>
           <span class="noise-state" data-noise-status>${noiseStatusText()}</span>
         </div>
@@ -2159,6 +2290,19 @@ function renderGameover() {
           })
           .join('')}
       </div>
+      <div class="match-stats">
+        <div class="match-stat">
+          <span class="kick">TOTAL TIME</span>
+          <strong data-final-match-clock>${formatClock(matchElapsedMs())}</strong>
+        </div>
+        <div class="match-stat">
+          <span class="kick">ABOVE THRESHOLD</span>
+          <strong data-final-loud-clock>${
+            state.noiseUsed ? formatClock(loudElapsedMs()) : 'MIC OFF'
+          }</strong>
+          <small>threshold ${noiseThreshold()}</small>
+        </div>
+      </div>
       <div class="gameover-actions">
         ${
           tie
@@ -2325,6 +2469,7 @@ function renderPhase() {
 }
 
 function render() {
+  finalizeMatchIfNeeded();
   const inGame = state.phase !== 'setup';
   const phaseChanged = state.phase !== lastPhase;
   lastPhase = state.phase;
@@ -2339,6 +2484,7 @@ function render() {
   if (state.phase === 'question') updateTimerDOM();
   save();
   updateNoiseDOM();
+  updateClocks();
   if (phaseChanged && state.phase === 'gameover') {
     requestAnimationFrame(() => arenaConfetti());
   }
@@ -2632,15 +2778,29 @@ app.addEventListener('contextmenu', (e) => {
 });
 
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) return;
-  save();
-  if (state.phase === 'question' && state.current && state.current.timer.running) {
-    state.current.timer.running = false;
+  if (document.hidden) {
+    accrueMatchTime();
+    flushLoudTime();
+    state.matchTickAt = null;
+    noise.overSince = 0;
     save();
+    if (state.phase === 'question' && state.current && state.current.timer.running) {
+      state.current.timer.running = false;
+      save();
+    }
+    return;
   }
+  if (state.matchActive && !state.matchEndedAt) {
+    state.matchTickAt = Date.now();
+    if (noise.over) noise.overSince = performance.now();
+  }
+  save();
 });
 
 window.addEventListener('beforeunload', () => {
+  accrueMatchTime();
+  flushLoudTime();
+  save();
   if (noise.stream) {
     noise.stream.getTracks().forEach((track) => track.stop());
   }
@@ -2653,6 +2813,9 @@ window.addEventListener('beforeunload', () => {
 if (params.get('fast') === '1') document.documentElement.classList.add('fast');
 
 state = load() || defaultState();
+state.matchTickAt =
+  state.matchActive && !state.matchEndedAt && state.phase !== 'setup' ? Date.now() : null;
+noise.overSince = 0;
 
 if (state.current && state.current.timer && state.phase === 'question') {
   state.current.timer.last = Date.now();

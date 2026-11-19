@@ -38,8 +38,11 @@ export default function sketch(p) {
 
   const MASS_MIN = 1
   const MASS_MAX = 10
-  const ACCEL_MAX = 10
-  const ACCEL_MIN = -G      // at -g the ropes go slack
+  const ACCEL_MAX = 20
+  const ACCEL_MIN = -30
+  const FT_MAX = 300
+  const FT_MIN = -300
+  const GROUND_START = BOX_TOP + BOX_H  // screen y of the ground at altitude 0
 
   const CARD1 = { x: 480, y: 14, w: 460, h: 250 }
   const CARD2 = { x: 520, y: 280, w: 380, h: 130 }
@@ -49,9 +52,9 @@ export default function sketch(p) {
 
   const TYPE = {
     title: 22,
-    force: 18,
-    symbol: 15,
-    foot: 16,
+    force: 20,
+    symbol: 20,
+    foot: 17,
     netValue: 20,
     caption: 15,
     velocity: 26,
@@ -76,7 +79,9 @@ export default function sketch(p) {
     bad: [185, 28, 28],
     box: [238, 225, 205],
     boxEdge: [143, 112, 78],
-    boxLine: [214, 194, 164]
+    boxLine: [214, 194, 164],
+    ground: [238, 233, 224],
+    groundLine: [214, 206, 192]
   }
 
   // Scattered, non-repeating cloud field. Each depth layer is a grid of
@@ -91,9 +96,9 @@ export default function sketch(p) {
   // Three star depths: far stars are small, dim and slow; near ones are
   // larger, brighter and faster. Same non-repeating cell technique.
   const STAR_LAYERS = [
-    { f: 0.004, cellW: 120, cellH: 110, r: 1.0, chance: 0.7, alpha: 0.55 },
-    { f: 0.008, cellW: 170, cellH: 160, r: 1.5, chance: 0.55, alpha: 0.75 },
-    { f: 0.016, cellW: 230, cellH: 220, r: 2.1, chance: 0.45, alpha: 1.0 }
+    { f: 0.001, cellW: 120, cellH: 110, r: 1.0, chance: 0.7, alpha: 0.55 },
+    { f: 0.002, cellW: 170, cellH: 160, r: 1.5, chance: 0.55, alpha: 0.75 },
+    { f: 0.004, cellW: 230, cellH: 220, r: 2.1, chance: 0.45, alpha: 1.0 }
   ]
 
   // Real-atmosphere sky stops, in metres above the start.
@@ -115,13 +120,18 @@ export default function sketch(p) {
   let accel = 2            // signed m/s², up positive
 
   let v = 0                // m/s, up positive
-  let y = 0                // m, altitude from the start (cloud scroll)
+  let y = 0                // m, altitude from the ground (cloud scroll)
+  let clock = 0            // s, twinkle / animation time
   let paused = false
+
+  // Logical letterbox margins, so the sky/ground/stars fill the whole canvas.
+  let viewPadX = 0
+  let viewPadY = 0
 
   let stage, controls
   let handReady = false
 
-  let accelInput, upBtn, downBtn
+  let accelInput, ftInput
   let pauseBtn, readout
   let ropeBtns = []
   let restBtn, accelBtn
@@ -135,6 +145,11 @@ export default function sketch(p) {
     return s.endsWith('.0') ? s.slice(0, -2) : s
   }
   const fmtNum = (n) => String(Number(n.toFixed(2)))
+  const fmtSigned = (val) => {
+    if (Math.abs(val) < 0.05) return '0'
+    const s = val.toFixed(1)
+    return s.endsWith('.0') ? s.slice(0, -2) : s
+  }
   const dirArrowV = (val) => (val > 0.005 ? ' \u2191' : val < -0.005 ? ' \u2193' : '')
   const fmtAlt = (val) =>
     Math.abs(val) >= 1000 ? `${(val / 1000).toFixed(2)} km` : `${val.toFixed(1)} m`
@@ -307,6 +322,9 @@ export default function sketch(p) {
     }
   }
 
+  const ftFromA = (a) => (mass * (G + a)) / nRopes
+  const aFromFt = (ft) => (nRopes * ft) / mass - G
+
   function update(dt) {
     if (mode === 'rest') {
       v = 0
@@ -314,11 +332,16 @@ export default function sketch(p) {
     }
     v += accelSigned() * dt
     y += v * dt
+    if (y < 0) {
+      y = 0
+      v = 0
+    }
   }
 
   function reset() {
     v = 0
     y = 0
+    clock = 0
   }
 
   // -------------------------------------------------------------- arrows
@@ -390,7 +413,7 @@ export default function sketch(p) {
       [
         { t: 'F' },
         { t: 'T', sub: true },
-        { t: ` = ${fmtF(f.eachT)} N` }
+        { t: ` = ${fmtSigned(f.eachT)} N` }
       ],
       CARD1.x + CARD1.w - 20,
       CARD1.y + 26,
@@ -414,52 +437,57 @@ export default function sketch(p) {
     const offs = fbdOffsets()
     const d = DOT1
     const R = 14
-    const slack = f.eachT < 0.05
+    const noRopes = Math.abs(f.eachT) < 0.05
     const lenT = arrowLen(f.eachT)
     const lenG = arrowLen(f.Fg)
     const gTail = d.y + R - 1
 
-    // Every rope's tension starts on the dot's upper edge, directly on the
-    // body. The big dot hides the tails so they read as one junction.
+    // Tension tails sit on the dot's upper edge at each rope offset.
+    const tails = []
     const tips = []
-    if (!slack) {
+    if (!noRopes) {
       for (let i = 0; i < offs.length; i++) {
         const off = offs[i]
         const tail = d.y - Math.sqrt(Math.max(0, R * R - off * off)) + 1
-        const tip = tail - lenT
-        tips.push(tip)
-        arrow(d.x + off, tail, d.x + off, tip, C.normal, 860 + i * 13)
+        tails.push(tail)
+        tips.push(tail - lenT)
+      }
+    }
+
+    // Dot first, so a downward tension arrowhead stays visible on its edge.
+    dot(d.x, d.y, R, C.ink)
+
+    if (!noRopes) {
+      for (let i = 0; i < offs.length; i++) {
+        const x = d.x + offs[i]
+        if (f.eachT >= 0) {
+          arrow(x, tails[i], x, tips[i], C.normal, 860 + i * 13)
+        } else {
+          arrow(x, tips[i], x, tails[i], C.normal, 860 + i * 13)
+        }
       }
     }
     arrow(d.x, gTail, d.x, gTail + lenG, C.gravity, 890)
-    dot(d.x, d.y, R, C.ink)
 
-    if (slack) {
-      p.fill(...C.muted)
-      p.textSize(TYPE.foot)
-      p.textAlign(p.LEFT, p.BASELINE)
-      p.text('ropes slack', CARD1.x + 20, CARD1.y + 64)
-    } else {
-      // Symbols only on the vectors; values live in the corner key.
-      for (let i = 0; i < offs.length; i++) {
-        const parts = [
-          { t: 'F' },
-          { t: 'T', sub: true }
-        ]
-        let align = 'CENTER'
-        let lx = d.x + offs[i]
-        let ly = tips[i] - 6
-        if (nRopes > 1 && i === 0) {
-          align = 'RIGHT'
-          lx = d.x + offs[i] - 6
-          ly = tips[i] + 6
-        } else if (nRopes > 1 && i === offs.length - 1) {
-          align = 'LEFT'
-          lx = d.x + offs[i] + 6
-          ly = tips[i] + 6
-        }
-        drawSub(parts, lx, ly, align, TYPE.symbol, C.normal)
+    // Symbols only on the vectors; values live in the corner key.
+    for (let i = 0; i < offs.length && !noRopes; i++) {
+      const parts = [
+        { t: 'F' },
+        { t: 'T', sub: true }
+      ]
+      let align = 'CENTER'
+      let lx = d.x + offs[i]
+      let ly = tips[i] - 6
+      if (nRopes > 1 && i === 0) {
+        align = 'RIGHT'
+        lx = d.x + offs[i] - 6
+        ly = tips[i] + 6
+      } else if (nRopes > 1 && i === offs.length - 1) {
+        align = 'LEFT'
+        lx = d.x + offs[i] + 6
+        ly = tips[i] + 6
       }
+      drawSub(parts, lx, ly, align, TYPE.symbol, C.normal)
     }
 
     drawSub(
@@ -532,6 +560,9 @@ export default function sketch(p) {
     const speed = Math.abs(v)
     const accel = Math.abs(f.a)
     if (speed < EPS_V && accel < EPS_A) return { text: 'at rest', color: C.muted }
+    if (y <= 0.001 && speed < EPS_V && f.a < -EPS_A) {
+      return { text: 'on ground', color: C.muted }
+    }
     if (accel < EPS_A) return { text: 'constant velocity', color: C.normal }
     if (f.a * v >= 0) return { text: 'speeding up', color: C.warn }
     return { text: 'slowing down', color: C.bad }
@@ -584,12 +615,13 @@ export default function sketch(p) {
       const L = CLOUD_LAYERS[li]
       const col = lerp3(L.color, sky, fade)
       const off = y * PX_PER_M * L.f
-      const cols = Math.ceil(W / L.cellW) + 2
-      const wj0 = Math.floor((-180 - off) / L.cellH) - 1
-      const wj1 = Math.ceil((H + 180 - off) / L.cellH) + 1
+      const ix0 = Math.floor(-viewPadX / L.cellW) - 1
+      const ix1 = Math.ceil((W + viewPadX) / L.cellW) + 1
+      const wj0 = Math.floor((-180 - viewPadY - off) / L.cellH) - 1
+      const wj1 = Math.ceil((H + viewPadY + 180 - off) / L.cellH) + 1
 
       for (let wj = wj0; wj <= wj1; wj++) {
-        for (let ix = -1; ix <= cols; ix++) {
+        for (let ix = ix0; ix <= ix1; ix++) {
           const salt = li * 919.7
           const h0 = hash(ix * 127.1 + wj * 311.7 + salt)
           if (h0 > L.chance) continue
@@ -617,12 +649,13 @@ export default function sketch(p) {
     for (let li = 0; li < STAR_LAYERS.length; li++) {
       const L = STAR_LAYERS[li]
       const off = y * PX_PER_M * L.f
-      const cols = Math.ceil(W / L.cellW) + 2
-      const wj0 = Math.floor((-60 - off) / L.cellH) - 1
-      const wj1 = Math.ceil((H + 60 - off) / L.cellH) + 1
+      const ix0 = Math.floor(-viewPadX / L.cellW) - 1
+      const ix1 = Math.ceil((W + viewPadX) / L.cellW) + 1
+      const wj0 = Math.floor((-60 - viewPadY - off) / L.cellH) - 1
+      const wj1 = Math.ceil((H + viewPadY + 60 - off) / L.cellH) + 1
 
       for (let wj = wj0; wj <= wj1; wj++) {
-        for (let ix = -1; ix <= cols; ix++) {
+        for (let ix = ix0; ix <= ix1; ix++) {
           const salt = li * 733.1
           const h0 = hash(ix * 113.7 + wj * 271.3 + salt)
           if (h0 > L.chance) continue
@@ -634,8 +667,9 @@ export default function sketch(p) {
           const sx = ix * L.cellW + L.cellW * 0.5 + (h1 - 0.5) * L.cellW * 0.8
           const sy = wj * L.cellH + off + L.cellH * 0.5 + (h2 - 0.5) * L.cellH * 0.8
           const r = L.r * (0.7 + h3 * 0.7)
+          const tw = 0.6 + 0.4 * Math.sin(clock * (1.2 + h3 * 1.8) + h4 * p.TWO_PI)
           p.noStroke()
-          p.fill(245, 248, 255, 230 * a * L.alpha * (0.5 + h4 * 0.5))
+          p.fill(245, 248, 255, 230 * a * L.alpha * tw)
           p.circle(sx, sy, r * 2)
         }
       }
@@ -648,7 +682,36 @@ export default function sketch(p) {
     return [-80, 0, 80]
   }
 
-  function drawRig() {
+  function drawGround() {
+    const gy = GROUND_START + y * PX_PER_M
+    if (gy > H + 60) return
+
+    p.noStroke()
+    p.fill(...C.ground)
+    p.rect(-viewPadX, gy, W + viewPadX * 2, H - gy + viewPadY)
+
+    p.stroke(...C.groundLine)
+    p.strokeWeight(1.3)
+    for (let x = -viewPadX; x < W + viewPadX; x += 26) {
+      const k = Math.round(x)
+      if (hash(k * 0.37) < 0.35) continue
+      roughLine(x, gy + 8, x - 10, gy + 24, k * 0.7, 0.5)
+    }
+    p.noStroke()
+    for (let x = -viewPadX; x < W + viewPadX; x += 37) {
+      const k = Math.round(x)
+      p.fill(...C.groundLine)
+      p.circle(x + jit(k, 8), gy + 14 + hash(k * 0.9) * 30, 2 + hash(k * 0.3) * 3)
+    }
+
+    p.stroke(...C.ink)
+    p.strokeWeight(2.4)
+    roughLine(-viewPadX - 12, gy, W + viewPadX + 12, gy, 77, 0.7)
+  }
+
+  function drawRig(f) {
+    if (Math.abs(f.eachT) < 0.05) return
+
     const offs = sceneOffsets()
     // Ropes go pale as the sky darkens so they stay visible in space.
     const ropeT = clamp((y - 15000) / 60000, 0, 1)
@@ -694,7 +757,8 @@ export default function sketch(p) {
     p.background(...sky)
     drawStars()
     drawClouds(sky)
-    drawRig()
+    drawGround()
+    drawRig(f)
     drawBox()
     drawFBD(f)
     drawNet(f)
@@ -702,8 +766,13 @@ export default function sketch(p) {
   }
 
   // -------------------------------------------------------------- controls
-  function syncAccelInput() {
+  function syncAccelField() {
     if (accelInput) accelInput.value = fmtNum(accel)
+  }
+
+  function syncFtDisplay() {
+    if (!ftInput) return
+    ftInput.value = fmtNum(mode === 'rest' ? (mass * G) / nRopes : ftFromA(accel))
   }
 
   function setRopes(n) {
@@ -712,15 +781,7 @@ export default function sketch(p) {
       b.classList.toggle('active', parseInt(b.dataset.n, 10) === n)
       b.setAttribute('aria-pressed', parseInt(b.dataset.n, 10) === n ? 'true' : 'false')
     }
-  }
-
-  function updateAccelButtons() {
-    const up = accel > 0.001
-    const down = accel < -0.001
-    if (upBtn) upBtn.classList.toggle('active', up)
-    if (downBtn) downBtn.classList.toggle('active', down)
-    if (upBtn) upBtn.setAttribute('aria-pressed', up ? 'true' : 'false')
-    if (downBtn) downBtn.setAttribute('aria-pressed', down ? 'true' : 'false')
+    syncFtDisplay()
   }
 
   function updateModeButtons() {
@@ -733,8 +794,10 @@ export default function sketch(p) {
       accelInput.disabled = off
       accelInput.value = off ? '0' : fmtNum(accel)
     }
-    if (upBtn) upBtn.disabled = off
-    if (downBtn) downBtn.disabled = off
+    if (ftInput) {
+      ftInput.disabled = off
+      ftInput.value = fmtNum(off ? (mass * G) / nRopes : ftFromA(accel))
+    }
   }
 
   function setMode(next) {
@@ -745,14 +808,13 @@ export default function sketch(p) {
 
   function setAccel(val) {
     accel = clamp(val, ACCEL_MIN, ACCEL_MAX)
-    if (upBtn) updateAccelButtons()
+    if (ftInput) ftInput.value = fmtNum(ftFromA(accel))
   }
 
-  function setAccelDir(d) {
-    if (Math.abs(accel) < 0.001) accel = d * 2
-    else accel = Math.abs(accel) * d
-    updateAccelButtons()
-    syncAccelInput()
+  function setFt(val) {
+    const ft = clamp(val, FT_MIN, FT_MAX)
+    accel = clamp(aFromFt(ft), ACCEL_MIN, ACCEL_MAX)
+    syncAccelField()
   }
 
   function togglePause() {
@@ -813,7 +875,7 @@ export default function sketch(p) {
     motionGroup.appendChild(accelBtn)
     controls.appendChild(motionGroup)
 
-    // Acceleration magnitude.
+    // Acceleration.
     const accelLabel = el('label')
     accelLabel.appendChild(el('span', null, 'Acceleration'))
     accelInput = el('input')
@@ -828,17 +890,20 @@ export default function sketch(p) {
     accelLabel.appendChild(el('span', null, 'm/s²'))
     controls.appendChild(accelLabel)
 
-    upBtn = el('button', null, '\u2191 Up')
-    upBtn.type = 'button'
-    upBtn.setAttribute('aria-pressed', 'false')
-    upBtn.addEventListener('click', () => setAccelDir(1))
-    controls.appendChild(upBtn)
-
-    downBtn = el('button', null, '\u2193 Down')
-    downBtn.type = 'button'
-    downBtn.setAttribute('aria-pressed', 'false')
-    downBtn.addEventListener('click', () => setAccelDir(-1))
-    controls.appendChild(downBtn)
+    // F_T per rope, linked to the acceleration.
+    const ftLabel = el('label')
+    ftLabel.appendChild(el('span', null, 'F_T / rope'))
+    ftInput = el('input')
+    ftInput.type = 'number'
+    ftInput.min = FT_MIN
+    ftInput.max = FT_MAX
+    ftInput.step = 0.5
+    ftInput.value = fmtNum(ftFromA(accel))
+    ftInput.inputMode = 'decimal'
+    attachNumber(ftInput, FT_MIN, FT_MAX, () => ftFromA(accel), setFt)
+    ftLabel.appendChild(ftInput)
+    ftLabel.appendChild(el('span', null, 'N'))
+    controls.appendChild(ftLabel)
 
     // Mass.
     const massLabel = el('label')
@@ -852,6 +917,7 @@ export default function sketch(p) {
     massInput.inputMode = 'decimal'
     attachNumber(massInput, MASS_MIN, MASS_MAX, () => mass, (n) => {
       mass = n
+      syncFtDisplay()
     })
     massLabel.appendChild(massInput)
     massLabel.appendChild(el('span', null, 'kg'))
@@ -873,14 +939,13 @@ export default function sketch(p) {
     controls.appendChild(readout)
 
     setRopes(1)
-    updateAccelButtons()
     updateModeButtons()
   }
 
   function updateReadout(f) {
     readout.textContent =
       `F_net = ${fmtF(f.net)} N${dirArrowV(f.net)}  ·  ` +
-      `total tension = ${fmtF(f.totalT)} N  ·  ` +
+      `total F_T = ${fmtSigned(f.totalT)} N  ·  ` +
       `v = ${Math.abs(v).toFixed(2)} m/s${dirArrowV(v)}  ·  ` +
       `Δy = ${fmtAlt(y)}`
   }
@@ -891,12 +956,6 @@ export default function sketch(p) {
     if (tag === 'INPUT' || tag === 'BUTTON' || tag === 'SELECT' || tag === 'TEXTAREA') return
     if (e.key === '1' || e.key === '2' || e.key === '3') {
       setRopes(parseInt(e.key, 10))
-      e.preventDefault()
-    } else if (e.key === 'ArrowUp' && mode === 'accel') {
-      setAccelDir(1)
-      e.preventDefault()
-    } else if (e.key === 'ArrowDown' && mode === 'accel') {
-      setAccelDir(-1)
       e.preventDefault()
     } else if (e.key === ' ') {
       togglePause()
@@ -932,11 +991,16 @@ export default function sketch(p) {
 
   p.draw = () => {
     const dt = clamp(p.deltaTime, 0, 50) / 1000
-    if (!paused) update(dt)
+    if (!paused) {
+      update(dt)
+      clock += dt
+    }
 
     const s = Math.min(p.width / W, p.height / H)
     const ox = (p.width - W * s) / 2
     const oy = (p.height - H * s) / 2
+    viewPadX = (p.width / s - W) / 2
+    viewPadY = (p.height / s - H) / 2
 
     p.textFont(handReady ? 'Patrick Hand' : 'sans-serif')
     p.textStyle(p.NORMAL)

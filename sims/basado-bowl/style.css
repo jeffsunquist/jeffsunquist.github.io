@@ -246,6 +246,9 @@ button {
 }
 
 .round-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
   margin-left: auto;
   padding: 0.35rem 0.7rem;
   font-family: var(--display);
@@ -371,6 +374,30 @@ button {
 .noise-readout {
   min-width: 1.6em;
   text-align: right;
+}
+
+.loud-clock {
+  min-width: 3.2em;
+  color: var(--gold);
+  font-family: var(--math);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.loud-clock b {
+  font-weight: 700;
+}
+
+.match-clock {
+  padding-left: 0.55rem;
+  border-left: 2px solid #4b4b7a;
+  color: #fff;
+  font-family: var(--math);
+  font-size: 0.82em;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 .noise-threshold-value {
@@ -2549,6 +2576,45 @@ sup {
   margin: 0.2rem 0 0;
   color: #4b3f2a;
   font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.match-stats {
+  display: flex;
+  justify-content: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.match-stat {
+  min-width: 155px;
+  padding: 0.3rem 0.7rem 0.35rem;
+  border: 3px solid var(--ink);
+  border-radius: 7px;
+  background: var(--paper);
+  box-shadow: 4px 4px 0 rgba(27, 27, 58, 0.22);
+  text-align: center;
+}
+
+.match-stat .kick {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.match-stat strong {
+  display: block;
+  margin-top: 0.1rem;
+  font-family: var(--math);
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.match-stat small {
+  display: block;
+  color: #6b5b3e;
+  font-size: 0.72rem;
   font-weight: 700;
 }
 

@@ -75,7 +75,9 @@ questions appear in both. Waves and Momentum are Grade 7 only. The bank holds
 755 questions, including 73 approved FOR handout MCQs and 250 new quantitative
 hard problems. Formula rendering uses self-hosted
 KaTeX in questions, choices, and explanations. Each new match uses a fresh
-random seed, so question selection changes between games. Tied leaders go to sudden death,
+random seed, so question selection changes between games. Header clocks track total
+match time and time above the noise threshold, and both appear on the game-over
+screen. Tied leaders go to sudden death,
 which uses only tied teams, hard questions, and a 15-second timer; no items can
 be used there. There is no
 shop and no star currency. Questions live in

@@ -40,6 +40,17 @@ for about 1.2 seconds. Turning the gate off immediately unlocks both buttons.
   microphone will also hear the teacher and game sound effects, so place the
   laptop toward the class and tune the threshold in the room.
 
+The header shows two match clocks:
+
+- **Total time** next to the round pill, running from START MATCH.
+- **Loud time** next to the noise meter, counting only while the mic is active
+  and the room is over the threshold.
+
+Both pause when the browser tab is hidden. Total time freezes when a final
+winner is decided; loud time stops with it. The game-over screen shows **TOTAL
+TIME** and **ABOVE THRESHOLD** (or **MIC OFF** if the microphone was never
+used) alongside the current threshold.
+
 ## Teams and order
 
 | Turn | Team | Colour | Look |
@@ -281,7 +292,7 @@ Then handle the effect in `useSpell()` / `castSpell()` in `game.js`.
 Console helpers: `BB.state`, `BB.addScore('blue', 100)`, `BB.phase('draft')`,
 `BB.question()`, `BB.reset()`.
 
-The match autosaves to `localStorage` under `basado-bowl:v11`. Bump `VERSION` in
+The match autosaves to `localStorage` under `basado-bowl:v12`. Bump `VERSION` in
 `game.js` when the state shape changes so an old save is ignored.
 
 ## Fonts
