@@ -1,10 +1,11 @@
 // Suspended Box — a hand-drawn vertical tension / net-force sandbox.
 //
-// A crate hangs from one, two, or three parallel vertical ropes. The player
-// chooses the number of ropes, whether the crate is at rest or accelerating,
-// the acceleration magnitude and direction, and the mass. Two free-body
-// diagrams update every frame: all individual forces (each rope's tension and
-// the weight) and the net force.
+// A crate hangs from one, two, or three parallel vertical ropes and starts on
+// the floor with slack ropes (zero tension). The player chooses the number of
+// ropes, the rope tension, and the mass; the acceleration is read from the
+// forces. Two free-body diagrams update every frame: all individual forces
+// (each rope's tension, the weight, and the normal force from the floor) and
+// the net force.
 //
 // The camera is locked to the crate, so the crate stays put and the cloud
 // layers scroll vertically. The scroll is exactly v * PX_PER_M at each depth
@@ -12,9 +13,17 @@
 //
 // Physics (up positive):
 //   F_g = mg
-//   accelerating:  F_T,total - F_g = ma  ->  F_T,total = m(g + a)
-//   each of n identical ropes: F_T = m(g + a) / n
-//   at rest: a = 0, v = 0  ->  each rope carries mg / n, F_net = 0
+//   each of n identical ropes: F_T (the only force the player sets)
+//   total tension: F_T,total = n F_T
+//   airborne:  a = (F_T,total - F_g) / m
+//   on the floor:  F_N = max(0, F_g - F_T,total).  While F_N > 0 the floor
+//   holds the crate at rest (a = 0, F_net = 0), so a negative tension (the
+//   ropes pushing down) makes F_N larger than the weight.
+//   equilibrium: F_T,total = F_g  ->  a = 0
+//   slack ropes: F_T = 0  ->  on the floor F_N = F_g; airborne a = -g
+//
+// The crate's speed is capped at 0.999c.  Above 0.9c the stars draw as
+// vertical streaks whose length grows as the cap is approached.
 //
 // p5 instance-mode sketch, no assets. The world is a fixed 960x640 logical
 // space scaled to fit the stage.
@@ -23,6 +32,9 @@ export default function sketch(p) {
   const W = 960
   const H = 640
   const G = 9.8
+  const C_LIGHT = 299792458   // m/s
+  const V_MAX = 0.999 * C_LIGHT
+  const BETA_STREAK = 0.9
 
   const BOX_X = 230
   const BOX_W = 160
@@ -31,15 +43,13 @@ export default function sketch(p) {
 
   const PX_PER_M = 46       // cloud scroll, pixels per metre of altitude
   const PX_PER_N = 0.45     // FBD force scale
-  const ARROW_MAX = 100
+  const ARROW_MAX = 80
   const NET_ARROW_MAX = 45
   const EPS_V = 0.05
   const EPS_A = 0.02
 
   const MASS_MIN = 1
   const MASS_MAX = 10
-  const ACCEL_MAX = 20
-  const ACCEL_MIN = -30
   const FT_MAX = 300
   const FT_MIN = -300
   const GROUND_START = BOX_TOP + BOX_H  // screen y of the ground at altitude 0
@@ -47,7 +57,7 @@ export default function sketch(p) {
   const CARD1 = { x: 480, y: 14, w: 460, h: 250 }
   const CARD2 = { x: 520, y: 280, w: 380, h: 130 }
   const CALLOUT = { x: 592, y: 424, w: 236, h: 112 }
-  const DOT1 = { x: 710, y: 180 }
+  const DOT1 = { x: 710, y: 160 }
   const DOT2 = { x: 710, y: 358 }
 
   const TYPE = {
@@ -72,7 +82,8 @@ export default function sketch(p) {
     line: [203, 213, 225],
     paper: [251, 251, 253],
     card: [255, 255, 255],
-    normal: [13, 148, 136],
+    tension: [13, 148, 136],
+    normal: [11, 87, 208],
     gravity: [220, 38, 38],
     net: [109, 40, 217],
     warn: [180, 83, 9],
@@ -116,12 +127,13 @@ export default function sketch(p) {
   // ---------------------------------------------------------------- state
   let mass = 10
   let nRopes = 1
-  let mode = 'rest'        // rest | accel
-  let accel = 2            // signed m/s², up positive
+  let tension = 0          // rope tension per rope, N, up positive
 
   let v = 0                // m/s, up positive
   let y = 0                // m, altitude from the ground (cloud scroll)
   let clock = 0            // s, twinkle / animation time
+  let starWarpY = null     // frozen star altitude once the warp starts
+  let starWarpClock = 0
   let paused = false
 
   // Logical letterbox margins, so the sky/ground/stars fill the whole canvas.
@@ -131,10 +143,9 @@ export default function sketch(p) {
   let stage, controls
   let handReady = false
 
-  let accelInput, ftInput
+  let accelOut, ftInput
   let pauseBtn, readout
   let ropeBtns = []
-  let restBtn, accelBtn
 
   // -------------------------------------------------------------- helpers
   const clamp = (val, lo, hi) => Math.max(lo, Math.min(hi, val))
@@ -151,8 +162,18 @@ export default function sketch(p) {
     return s.endsWith('.0') ? s.slice(0, -2) : s
   }
   const dirArrowV = (val) => (val > 0.005 ? ' \u2191' : val < -0.005 ? ' \u2193' : '')
-  const fmtAlt = (val) =>
-    Math.abs(val) >= 1000 ? `${(val / 1000).toFixed(2)} km` : `${val.toFixed(1)} m`
+  const fmtSpeed = (val) => {
+    const s = Math.abs(val)
+    if (s < 1e4) return `${s.toFixed(1)} m/s`
+    if (s < 1e7) return `${(s / 1000).toFixed(1)} km/s`
+    return `${(s / C_LIGHT).toFixed(3)}c`
+  }
+  const fmtAlt = (val) => {
+    const a = Math.abs(val)
+    if (a >= 1e9) return `${(val / 1e9).toFixed(2)} Gm`
+    if (a >= 1000) return `${(val / 1000).toFixed(2)} km`
+    return `${val.toFixed(1)} m`
+  }
 
   function lerp3(a, b, t) {
     return [
@@ -305,32 +326,33 @@ export default function sketch(p) {
   }
 
   // ------------------------------------------------------------- physics
-  function accelSigned() {
-    return mode === 'rest' ? 0 : accel
-  }
-
   function computeForces() {
     const Fg = mass * G
-    const a = accelSigned()
-    const totalT = mass * (G + a)
+    const totalT = tension * nRopes
+    // The crate can only rest on the floor at ground level and while it is
+    // not already moving upward.
+    const onFloor = y <= 0.001 && v <= 0.001
+    const Fn = onFloor ? Math.max(0, Fg - totalT) : 0
+    // The floor supplies whatever the ropes do not, so the crate cannot
+    // accelerate while F_N > 0.
+    const a = Fn > 0 ? 0 : aFromFt(tension)
     return {
       Fg,
       a,
       totalT,
-      eachT: totalT / nRopes,
+      eachT: tension,
+      Fn,
+      held: Fn >= 0.4,
       net: mass * a
     }
   }
 
-  const ftFromA = (a) => (mass * (G + a)) / nRopes
   const aFromFt = (ft) => (nRopes * ft) / mass - G
 
   function update(dt) {
-    if (mode === 'rest') {
-      v = 0
-      return
-    }
-    v += accelSigned() * dt
+    // The floor removes the downward acceleration while it supports the crate.
+    v += computeForces().a * dt
+    v = clamp(v, -V_MAX, V_MAX)
     y += v * dt
     if (y < 0) {
       y = 0
@@ -342,6 +364,7 @@ export default function sketch(p) {
     v = 0
     y = 0
     clock = 0
+    starWarpY = null
   }
 
   // -------------------------------------------------------------- arrows
@@ -419,7 +442,7 @@ export default function sketch(p) {
       CARD1.y + 26,
       'RIGHT',
       TYPE.foot,
-      C.normal
+      C.tension
     )
     drawSub(
       [
@@ -433,61 +456,128 @@ export default function sketch(p) {
       TYPE.foot,
       C.gravity
     )
+    if (f.held) {
+      drawSub(
+        [
+          { t: 'F' },
+          { t: 'N', sub: true },
+          { t: ` = ${fmtF(f.Fn)} N` }
+        ],
+        CARD1.x + CARD1.w - 20,
+        CARD1.y + 74,
+        'RIGHT',
+        TYPE.foot,
+        C.normal
+      )
+    }
 
-    const offs = fbdOffsets()
     const d = DOT1
-    const R = 14
+    const R = 16
     const noRopes = Math.abs(f.eachT) < 0.05
+    const down = !noRopes && f.eachT < 0
+    const tensionUp = f.eachT > 0.05
+    const normalUp = f.held && tensionUp
+    let offs = fbdOffsets()
+    let nx = d.x
+    if (normalUp) {
+      if (nRopes === 1) {
+        offs = [-10]
+      } else if (nRopes === 2) {
+        offs = [-10, 10]
+      } else {
+        // Three ropes plus the normal force: four parallel arrows across the
+        // dot, with F_N on the right.
+        offs = [-14, -4.67, 4.67]
+        nx = d.x + 14
+      }
+    }
     const lenT = arrowLen(f.eachT)
     const lenG = arrowLen(f.Fg)
-    const gTail = d.y + R - 1
+    // With the ropes pushing down, the weight moves to its own lane so the two
+    // downward forces stay distinct.
+    const gx = down ? d.x + 30 : d.x
+    const gTail = down ? d.y : d.y + R - 1
 
-    // Tension tails sit on the dot's upper edge at each rope offset.
+    // Tension tails sit on the dot's edge, upper for a pull and lower for a
+    // push, at each rope offset.
     const tails = []
     const tips = []
     if (!noRopes) {
       for (let i = 0; i < offs.length; i++) {
         const off = offs[i]
-        const tail = d.y - Math.sqrt(Math.max(0, R * R - off * off)) + 1
+        const edge = Math.sqrt(Math.max(0, R * R - off * off))
+        const tail = down ? d.y + edge - 1 : d.y - edge + 1
         tails.push(tail)
-        tips.push(tail - lenT)
+        tips.push(tail + (down ? lenT : -lenT))
       }
     }
 
-    // Dot first, so a downward tension arrowhead stays visible on its edge.
     dot(d.x, d.y, R, C.ink)
 
     if (!noRopes) {
       for (let i = 0; i < offs.length; i++) {
         const x = d.x + offs[i]
-        if (f.eachT >= 0) {
-          arrow(x, tails[i], x, tips[i], C.normal, 860 + i * 13)
-        } else {
-          arrow(x, tips[i], x, tails[i], C.normal, 860 + i * 13)
-        }
+        arrow(x, tails[i], x, tips[i], C.tension, 860 + i * 13)
       }
     }
-    arrow(d.x, gTail, d.x, gTail + lenG, C.gravity, 890)
+    arrow(gx, gTail, gx, gTail + lenG, C.gravity, 890)
 
-    // Symbols only on the vectors; values live in the corner key.
-    for (let i = 0; i < offs.length && !noRopes; i++) {
+    // Normal force: the floor pushes up, straight out of the dot.
+    if (f.held) {
+      const lenN = arrowLen(f.Fn)
+      const nOff = nx - d.x
+      const tailN = d.y - Math.sqrt(Math.max(0, R * R - nOff * nOff)) + 1
+      const tipN = tailN - lenN
+      arrow(nx, tailN, nx, tipN, C.normal, 930)
+      if (normalUp && nRopes === 3) {
+        // Four-arrow row: label F_N outboard so it clears the rope arrows.
+        drawSub(
+          [
+            { t: 'F' },
+            { t: 'N', sub: true }
+          ],
+          nx + 8,
+          (tailN + tipN) / 2 + 6,
+          'LEFT',
+          TYPE.symbol,
+          C.normal
+        )
+      } else {
+        drawSub(
+          [
+            { t: 'F' },
+            { t: 'N', sub: true }
+          ],
+          normalUp ? nx : nx + 10,
+          normalUp ? tipN - 6 : tipN + 5,
+          normalUp ? 'CENTER' : 'LEFT',
+          TYPE.symbol,
+          C.normal
+        )
+      }
+    }
+
+    // Symbols only on the vectors; values live in the corner key. A downward
+    // bundle gets one label clear of the weight's label.
+    if (!noRopes) {
       const parts = [
         { t: 'F' },
         { t: 'T', sub: true }
       ]
-      let align = 'CENTER'
-      let lx = d.x + offs[i]
-      let ly = tips[i] - 6
-      if (nRopes > 1 && i === 0) {
-        align = 'RIGHT'
-        lx = d.x + offs[i] - 6
-        ly = tips[i] + 6
-      } else if (nRopes > 1 && i === offs.length - 1) {
-        align = 'LEFT'
-        lx = d.x + offs[i] + 6
-        ly = tips[i] + 6
+      if (down) {
+        const leftX = d.x - Math.max(...offs.map((off) => Math.abs(off)))
+        const midY = (tails[0] + tips[0]) / 2 + 6
+        drawSub(parts, leftX - 8, midY, 'RIGHT', TYPE.symbol, C.tension)
+      } else if (normalUp) {
+        // F_N owns the centre, so the tension label sits left of the bundle.
+        const midY = (tails[0] + tips[0]) / 2 + 6
+        drawSub(parts, d.x + offs[0] - 10, midY, 'RIGHT', TYPE.symbol, C.tension)
+      } else {
+        // One label for the whole bundle; the corner key carries the value.
+        let topTip = tips[0]
+        for (const tip of tips) topTip = Math.min(topTip, tip)
+        drawSub(parts, d.x, topTip - 6, 'CENTER', TYPE.symbol, C.tension)
       }
-      drawSub(parts, lx, ly, align, TYPE.symbol, C.normal)
     }
 
     drawSub(
@@ -495,7 +585,7 @@ export default function sketch(p) {
         { t: 'F' },
         { t: 'g', sub: true }
       ],
-      d.x + 12,
+      gx + 12,
       gTail + lenG + 5,
       'LEFT',
       TYPE.symbol,
@@ -553,17 +643,20 @@ export default function sketch(p) {
     p.fill(...C.muted)
     p.textSize(TYPE.caption)
     p.textAlign(p.LEFT, p.BASELINE)
-    p.text(zero ? 'balanced' : 'unbalanced', CARD2.x + 20, CARD2.y + CARD2.h - 14)
+    const freeFall = Math.abs(f.eachT) < 0.05 && f.Fn <= 0
+    const caption = freeFall ? 'free fall' : zero ? 'equilibrium' : 'unbalanced'
+    p.text(caption, CARD2.x + 20, CARD2.y + CARD2.h - 14)
   }
 
   function velocityState(f) {
     const speed = Math.abs(v)
     const accel = Math.abs(f.a)
-    if (speed < EPS_V && accel < EPS_A) return { text: 'at rest', color: C.muted }
-    if (y <= 0.001 && speed < EPS_V && f.a < -EPS_A) {
-      return { text: 'on ground', color: C.muted }
+    if (f.held) return { text: 'on ground', color: C.muted }
+    if (speed >= V_MAX - 1 && f.a * v >= 0) {
+      return { text: 'at 0.999c', color: C.warn }
     }
-    if (accel < EPS_A) return { text: 'constant velocity', color: C.normal }
+    if (speed < EPS_V && accel < EPS_A) return { text: 'at rest', color: C.muted }
+    if (accel < EPS_A) return { text: 'constant velocity', color: C.tension }
     if (f.a * v >= 0) return { text: 'speeding up', color: C.warn }
     return { text: 'slowing down', color: C.bad }
   }
@@ -571,14 +664,12 @@ export default function sketch(p) {
   function drawCallout(f) {
     drawCard(CALLOUT, 771)
 
-    const speed = Math.abs(v)
-    const vTxt = speed < 0.05 ? '0' : speed.toFixed(1)
     const x = CALLOUT.x + 20
 
     p.fill(...C.ink)
     p.textSize(TYPE.velocity)
     p.textAlign(p.LEFT, p.BASELINE)
-    p.text(`v = ${vTxt} m/s${dirArrowV(v)}`, x, CALLOUT.y + 34)
+    p.text(`v = ${fmtSpeed(v)}${dirArrowV(v)}`, x, CALLOUT.y + 34)
 
     drawSub(
       [
@@ -641,14 +732,28 @@ export default function sketch(p) {
   }
 
   // Stars only exist in the dark upper atmosphere. Three cell fields at
-  // different depths give the same parallax treatment as the clouds.
+  // different depths give the same parallax treatment as the clouds.  Above
+  // 0.9c they render as streaks and the field is frozen so it does not strobe.
   function drawStars() {
     const a = clamp((y - STAR_START) / (KARMAN - STAR_START), 0, 1)
     if (a <= 0.02) return
 
+    const beta = Math.abs(v) / C_LIGHT
+    const warp = clamp((beta - BETA_STREAK) / (0.999 - BETA_STREAK), 0, 1)
+    if (warp > 0 && starWarpY === null) {
+      starWarpY = y
+      starWarpClock = clock
+    } else if (warp <= 0) {
+      starWarpY = null
+    }
+    const starY = starWarpY !== null ? starWarpY : y
+    const drift = starWarpY !== null ? (clock - starWarpClock) * 90 * Math.sign(v) : 0
+    const streakBase = 6 + 74 * warp
+
     for (let li = 0; li < STAR_LAYERS.length; li++) {
       const L = STAR_LAYERS[li]
-      const off = y * PX_PER_M * L.f
+      const depth = L.f / STAR_LAYERS[STAR_LAYERS.length - 1].f
+      const off = starY * PX_PER_M * L.f + drift * depth
       const ix0 = Math.floor(-viewPadX / L.cellW) - 1
       const ix1 = Math.ceil((W + viewPadX) / L.cellW) + 1
       const wj0 = Math.floor((-60 - viewPadY - off) / L.cellH) - 1
@@ -668,9 +773,22 @@ export default function sketch(p) {
           const sy = wj * L.cellH + off + L.cellH * 0.5 + (h2 - 0.5) * L.cellH * 0.8
           const r = L.r * (0.7 + h3 * 0.7)
           const tw = 0.6 + 0.4 * Math.sin(clock * (1.2 + h3 * 1.8) + h4 * p.TWO_PI)
-          p.noStroke()
-          p.fill(245, 248, 255, 230 * a * L.alpha * tw)
-          p.circle(sx, sy, r * 2)
+          const alpha = 230 * a * L.alpha * tw
+
+          if (warp > 0) {
+            const len = streakBase * (0.75 + h4 * 0.5) * (0.65 + 0.35 * depth)
+            const tail = v > 0 ? sy - len : sy + len
+            p.stroke(245, 248, 255, alpha)
+            p.strokeWeight(Math.max(1.3, r))
+            p.line(sx, tail, sx, sy)
+            p.noStroke()
+            p.fill(245, 248, 255, Math.min(255, alpha * 1.2))
+            p.circle(sx, sy, r * 1.9)
+          } else {
+            p.noStroke()
+            p.fill(245, 248, 255, alpha)
+            p.circle(sx, sy, r * 2)
+          }
         }
       }
     }
@@ -762,8 +880,8 @@ export default function sketch(p) {
     p.background(...sky)
     drawStars()
     drawClouds(sky)
-    drawRig(f)
     drawGround()
+    drawRig(f)
     drawBox()
     drawFBD(f)
     drawNet(f)
@@ -771,13 +889,9 @@ export default function sketch(p) {
   }
 
   // -------------------------------------------------------------- controls
-  function syncAccelField() {
-    if (accelInput) accelInput.value = fmtNum(accel)
-  }
-
-  function syncFtDisplay() {
-    if (!ftInput) return
-    ftInput.value = fmtNum(mode === 'rest' ? (mass * G) / nRopes : ftFromA(accel))
+  function setTension(val) {
+    tension = clamp(val, FT_MIN, FT_MAX)
+    if (ftInput) ftInput.value = fmtNum(tension)
   }
 
   function setRopes(n) {
@@ -786,40 +900,6 @@ export default function sketch(p) {
       b.classList.toggle('active', parseInt(b.dataset.n, 10) === n)
       b.setAttribute('aria-pressed', parseInt(b.dataset.n, 10) === n ? 'true' : 'false')
     }
-    syncFtDisplay()
-  }
-
-  function updateModeButtons() {
-    if (restBtn) restBtn.classList.toggle('active', mode === 'rest')
-    if (accelBtn) accelBtn.classList.toggle('active', mode === 'accel')
-    if (restBtn) restBtn.setAttribute('aria-pressed', mode === 'rest' ? 'true' : 'false')
-    if (accelBtn) accelBtn.setAttribute('aria-pressed', mode === 'accel' ? 'true' : 'false')
-    const off = mode === 'rest'
-    if (accelInput) {
-      accelInput.disabled = off
-      accelInput.value = off ? '0' : fmtNum(accel)
-    }
-    if (ftInput) {
-      ftInput.disabled = off
-      ftInput.value = fmtNum(off ? (mass * G) / nRopes : ftFromA(accel))
-    }
-  }
-
-  function setMode(next) {
-    mode = next
-    if (mode === 'rest') v = 0
-    updateModeButtons()
-  }
-
-  function setAccel(val) {
-    accel = clamp(val, ACCEL_MIN, ACCEL_MAX)
-    if (ftInput) ftInput.value = fmtNum(ftFromA(accel))
-  }
-
-  function setFt(val) {
-    const ft = clamp(val, FT_MIN, FT_MAX)
-    accel = clamp(aFromFt(ft), ACCEL_MIN, ACCEL_MAX)
-    syncAccelField()
   }
 
   function togglePause() {
@@ -865,37 +945,15 @@ export default function sketch(p) {
     }
     controls.appendChild(ropeGroup)
 
-    // Motion mode.
-    const motionGroup = el('div', 'cluster')
-    motionGroup.appendChild(el('span', null, 'Motion'))
-    restBtn = el('button', null, 'At rest')
-    restBtn.type = 'button'
-    restBtn.setAttribute('aria-pressed', 'false')
-    restBtn.addEventListener('click', () => setMode('rest'))
-    motionGroup.appendChild(restBtn)
-    accelBtn = el('button', null, 'Accelerating')
-    accelBtn.type = 'button'
-    accelBtn.setAttribute('aria-pressed', 'false')
-    accelBtn.addEventListener('click', () => setMode('accel'))
-    motionGroup.appendChild(accelBtn)
-    controls.appendChild(motionGroup)
-
-    // Acceleration.
+    // Acceleration: read from the forces, not typed.
     const accelLabel = el('label')
     accelLabel.appendChild(el('span', null, 'Acceleration'))
-    accelInput = el('input')
-    accelInput.type = 'number'
-    accelInput.min = ACCEL_MIN
-    accelInput.max = ACCEL_MAX
-    accelInput.step = 0.5
-    accelInput.value = fmtNum(accel)
-    accelInput.inputMode = 'decimal'
-    attachNumber(accelInput, ACCEL_MIN, ACCEL_MAX, () => accel, setAccel)
-    accelLabel.appendChild(accelInput)
+    accelOut = el('span', 'val', '0')
+    accelLabel.appendChild(accelOut)
     accelLabel.appendChild(el('span', null, 'm/s²'))
     controls.appendChild(accelLabel)
 
-    // F_T per rope, linked to the acceleration.
+    // F_T per rope: the only editable force.
     const ftLabel = el('label')
     ftLabel.appendChild(el('span', null, 'F_T / rope'))
     ftInput = el('input')
@@ -903,12 +961,26 @@ export default function sketch(p) {
     ftInput.min = FT_MIN
     ftInput.max = FT_MAX
     ftInput.step = 0.5
-    ftInput.value = fmtNum(ftFromA(accel))
+    ftInput.value = fmtNum(tension)
     ftInput.inputMode = 'decimal'
-    attachNumber(ftInput, FT_MIN, FT_MAX, () => ftFromA(accel), setFt)
+    attachNumber(ftInput, FT_MIN, FT_MAX, () => tension, setTension)
     ftLabel.appendChild(ftInput)
     ftLabel.appendChild(el('span', null, 'N'))
     controls.appendChild(ftLabel)
+
+    // Tension presets.
+    const presetGroup = el('div', 'cluster')
+    const zeroBtn = el('button', null, 'Zero tension')
+    zeroBtn.type = 'button'
+    zeroBtn.title = 'Set F_T = 0 (slack ropes)'
+    zeroBtn.addEventListener('click', () => setTension(0))
+    presetGroup.appendChild(zeroBtn)
+    const balanceBtn = el('button', null, 'Balance the weight')
+    balanceBtn.type = 'button'
+    balanceBtn.title = 'Set F_T so the total tension balances the weight'
+    balanceBtn.addEventListener('click', () => setTension((mass * G) / nRopes))
+    presetGroup.appendChild(balanceBtn)
+    controls.appendChild(presetGroup)
 
     // Mass.
     const massLabel = el('label')
@@ -922,7 +994,6 @@ export default function sketch(p) {
     massInput.inputMode = 'decimal'
     attachNumber(massInput, MASS_MIN, MASS_MAX, () => mass, (n) => {
       mass = n
-      syncFtDisplay()
     })
     massLabel.appendChild(massInput)
     massLabel.appendChild(el('span', null, 'kg'))
@@ -944,14 +1015,15 @@ export default function sketch(p) {
     controls.appendChild(readout)
 
     setRopes(1)
-    updateModeButtons()
   }
 
   function updateReadout(f) {
+    if (accelOut) accelOut.textContent = fmtNum(f.a)
     readout.textContent =
       `F_net = ${fmtF(f.net)} N${dirArrowV(f.net)}  ·  ` +
       `total F_T = ${fmtSigned(f.totalT)} N  ·  ` +
-      `v = ${Math.abs(v).toFixed(2)} m/s${dirArrowV(v)}  ·  ` +
+      (f.held ? `F_N = ${fmtF(f.Fn)} N  ·  ` : '') +
+      `v = ${fmtSpeed(v)}${dirArrowV(v)}  ·  ` +
       `Δy = ${fmtAlt(y)}`
   }
 

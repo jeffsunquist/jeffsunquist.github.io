@@ -1,5 +1,5 @@
 import { CONFIG, SPELL_BY_ID, CATEGORY_BY_ID } from './config.js';
-import { QUESTIONS } from './questions.js';
+import { QUESTIONS, questionAssetUrl } from './questions.js';
 import { CHARACTERS, characterSVG } from './characters.js';
 import { loadKatex } from './katex-loader.js';
 
@@ -319,7 +319,7 @@ function richText(value) {
 
 function questionFigure(q) {
   if (!q.image) return '';
-  const src = new URL(q.image, import.meta.url).href;
+  const src = questionAssetUrl(q.image);
   return `<figure class="question-figure">
     <img src="${esc(src)}" alt="${esc(q.imageAlt || 'Question diagram')}" decoding="async" />
   </figure>`;

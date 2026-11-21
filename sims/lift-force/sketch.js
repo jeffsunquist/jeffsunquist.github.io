@@ -5,6 +5,20 @@
 // p5 instance-mode sketch, no assets. The world is a fixed 960x640 logical
 // space scaled to fit the stage, so jump distances and aim never change with
 // the window size.
+import { QUESTIONS } from '../questions/index.js'
+
+// The rescue prompt draws on the p5 canvas, which cannot render KaTeX or the
+// bank's SVG figures. Use the short, plain-text subset of the shared bank.
+const NON_PLAIN = /[\\$_^]/
+const RESCUE_POOL = QUESTIONS.filter(
+  (q) =>
+    !q.image &&
+    q.a.length === 4 &&
+    q.q.length <= 110 &&
+    !NON_PLAIN.test(q.q) &&
+    q.a.every((a) => a.length <= 30 && !NON_PLAIN.test(a))
+)
+
 export default function sketch(p) {
   // ---------------------------------------------------------------- world
   const W = 960
@@ -87,72 +101,6 @@ export default function sketch(p) {
   }
   const ORDER = ['pistol', 'shotgun', 'flame']
 
-  // ------------------------------------------------------- rescue questions
-  // One of these is asked when the player runs out of health. Keep the
-  // options short so they fit the answer buttons.
-  const PHYSICS_QUESTIONS = [
-    {
-      q: 'A car travels 100 m in 5 s. What is its average speed?',
-      options: ['5 m/s', '20 m/s', '50 m/s', '500 m/s'],
-      answer: 1
-    },
-    {
-      q: 'Which of these is a vector quantity?',
-      options: ['Speed', 'Distance', 'Velocity', 'Mass'],
-      answer: 2
-    },
-    {
-      q: 'A 10 kg box has a net force of 50 N. What is its acceleration?',
-      options: ['0.2 m/s²', '5 m/s²', '40 m/s²', '500 m/s²'],
-      answer: 1
-    },
-    {
-      q: 'What is the weight of a 2 kg object on Earth? (Use g = 9.8 m/s².)',
-      options: ['2 N', '9.8 N', '19.6 N', '196 N'],
-      answer: 2
-    },
-    {
-      q: 'A 3 kg object accelerates at 4 m/s². What is the net force?',
-      options: ['0.75 N', '7 N', '12 N', '24 N'],
-      answer: 2
-    },
-    {
-      q: 'An object has zero net force acting on it. It must…',
-      options: ['be at rest', 'accelerate', 'be at rest or move at constant velocity', 'be in free fall'],
-      answer: 2
-    },
-    {
-      q: "Newton's third law says action–reaction forces are…",
-      options: ['equal and in the same direction', 'equal and opposite on different objects', 'equal and opposite on the same object', 'always unequal'],
-      answer: 1
-    },
-    {
-      q: 'A ball is thrown straight up. At its highest point, its acceleration is…',
-      options: ['zero', '9.8 m/s² downward', '9.8 m/s² upward', 'equal to its velocity'],
-      answer: 1
-    },
-    {
-      q: 'A crate is pushed with 40 N right while kinetic friction is 10 N left. The net force is…',
-      options: ['10 N left', '30 N right', '40 N right', '50 N left'],
-      answer: 1
-    },
-    {
-      q: 'You push a box sideways while it moves forward. The work done by your push is…',
-      options: ['positive', 'negative', 'zero', 'equal to its weight'],
-      answer: 2
-    },
-    {
-      q: 'What is the SI unit of force?',
-      options: ['joule', 'newton', 'watt', 'pascal'],
-      answer: 1
-    },
-    {
-      q: 'A person walks 4 m east, then 3 m west. Their displacement is…',
-      options: ['7 m east', '1 m east', '1 m west', '7 m west'],
-      answer: 1
-    }
-  ]
-
   // Answer buttons: a compact 2x2 grid in the bottom-sheet question panel.
   const RESCUE_BTN_W = 350
   const RESCUE_BTN_H = 50
@@ -225,7 +173,7 @@ export default function sketch(p) {
   // The rescue event: null when idle, otherwise the cutscene state.
   let rescue = null
   let rescued = false
-  let lastQuestion = -1
+  let lastQuestionId = null
   // Cinematic camera, only used while mode === 'rescue'.
   let camera = { zoom: 1, x: W / 2, y: H / 2 }
 
@@ -849,14 +797,15 @@ export default function sketch(p) {
   // outright. Answer the physics question correctly to be carried off, or
   // watch him leave and take the normal "owari da" ending.
   function pickRescueQuestion() {
-    const n = PHYSICS_QUESTIONS.length
+    const n = RESCUE_POOL.length
+    if (!n) return null
     let i = Math.min(n - 1, Math.floor(p.random(n)))
-    if (n > 1 && i === lastQuestion) i = (i + 1) % n
-    lastQuestion = i
+    if (n > 1 && RESCUE_POOL[i].id === lastQuestionId) i = (i + 1) % n
 
-    const src = PHYSICS_QUESTIONS[i]
-    const correctText = src.options[src.answer]
-    const options = src.options.slice()
+    const src = RESCUE_POOL[i]
+    lastQuestionId = src.id
+    const correctText = src.a[src.correct]
+    const options = src.a.slice()
     for (let k = options.length - 1; k > 0; k--) {
       const j = Math.floor(p.random(k + 1))
       const tmp = options[k]

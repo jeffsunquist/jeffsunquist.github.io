@@ -103,11 +103,13 @@ targeted.
 
 ## Question bank and grades
 
-The game ships with **755 questions**:
+The game ships with **755 questions** from the shared bank in
+`sims/questions/`, which other sims can also use (Lift Force draws its
+end-of-run rescue question from a short plain-text subset):
 
-- 82 curated questions in `questions/{sci,kin,for,ene}.js`.
-- 600 authored questions in `questions/bank/{sci,kin,for,ene,ele,wav,mom}.js`.
-- 73 approved FOR handout MCQs in `questions/bank/for-approved.js`.
+- 82 curated questions in `sims/questions/{sci,kin,for,ene}.js`.
+- 600 authored questions in `sims/questions/bank/{sci,kin,for,ene,ele,wav,mom}.js`.
+- 73 approved FOR handout MCQs in `sims/questions/bank/for-approved.js`.
 - 250 of the authored questions are new quantitative hard problems; every
   unit/grade has 10 easy, 10 medium, and 30 hard questions.
 
@@ -142,13 +144,15 @@ a Grade 7-only objective, or the reverse.
 
 ### Approved FOR handout MCQs
 
-`questions/bank/for-approved.js` is generated from the approved FOR MCQs used in
-the scored `FOR-W01`–`FOR-W06` and `FOR-D01`–`FOR-D06` handouts. It contains 73
+`sims/questions/bank/for-approved.js` is generated from the approved FOR MCQs
+used in the scored `FOR-W01`–`FOR-W06` and `FOR-D01`–`FOR-D06` handouts. It contains 73
 questions (75 approved unique questions minus two exact duplicates already
 covered by the bank).
 
-- Explanations and image alt text live in `questions/for-approved.meta.yaml`.
-- Diagram questions use self-contained SVGs from `questions/images/for/`.
+- Explanations and image alt text live in
+  `sims/questions/for-approved.meta.yaml`.
+- Diagram questions use self-contained SVGs from
+  `sims/questions/images/for/`.
 - Regenerate from `handouts_builder/` with:
 
 ```bash
@@ -228,25 +232,26 @@ one-dimensional.
 | Team colours, names, characters | `config.js` → `teams` |
 | Items and descriptions | `config.js` → `spells` |
 | Characters and pixel sprites | `characters.js` |
-| Curated questions | `questions/{sci,kin,for,ene}.js` |
-| Authored bank | `questions/bank/{sci,kin,for,ene,ele,wav}.js` |
-| Approved FOR handout bank | `questions/bank/for-approved.js` |
-| FOR handout explanations / image alt text | `questions/for-approved.meta.yaml` |
-| FOR handout diagrams | `questions/images/for/*.svg` |
+| Curated questions | `sims/questions/{sci,kin,for,ene}.js` |
+| Authored bank | `sims/questions/bank/{sci,kin,for,ene,ele,wav,mom}.js` |
+| Approved FOR handout bank | `sims/questions/bank/for-approved.js` |
+| FOR handout explanations / image alt text | `sims/questions/for-approved.meta.yaml` |
+| FOR handout diagrams | `sims/questions/images/for/*.svg` |
 | Validate the bank | `node tools/validate-questions.mjs` |
 | Layout and animation styling | `style.css` |
 | Flow, draft, casting, effects | `game.js` |
 
 ### Add a question
 
-Append an object to the right unit file. New questions should be
-grade-specific and carry an `lo` tag:
+Append an object to the right unit file under `sims/questions/`. The bank is
+shared with other sims. New questions should be grade-specific and carry an
+`lo` tag:
 
 ```js
 {
   id: 'KIN6-031',         // unique
   grade: '6',             // '6' or '7'; 'both' stays shared
-  unit: 'KIN',            // SCI, KIN, FOR, ENE, ELE, or WAV
+  unit: 'KIN',            // SCI, KIN, FOR, ENE, ELE, WAV, or MOM
   level: 2,               // internal only: 1 easy, 2 medium, 3 hard
   lo: 'KIN-25',           // one logical_id from shared/lo_master.csv
   q: 'A car travels 60 m in 6 s. What is its speed?',

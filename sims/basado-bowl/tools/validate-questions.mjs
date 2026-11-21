@@ -3,7 +3,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { QUESTIONS } from '../questions.js';
+import { QUESTIONS } from '../../questions/index.js';
 import { CONFIG } from '../config.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -136,9 +136,9 @@ for (const q of QUESTIONS) {
   if (q.image != null) {
     if (typeof q.image !== 'string' || !q.image.trim()) {
       fail(q, 'invalid image path');
-    } else if (!q.image.startsWith('questions/images/') || q.image.includes('..')) {
-      fail(q, 'image must live under questions/images/');
-    } else if (!existsSync(resolve(here, '..', q.image))) {
+    } else if (!q.image.startsWith('images/') || q.image.includes('..')) {
+      fail(q, 'image must live under images/');
+    } else if (!existsSync(resolve(here, '../../questions', q.image))) {
       fail(q, `missing image file ${q.image}`);
     }
     if (typeof q.imageAlt !== 'string' || !q.imageAlt.trim()) {
